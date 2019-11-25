@@ -2,6 +2,12 @@
 
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 8.3.19.
 
+## Setting up project
+
+Install Node.js (12.13.1 LTS @ https://nodejs.org/en/).  This will automatically install NPM.
+
+Run `npm install -g @angular/cli` to install the Angular CLI.  After that, run `npm install --save-dev @angular-devkit/build-angular` to set up the `ng serve` command
+
 ## Development server
 
 Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
