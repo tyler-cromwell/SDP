@@ -1,17 +1,28 @@
-<div class="home">
+<div id="home">
   <h3>Search</h3>
   
-  <form action="">
-    <input type="text" placeholder="Project name">
-    <input type="submit" value="Search"/>
-  </form>
-  <button>Advanced Search</button>
+  <div class="row">
+    <form action="" class="col s12">
+      <div class="row">
+        <div class="col s6">
+          <input type="text" placeholder="Project name">
+        </div>
+        <div class="col s6">
+          <input type="submit" value="Search" class="waves-effect waves-light btn"/>
+        </div>
+      </div>
+    </form>
+  </div>
 
-  <div class="actions">
+  <div class="row">
+    <button class="waves-effect waves-light btn">Advanced Search</button>
+  </div>
+
+  <div id="actions">
     <h3>Actions</h3>
-    <nav>
-      <a routerLink="/page1" routerLinkActive="">Create Project</a>
-      <a routerLink="/page2" routerLinkActive="">Browse Projects</a>
-    </nav>
+    <div>
+      <a class="waves-effect waves-light btn" routerLink="/page1" routerLinkActive="">Create Project</a>
+      <a class="waves-effect waves-light btn" routerLink="/page2" routerLinkActive="">Browse Projects</a>
+    </div>
   </div>
 </div>
