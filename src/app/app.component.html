@@ -1,3 +1,21 @@
+<ul id="user-dropdown" class="dropdown-content">
+  <li><a href="#!">two</a></li>
+  <li class="divider"></li>
+  <li><a href="#!">three</a></li>
+</ul>
+
+
+<nav>
+  <div class="nav-wrapper">
+    <a class="brand-logo" routerLink="/" routerLinkActive="">AWS Server Manager</a>
+    <ul class="right hide-on-med-and-down">
+      <!--<li><a href="#!">Link</a></li>-->
+      <li><a class="dropdown-trigger" href="#!" data-target="user-dropdown">User<i class="material-icons right">arrow_drop_down</i></a></li>
+    </ul>
+  </div>
+</nav>
+
+
 <div class="container">
   <router-outlet></router-outlet>
 </div>
@@ -16,8 +34,6 @@
         <ul>
           <li><a class="grey-text text-lighten-3" href="#!">Link 1</a></li>
           <li><a class="grey-text text-lighten-3" href="#!">Link 2</a></li>
-          <li><a class="grey-text text-lighten-3" href="#!">Link 3</a></li>
-          <li><a class="grey-text text-lighten-3" href="#!">Link 4</a></li>
         </ul>
       </div>
     </div>
