@@ -15,15 +15,39 @@
   </div>
 
   <div class="row">
-    <a class="waves-effect waves-light btn-small modal-trigger" href="#advancedSearchModal">Advanced Search</a>
+    <!-- class="waves-effect" permanently alters color, so please DO NOT USE -->
+    <a class="waves-light btn-small modal-trigger" href="#advanced-search-modal">Advanced Search</a>
 
-    <div id="advancedSearchModal" class="modal">
+    <div id="advanced-search-modal" class="modal">
       <div class="modal-content">
         <h4>Advanced Search</h4>
-        <p>A bunch of text</p>
+
+        <div class="row">
+          <form class="col s12">
+            <div class="row modal-form-row">
+              <div class="input-field col s12">
+                <input id="field_name" type="text" class="validate">
+                <label for="field_name">Name</label>
+              </div>
+            </div>
+            <div class="row">
+              <div class="input-field col s12">
+                <input id="field_team" type="text" class="validate">
+                <label for="field_team">Team</label>
+              </div>
+            </div>
+            <div class="row">
+              <div class="input-field col s12">
+                <input id="field_owner" type="text" class="validate">
+                <label for="field_owner">Owner</label>
+              </div>
+            </div>
+          </form>
+        </div>
       </div>
+
       <div class="modal-footer">
-        <a href="#!" class="modal-close waves-effect waves-light btn-flat">Search</a>
+        <a class="modal-action modal-close waves-effect waves-green btn-flat">Submit</a>
       </div>
     </div>
   </div>
