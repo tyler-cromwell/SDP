@@ -1,3 +1,21 @@
+<ul id="user-dropdown" class="dropdown-content">
+  <li><span>Change Password</span></li>
+  <li class="divider"></li>
+  <li><span>Logout</span></li>
+</ul>
+
+
+<nav>
+  <div class="nav-wrapper">
+    <a class="brand-logo" routerLink="/" routerLinkActive="">AWS Server Management Tool</a>
+    <ul class="right hide-on-med-and-down">
+      <!--<li><span>Link</span></li>-->
+      <li><span class="dropdown-trigger" data-target="user-dropdown">User<i class="material-icons right">arrow_drop_down</i></span></li>
+    </ul>
+  </div>
+</nav>
+
+
 <div class="container">
   <router-outlet></router-outlet>
 </div>
@@ -14,10 +32,8 @@
       <div class="col l4 offset-l2 s12">
         <h5 class="white-text">Links</h5>
         <ul>
-          <li><a class="grey-text text-lighten-3" href="#!">Link 1</a></li>
-          <li><a class="grey-text text-lighten-3" href="#!">Link 2</a></li>
-          <li><a class="grey-text text-lighten-3" href="#!">Link 3</a></li>
-          <li><a class="grey-text text-lighten-3" href="#!">Link 4</a></li>
+          <li><a class="grey-text text-lighten-3">Link 1</a></li>
+          <li><a class="grey-text text-lighten-3">Link 2</a></li>
         </ul>
       </div>
     </div>
@@ -26,7 +42,7 @@
   <div class="footer-copyright">
     <div class="container">
       © 2019 Copyright ???
-      <a class="grey-text text-lighten-4 right" href="#!">More Links</a>
+      <a class="grey-text text-lighten-4 right">More Links</a>
     </div>
   </div>
 </footer>
