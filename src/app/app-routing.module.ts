@@ -4,11 +4,13 @@ import { Routes, RouterModule } from '@angular/router';
 import { HomeComponent } from './home/home.component';
 import { BrowseComponent } from './browse/browse.component';
 import { CreateComponent } from './create/create.component';
+import { DetailComponent } from './detail/detail.component';
 
 
 const routes: Routes = [
   { path: '', component: HomeComponent },
   { path: 'browse', component: BrowseComponent},
+  { path: 'browse/:id', component: DetailComponent},
   { path: 'create', component: CreateComponent}
 ];
 
@@ -17,4 +19,9 @@ const routes: Routes = [
   exports: [RouterModule]
 })
 export class AppRoutingModule { }
-export const routingComponents = [HomeComponent, BrowseComponent, CreateComponent]
+export const routingComponents = [
+  HomeComponent,
+  BrowseComponent,
+  CreateComponent,
+  DetailComponent
+]
