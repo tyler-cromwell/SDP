@@ -1,12 +1,10 @@
-import json
-
 import boto3
 
 
 ec2 = boto3.resource('ec2')
 
 
-def createEC2(event, context):
+def post_instances(event, context):
     required = ['type', 'minCount', 'maxCount']
 
     if False in [k in event.keys() for k in required]:
@@ -23,5 +21,5 @@ def createEC2(event, context):
     )
 
     return {
-        'instance': str(instance.id),
+        'instance': str(instance),
     }
