@@ -23,7 +23,6 @@ export class AppComponent {
   ngOnInit() { }
 
   handleGetInstances(event: Event) {
-    console.log('Retrieving EC2 instances...')
     this.client.getInstances().subscribe(data => console.log(
         JSON.parse(data)
       )
@@ -31,7 +30,6 @@ export class AppComponent {
   }
 
   handlePostInstances(event: Event) {
-    console.log('Creating EC2...')
     /*
     this.client.postInstances().subscribe(data => console.log(
         JSON.parse(data)
