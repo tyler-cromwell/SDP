@@ -12,7 +12,7 @@ import * as M from "materialize-css/dist/js/materialize";
 export class AppComponent {
   title = 'SDP';
 
-  constructor(private srv: AWSClientService) {
+  constructor(private client: AWSClientService) {
     document.addEventListener('DOMContentLoaded', function() {
       var elems = document.querySelectorAll('.dropdown-trigger');
       var options = {};
@@ -21,4 +21,22 @@ export class AppComponent {
   }
 
   ngOnInit() { }
+
+  handleGetInstances(event: Event) {
+    console.log('Retrieving EC2 instances...')
+    this.client.getInstances().subscribe(data => console.log(
+        JSON.stringify(JSON.parse(data), null, 2)
+      )
+    )
+  }
+
+  handlePostInstances(event: Event) {
+    console.log('Creating EC2...')
+    /*
+    this.client.postInstances().subscribe(data => console.log(
+        JSON.stringify(JSON.parse(data), null, 2)
+      )
+    )
+    */
+  }
 }

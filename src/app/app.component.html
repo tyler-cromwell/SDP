@@ -18,6 +18,15 @@
 
 <div class="container">
   <router-outlet></router-outlet>
+
+  <div id="test">
+    <div class="row">
+      <h3>Testing Area</h3>
+
+      <button class="waves-light btn-small" (click)="handleGetInstances($event)" type="button">Get Instances</button>
+      <button class="waves-light btn-small" (click)="handlePostInstances($event)" type="button">Post Instances</button>
+    </div>
+  </div>
 </div>
 
 

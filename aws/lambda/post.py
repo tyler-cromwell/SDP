@@ -1,7 +1,6 @@
+import json
+
 import boto3
-
-
-ec2 = boto3.resource('ec2')
 
 
 def post_instances(event, context):
@@ -12,7 +11,8 @@ def post_instances(event, context):
             'error': 'Missing a required key'
         }
 
-    instance = ec2.create_instances(
+    resource = boto3.resource('ec2')
+    instances = resource.create_instances(
         ImageId='ami-04b9e92b5572fa0d1',
         InstanceType=event['type'],
         KeyName='cse4940-ec2-keypair',
@@ -20,6 +20,6 @@ def post_instances(event, context):
         MinCount=int(event['maxCount'])
     )
 
-    return {
-        'instance': str(instance),
-    }
+    return json.dumps({
+        'instances': [instance.id for instance in instances],
+    })

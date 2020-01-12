@@ -8,10 +8,19 @@ import * as Confidential from './confidential.json';
 })
 export class AWSClientService {
   private url = Confidential['url'];
+  private headers = {
+    headers: new HttpHeaders({
+      'x-api-key': Confidential['x-api-key']
+    })
+  }
 
   constructor(private http:HttpClient) { }
 
-  createEC2() {
+  getInstances() {
+    return this.http.get(this.url, this.headers)
+  }
+
+  postInstances() {
     return this.http.post(
       this.url,
       {
@@ -19,11 +28,7 @@ export class AWSClientService {
         minCount: "1",
         maxCount: "1"
       },
-      {
-        headers: new HttpHeaders({
-          'x-api-key': Confidential['x-api-key']
-        })
-      }
+      this.headers
     );
   }
 }
