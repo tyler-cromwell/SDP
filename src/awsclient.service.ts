@@ -17,11 +17,11 @@ export class AWSClientService {
   constructor(private http:HttpClient) { }
 
   getInstances() {
-    return this.http.get(this.url, this.headers)
+    return this.http.get<string>(this.url, this.headers)
   }
 
   postInstances() {
-    return this.http.post(
+    return this.http.post<string>(
       this.url,
       {
         type: "t2.micro",

@@ -25,7 +25,7 @@ export class AppComponent {
   handleGetInstances(event: Event) {
     console.log('Retrieving EC2 instances...')
     this.client.getInstances().subscribe(data => console.log(
-        JSON.stringify(JSON.parse(data), null, 2)
+        JSON.parse(data)
       )
     )
   }
@@ -34,7 +34,7 @@ export class AppComponent {
     console.log('Creating EC2...')
     /*
     this.client.postInstances().subscribe(data => console.log(
-        JSON.stringify(JSON.parse(data), null, 2)
+        JSON.parse(data)
       )
     )
     */
