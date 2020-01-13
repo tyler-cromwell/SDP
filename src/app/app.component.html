@@ -25,6 +25,13 @@
 
       <button class="waves-light btn-small" (click)="handleGetInstances($event)" type="button">Get Instances</button>
       <button class="waves-light btn-small" (click)="handlePostInstances($event)" type="button">Post Instances</button>
+
+      <ul>
+        <li *ngFor="let instance of instances">
+          {{instance.InstanceId}}
+        </li>
+      </ul>
+
     </div>
   </div>
 </div>
