@@ -61,32 +61,16 @@
   <div class="row">
     <h3>Projects</h3>
 
-    <div class="col s12 m12">
+    <div class="col s12 m12" *ngFor="let project of projects">
       <div class="card darken-1">
         <div class="card-content">
-          <span class="card-title">Project 1</span>
-          <p>I am a very simple card. I am good at containing small bits of information.
-          I am convenient because I require little markup to use effectively.</p>
+          <span class="card-title">{{project.Name["S"]}}</span>
+          <p>{{project.Description["S"]}}</p>
         </div>
         <div class="card-action">
-          <a>This is a link</a>
-          <a>This is a link</a>
+          <a>{{project.Owner["S"]}}</a>
+          <a>{{project.Version["S"]}}</a>
           <a class="secondary-content" routerLink="/browse/1" routerLinkActive=""><i class="material-icons">send</i></a>
-        </div>
-      </div>
-    </div>
-
-    <div class="col s12 m12">
-      <div class="card darken-1">
-        <div class="card-content">
-          <span class="card-title">Project 2</span>
-          <p>I am a very simple card. I am good at containing small bits of information.
-          I am convenient because I require little markup to use effectively.</p>
-        </div>
-        <div class="card-action">
-          <a>This is a link</a>
-          <a>This is a link</a>
-          <a class="secondary-content" routerLink="/browse/2" routerLinkActive=""><i class="material-icons">send</i></a>
         </div>
       </div>
     </div>

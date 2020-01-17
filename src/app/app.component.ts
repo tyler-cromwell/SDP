@@ -19,6 +19,7 @@ export class AppComponent {
       var options = {};
       var instances = M.Dropdown.init(elems, options);
     });
+
     this.client.getInstances().subscribe(data => {
         let reservations = JSON.parse(data)["Reservations"]
 
@@ -27,10 +28,6 @@ export class AppComponent {
         } else {
           this.instances = []
         }
-      }
-    )
-    this.client.getProjects().subscribe(data => {
-        console.log(data)
       }
     )
   }
