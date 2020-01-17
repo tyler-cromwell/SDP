@@ -16,8 +16,12 @@ export class AWSClientService {
 
   constructor(private http:HttpClient) { }
 
+  getProjects() {
+    return this.http.get<string>(this.url+"/projects", this.headers)
+  }
+
   getInstances() {
-    return this.http.get<string>(this.url, this.headers)
+    return this.http.get<string>(this.url+"/test", this.headers)
   }
 
   postInstances() {

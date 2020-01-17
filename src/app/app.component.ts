@@ -29,6 +29,10 @@ export class AppComponent {
         }
       }
     )
+    this.client.getProjects().subscribe(data => {
+        console.log(data)
+      }
+    )
   }
 
   ngOnInit() { }
