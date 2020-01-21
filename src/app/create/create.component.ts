@@ -6,10 +6,17 @@ import { Component, OnInit } from '@angular/core';
   styleUrls: ['./create.component.css']
 })
 export class CreateComponent implements OnInit {
+  projectName: string;
+  projectOwner: string;
+  projectDescription: string;
 
   constructor() { }
 
-  ngOnInit() {
-  }
+  ngOnInit() { }
 
+  onSubmit() {
+    console.log(this.projectName)
+    console.log(this.projectOwner)
+    console.log(this.projectDescription)
+  }
 }
