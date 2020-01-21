@@ -1,5 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 
+import { AWSClientService } from '../../awsclient.service';
+
+
 @Component({
   selector: 'app-create',
   templateUrl: './create.component.html',
@@ -10,13 +13,19 @@ export class CreateComponent implements OnInit {
   projectOwner: string;
   projectDescription: string;
 
-  constructor() { }
+  constructor(private client: AWSClientService) { }
 
   ngOnInit() { }
 
   onSubmit() {
-    console.log(this.projectName)
-    console.log(this.projectOwner)
-    console.log(this.projectDescription)
+    this.client.postProject(
+      this.projectName,
+      this.projectOwner,
+      this.projectDescription
+    ).subscribe(
+      data => {
+        console.log(JSON.parse(data))
+      }
+    )
   }
 }
