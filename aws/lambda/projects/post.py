@@ -3,7 +3,7 @@ import json
 import boto3
 
 
-def post_project(event, context):
+def main(event, context):
     required = ['name', 'owner', 'description']
 
     if False in [k in event.keys() for k in required]:

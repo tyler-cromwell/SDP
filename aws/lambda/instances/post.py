@@ -10,7 +10,7 @@ def datetime_handler(x):
     raise TypeError("Unknown type")
 
 
-def post_instances(event, context):
+def main(event, context):
     required = ['type', 'minCount', 'maxCount']
 
     if False in [k in event.keys() for k in required]:
