@@ -28,6 +28,7 @@ export class AWSClientService {
     return this.http.post<string>(
       this.url+"/instances",
       {
+        ami: "ami-04b9e92b5572fa0d1",
         type: "t2.micro",
         minCount: "1",
         maxCount: "1"

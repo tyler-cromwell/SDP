@@ -20,7 +20,7 @@ def post_instances(event, context):
 
     client = boto3.client('ec2')
     instances = client.run_instances(
-        ImageId='ami-04b9e92b5572fa0d1',
+        ImageId=event['ami'],
         InstanceType=event['type'],
         KeyName='cse4940-ec2-keypair',
         MinCount=int(event['minCount']),
