@@ -21,13 +21,14 @@ export class AWSClientService {
   }
 
   getInstances() {
-    return this.http.get<string>(this.url+"/test", this.headers)
+    return this.http.get<string>(this.url+"/instances", this.headers)
   }
 
   postInstances() {
     return this.http.post<string>(
-      this.url+"/test",
+      this.url+"/instances",
       {
+        ami: "ami-04b9e92b5572fa0d1",
         type: "t2.micro",
         minCount: "1",
         maxCount: "1"

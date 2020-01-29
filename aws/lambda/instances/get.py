@@ -10,9 +10,7 @@ def datetime_handler(x):
     raise TypeError("Unknown type")
 
 
-def get_instances(event, context):
+def main(event, context):
     client = boto3.client('ec2')
-    
     response = client.describe_instances()
-    
     return json.dumps(response, default=datetime_handler)

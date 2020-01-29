@@ -1,9 +1,16 @@
+import datetime
 import json
 
 import boto3
 
 
-def post_instances(event, context):
+def datetime_handler(x):
+    if isinstance(x, datetime.datetime):
+        return x.isoformat()
+    raise TypeError("Unknown type")
+
+
+def main(event, context):
     required = ['type', 'minCount', 'maxCount']
 
     if False in [k in event.keys() for k in required]:
@@ -11,15 +18,13 @@ def post_instances(event, context):
             'error': 'Missing a required key'
         }
 
-    resource = boto3.resource('ec2')
-    instances = resource.create_instances(
-        ImageId='ami-04b9e92b5572fa0d1',
+    client = boto3.client('ec2')
+    instances = client.run_instances(
+        ImageId=event['ami'],
         InstanceType=event['type'],
         KeyName='cse4940-ec2-keypair',
-        MaxCount=int(event['minCount']),
-        MinCount=int(event['maxCount'])
+        MinCount=int(event['minCount']),
+        MaxCount=int(event['maxCount'])
     )
 
-    return json.dumps({
-        'instances': [instance.id for instance in instances],
-    })
+    return json.dumps(instances, default=datetime_handler)

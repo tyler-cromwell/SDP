@@ -24,7 +24,10 @@ export class AppComponent {
         let reservations = JSON.parse(data)["Reservations"]
 
         if (reservations.length) {
-          this.instances = reservations[0]["Instances"]
+          this.instances = reservations.map(res => {
+              return res["Instances"][0]
+            }
+          )
         } else {
           this.instances = []
         }
@@ -39,7 +42,10 @@ export class AppComponent {
         let reservations = JSON.parse(data)["Reservations"]
 
         if (reservations.length) {
-          this.instances = reservations[0]["Instances"]
+          this.instances = reservations.map(res => {
+              return res["Instances"][0]
+            }
+          )
         } else {
           this.instances = []
         }
@@ -49,9 +55,9 @@ export class AppComponent {
 
   handlePostInstances(event: Event) {
     /*
-    this.client.postInstances().subscribe(data => console.log(
-        JSON.parse(data)
-      )
+    this.client.postInstances().subscribe(data => {
+        console.log(JSON.parse(data))
+      }
     )
     */
   }
