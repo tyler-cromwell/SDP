@@ -2,30 +2,22 @@ import json
 
 import boto3
 
-import utils
-
 
 class Template:
-    def __init__(
-        self,
-        description='',
-        version='2010-09-09'
-    ):
+    def __init__(self, description='', version='2010-09-09'):
         self.json = {
             'AWSTemplateFormatVersion': version,
             'Description': description,
             'Resources': {},
             'Outputs': {}
         }
+        self.keys = []
 
-    def add_ec2_instance(
-        self,
-        name,
-        instance_type,
-        key_name,
-        machine_image,
-        user_data=''
-    ):
+
+    def add_ec2_instance(self, name, instance_type, key_name, machine_image, user_data=''):
+        if key_name not in self.keys:
+            self.keys.append(key_name)
+
         self.json['Resources'][name] = {
             'Type': 'AWS::EC2::Instance',
             'Properties': {
@@ -49,16 +41,12 @@ class Template:
         }
 
 
-    def create_stack(
-        self,
-        stack_name,
-        key_names=[]
-    ):
+    def create_stack(self, stack_name):
         response = {}
         cfclient = boto3.client('cloudformation')
         ec2client = boto3.client('ec2')
 
-        for name in key_names:
+        for name in self.keys:
             result = ec2client.describe_key_pairs(KeyNames=[name])
 
             if len(result['KeyPairs']) == 0:

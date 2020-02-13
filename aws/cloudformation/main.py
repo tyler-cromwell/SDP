@@ -25,8 +25,7 @@ if __name__ == '__main__':
 
     """
     response = template.create_stack(
-        stack_name='MyCFStack01',
-        key_names=[keypair]
+        stack_name='MyCFStack01'
     )
     print(utils.prettify_json(response))
     """
