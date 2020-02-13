@@ -3,6 +3,7 @@ import template
 import utils
 
 import boto3
+from botocore.exceptions import ClientError
 
 
 """
@@ -23,15 +24,17 @@ if __name__ == '__main__':
     )
     print(utils.prettify_json(template.json))
 
-    """
-    response = template.create_stack(
-        stack_name='MyCFStack01'
-    )
-    print(utils.prettify_json(response))
-    """
-
-    cfclient = boto3.client('cloudformation')
-    response = cfclient.describe_stacks(
-        StackName='MyCFStack01'
-    )
-    print(utils.prettify_json(response))
+    try:
+        cfclient = boto3.client('cloudformation')
+        response = cfclient.describe_stacks(
+            StackName='MyCFStack01'
+        )
+        print(utils.prettify_json(response))
+    except ClientError:
+        print(end='')
+        """
+        response = template.create_stack(
+            stack_name='MyCFStack01'
+        )
+        print(utils.prettify_json(response))
+        """
