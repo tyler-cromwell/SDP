@@ -39,6 +39,16 @@ class Template:
                 'Fn::GetAtt': [name, 'AvailabilityZone']
             }
         }
+        self.json['Outputs']['PublicDns'] = {
+            'Value': {
+                'Fn::GetAtt': [name, 'PublicDnsName']
+            }
+        }
+        self.json['Outputs']['PublicIp'] = {
+            'Value': {
+                'Fn::GetAtt': [name, 'PublicIp']
+            }
+        }
 
 
     def create_stack(self, stack_name):
