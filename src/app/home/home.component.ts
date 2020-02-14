@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 
 import { AWSClientService } from '../../awsclient.service';
+import { Template } from '../../template';
 import * as M from "materialize-css/dist/js/materialize";
 
 
@@ -27,6 +28,16 @@ export class HomeComponent implements OnInit {
         }
       }
     )
+
+    var keypair: string = "MyEC2KeyPair01";
+    var template = new Template();
+    template.addEC2Instance(
+        "MyEC2Instance01",
+        "t2.micro",
+        keypair,
+        "ami-04b9e92b5572fa0d1"
+    );
+    console.log(template.json);
   }
 
   ngOnInit() { }
