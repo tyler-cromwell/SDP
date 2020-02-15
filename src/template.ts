@@ -1,7 +1,5 @@
 import { Injectable } from '@angular/core';
 
-import * as AWS from 'aws-sdk';
-
 
 export class Template {
   json: object;
@@ -54,51 +52,5 @@ export class Template {
         "Fn::GetAtt": [name, "PublicIp"]
       }
     };
-  }
-
-  createStack(stack_name: string) {
-    var response = {}
-    var cfclient = new AWS.CloudFormation();
-    var ec2client = new AWS.EC2();
-
-    for (var name of this.keys) {
-      var result = ec2client.describeKeyPairs(
-        {
-          KeyNames: [name]
-        },
-        (err, data) => {
-          if (err) {
-            console.log(err, err.stack);
-          }
-        }
-      );
-
-      if (result['KeyPairs'].length == 0) {
-        response[name] = ec2client.createKeyPair(
-          {
-            KeyName: name
-          },
-          (err, data) => {
-            if (err) {
-              console.log(err, err.stack);
-            }
-          }
-        );
-      }
-    }
-
-    response[stack_name] = cfclient.createStack(
-      {
-        StackName: stack_name,
-        TemplateBody: JSON.stringify(this.json)
-      },
-      (err, data) => {
-        if (err) {
-          console.log(err, err.stack);
-        }
-      }
-    );
-
-    return response;
   }
 }

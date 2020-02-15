@@ -7,9 +7,8 @@ from botocore.exceptions import ClientError
 
 
 """
-Check for existence of KeyPairs, Stacks
 EC2 Instances:
-    - Key pairs must be created first
+    - Inputs: Name, size, ami, key
 """
 
 
