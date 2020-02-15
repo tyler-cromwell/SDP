@@ -21,8 +21,8 @@ export class AWSClientService {
     return this.http.get<string>(this.url+"/projects", this.headers)
   }
 
-  async postStack(name: string, template: Template) {
-    return await this.http.post<string>(
+  postStack(name: string, template: Template) {
+    return this.http.post<string>(
       this.url+"/stacks",
       {
         name: name,
@@ -30,7 +30,7 @@ export class AWSClientService {
         keys: JSON.stringify(template.keys)
       },
       this.headers
-    ).toPromise()
+    )
   }
 
   getInstances() {
