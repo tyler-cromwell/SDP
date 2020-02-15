@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 
 import { AWSClientService } from '../../awsclient.service';
-import { Template } from '../../template';
 import * as M from "materialize-css/dist/js/materialize";
 
 

@@ -11,20 +11,22 @@ def main(event, context):
             'error': 'Missing required key'
         }
     
-    response = {}
+    response = {'stack': {}, 'keys': {}}
     stack_name = event['name']
     keys = json.loads(event['keys'])
     template = event['template']
     cfclient = boto3.client('cloudformation')
     ec2client = boto3.client('ec2')
 
-    for name in keys:
-        result = ec2client.describe_key_pairs(KeyNames=[name])
+    for i, name in enumerate(keys):
+        result = ec2client.describe_key_pairs(Filters=[{'Name': 'key-name', 'Values': [name]}])
         
         if len(result['KeyPairs']) == 0:
-            response[name] = ec2client.create_key_pair(KeyName=name)
+            response['keys'][name] = ec2client.create_key_pair(KeyName=name)
+        else:
+            response['keys'][name] = result['KeyPairs'][i]
 
-    response[stack_name] = cfclient.create_stack(
+    response['stack'][stack_name] = cfclient.create_stack(
         StackName=stack_name,
         TemplateBody=json.dumps(template)
     )
