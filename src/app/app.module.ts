@@ -5,11 +5,13 @@ import { FormsModule } from '@angular/forms';
 
 import { AppRoutingModule, routingComponents } from './app-routing.module';
 import { AppComponent } from './app.component';
+import { Ec2Component } from './ec2/ec2.component';
 
 @NgModule({
   declarations: [
     AppComponent,
-    routingComponents
+    routingComponents,
+    Ec2Component
   ],
   imports: [
     BrowserModule,

@@ -29,24 +29,23 @@
         </div>
       </li>
       <li class="collection-item">
-        <div>
-          Resource 2
-          <a class="secondary-content"><i class="material-icons red-text">delete</i></a>
-          <a class="secondary-content"><i class="material-icons green-text">play_arrow</i></a>
-          <a class="secondary-content"><i class="material-icons grey-text">edit</i></a>
-          <span class="new badge orange" data-badge-caption="">Disabled</span>
-        </div>
-      </li>
-      <li class="collection-item">
-        <div>
-          Add
-          <a class="secondary-content"><i class="material-icons">add</i></a>
-        </div>
+        <button data-target="createEC2Instance" class="btn modal-trigger">Add EC2</button>        
       </li>
     </ul>
 
+      <!-- Modal Structure -->
+    <div id="createEC2Instance" class="modal" #modalEC2Input>
+      <div class="modal-content">
+        <h4>Create EC2 instance</h4>
+        <app-ec2></app-ec2>
+      </div>
+      <div class="modal-footer">
+        <a class="modal-close waves-effect waves-green btn-flat">Agree</a>
+      </div>
+    </div>
+
     <div class="row">
-      <h3>Databases</h3>
+      <h3>Databases</h3>             
     </div>
   </div>
 </div>
