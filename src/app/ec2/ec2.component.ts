@@ -1,5 +1,6 @@
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import * as M from "materialize-css/dist/js/materialize";
+import { NgForm } from '@angular/forms';
 
 @Component({
   selector: 'app-ec2',
@@ -20,4 +21,7 @@ export class Ec2Component implements OnInit {
     M.FormSelect.init(this.machineImageSelect.nativeElement, {});    
   }
 
+  onSubmit(form: NgForm) {
+    console.log(form)
+  }
 }
