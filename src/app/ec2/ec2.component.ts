@@ -1,6 +1,9 @@
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import * as M from "materialize-css/dist/js/materialize";
 import { NgForm } from '@angular/forms';
+import { AWSClientService } from 'src/awsclient.service';
+import { Template } from 'src/template'
+
 
 @Component({
   selector: 'app-ec2',
@@ -11,7 +14,7 @@ export class Ec2Component implements OnInit {
   @ViewChild('instanceTypeSelect', {static:true}) instanceTypeSelect: ElementRef;
   @ViewChild('machineImageSelect', {static:true}) machineImageSelect: ElementRef;
 
-  constructor() { }
+  constructor(private client: AWSClientService) { }
 
   ngOnInit() {
   }
@@ -22,6 +25,14 @@ export class Ec2Component implements OnInit {
   }
 
   onSubmit(form: NgForm) {
-    console.log(form)
+    let {name, instanceType, keyName, machineImage} = form.value;    
+    let template: Template = new Template();
+    template.addEC2Instance(name, instanceType, keyName, machineImage);
+    this.client.postStack("test13", template).subscribe(
+      data => {
+        console.log("posted stack!")
+        console.log(JSON.parse(data))
+      }
+    );
   }
 }
