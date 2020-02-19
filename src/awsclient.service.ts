@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import * as Confidential from './confidential.json';
+import { Template } from './template';
 
 
 @Injectable({
@@ -18,6 +19,18 @@ export class AWSClientService {
 
   getProjects() {
     return this.http.get<string>(this.url+"/projects", this.headers)
+  }
+
+  postStack(name: string, template: Template) {
+    return this.http.post<string>(
+      this.url+"/stacks",
+      {
+        name: name,
+        template: template.json,
+        keys: JSON.stringify(template.keys)
+      },
+      this.headers
+    )
   }
 
   getInstances() {
