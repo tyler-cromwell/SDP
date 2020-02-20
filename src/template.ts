@@ -15,19 +15,19 @@ export class Template {
     this.keys = [];
   }
 
-  addEC2Instance(name: string, instance_type: string, key_name: string, machine_image: string, user_data: string = "") {
-    if (this.keys.indexOf(key_name) == -1) {
-      this.keys.push(key_name);
+  addEC2Instance(name: string, instanceType: string, keyName: string, machineImage: string, userData: string = "") {
+    if (this.keys.indexOf(keyName) == -1) {
+      this.keys.push(keyName);
     }
 
     this.json["Resources"][name] = {
       "Type": "AWS::EC2::Instance",
       "Properties": {
-        "ImageId": machine_image,
-        "InstanceType": instance_type,
-        "KeyName": key_name,
+        "ImageId": machineImage,
+        "InstanceType": instanceType,
+        "KeyName": keyName,
         "UserData": {
-          "Fn::Base64": user_data
+          "Fn::Base64": userData
         }
       }
     };

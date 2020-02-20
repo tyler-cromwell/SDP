@@ -53,9 +53,12 @@ export class AppComponent {
     )
   }
 
-  handlePostInstances(event: Event) {
+  handleCreateInstance(event: Event) {
     /*
-    this.client.postInstances().subscribe(data => {
+    this.client.createInstance(
+      "t2.micro",
+      "ami-04b9e92b5572fa0d1"
+    ).subscribe(data => {
         console.log(JSON.parse(data))
       }
     )

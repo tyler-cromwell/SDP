@@ -28,7 +28,7 @@ export class Ec2Component implements OnInit {
     let {name, instanceType, keyName, machineImage} = form.value;    
     let template: Template = new Template();
     template.addEC2Instance(name, instanceType, keyName, machineImage);
-    this.client.postStack(name+"stack", template).subscribe(
+    this.client.createStack(name+"stack", template).subscribe(
       data => {
         console.log(data)
       }
