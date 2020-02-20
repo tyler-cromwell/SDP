@@ -17,11 +17,32 @@ export class AWSClientService {
 
   constructor(private http:HttpClient) { }
 
-  getProjects() {
-    return this.http.get<string>(this.url+"/projects", this.headers)
+  createInstance(instanceType: string, machineImage: string) {
+    return this.http.post<string>(
+      this.url+"/instances",
+      {
+        type: instanceType,
+        ami: machineImage,
+        minCount: "1",
+        maxCount: "1"
+      },
+      this.headers
+    );
   }
 
-  postStack(name: string, template: Template) {
+  createProject(name: string, owner: string, description: string) {
+    return this.http.post<string>(
+      this.url+"/projects",
+      {
+        name: name,
+        owner: owner,
+        description: description
+      },
+      this.headers
+    );
+  }
+
+  createStack(name: string, template: Template) {
     return this.http.post<string>(
       this.url+"/stacks",
       {
@@ -34,31 +55,16 @@ export class AWSClientService {
   }
 
   getInstances() {
-    return this.http.get<string>(this.url+"/instances", this.headers)
-  }
-
-  postInstances() {
-    return this.http.post<string>(
+    return this.http.get<string>(
       this.url+"/instances",
-      {
-        ami: "ami-04b9e92b5572fa0d1",
-        type: "t2.micro",
-        minCount: "1",
-        maxCount: "1"
-      },
       this.headers
-    );
+    )
   }
 
-  postProject(name: string, owner: string, description: string) {
-    return this.http.post<string>(
+  getProjects() {
+    return this.http.get<string>(
       this.url+"/projects",
-      {
-        name: name,
-        owner: owner,
-        description: description
-      },
       this.headers
-    );
+    )
   }
 }
