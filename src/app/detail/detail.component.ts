@@ -11,9 +11,7 @@ export class DetailComponent implements OnInit {
 
   constructor() { }
 
-  ngOnInit() {
-
-  }
+  ngOnInit() { }
 
   ngAfterViewInit() {
     M.Modal.init(this.modalEC2Input.nativeElement, {});

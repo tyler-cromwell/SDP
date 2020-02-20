@@ -10,7 +10,7 @@ import * as M from "materialize-css/dist/js/materialize";
   providers: [AWSClientService]
 })
 export class AppComponent {
-  title = 'SDP';
+  title: string = 'SDP';
   instances = [];
 
   constructor(private client: AWSClientService) {

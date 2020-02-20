@@ -30,7 +30,7 @@ export class Ec2Component implements OnInit {
     template.addEC2Instance(name, instanceType, keyName, machineImage);
     this.client.createStack(name+"stack", template).subscribe(
       data => {
-        console.log(data)
+        console.log(JSON.parse(data))
       }
     );
   }
