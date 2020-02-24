@@ -1,6 +1,7 @@
 # See http://help.github.com/ignore-files/ for more about ignoring files.
 *.swp
 src/confidential.json
+__pycache__/
 
 # compiled output
 /dist
