@@ -48,9 +48,20 @@ class Template:
             }
         }
 
-    def add_lambda_function(self, name, filename, rolename):
+
+    def add_lambda_function(self, name, filename, create_role=True):
         with open(filename) as fp:
             code = fp.read()
+
+        rolename=name+'Role'
+
+        if create_role:
+            self.add_iam_role(
+                name=rolename,
+                policies=[
+                    'arn:aws:iam::aws:policy/AmazonEC2FullAccess'
+                ]
+            )
 
         self.json['Resources'][name] = {
             'Type': 'AWS::Lambda::Function',
@@ -66,6 +77,7 @@ class Template:
                 'Runtime': 'python3.7'
             }
         }
+
 
     def add_iam_role(self, name, policies):
         self.json['Resources'][name] = {
@@ -87,9 +99,7 @@ class Template:
                         }
                     ]
                 },
-                'ManagedPolicyArns': [
-                    'arn:aws:iam::aws:policy/AmazonEC2FullAccess'
-                ],
+                'ManagedPolicyArns': policies,
                 'RoleName': name
             }
        }

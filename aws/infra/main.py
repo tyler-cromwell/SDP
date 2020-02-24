@@ -26,18 +26,10 @@ if __name__ == '__main__':
     )
 
     keypair = 'MyEC2KeyPair01'
-    rolename = 'MyLambdaFunctionRole01'
     template = template.Template()
-    template.add_iam_role(
-        name=rolename,
-        policies=[
-            'AWSEC2ReadOnlyAccess'
-        ]
-    )
     template.add_lambda_function(
         name='MyLambdaFunction01',
-        filename='get.py',
-        rolename=rolename
+        filename='get.py'
     )
     """
     template.add_ec2_instance(
