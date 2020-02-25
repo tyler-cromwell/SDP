@@ -58,9 +58,25 @@ class Template:
         if create_role:
             self.add_iam_role(
                 name=rolename,
-                policies=[
+                managed_policies=[
                     'arn:aws:iam::aws:policy/AmazonEC2FullAccess'
-                ]
+                ],
+                assume_policy={
+                    'Version': '2012-10-17',
+                    'Statement': [
+                        {
+                            'Effect': 'Allow',
+                            'Principal': {
+                                'Service': [
+                                    'lambda.amazonaws.com'
+                                ]
+                            },
+                            'Action': [
+                                'sts:AssumeRole'
+                            ]
+                        }
+                    ]
+                }
             )
 
         self.json['Resources'][name] = {
@@ -79,27 +95,29 @@ class Template:
         }
 
 
-    def add_iam_role(self, name, policies):
+    def add_iam_role(self, name, managed_policies, assume_policy):
         self.json['Resources'][name] = {
             'Type': 'AWS::IAM::Role',
             'Properties': {
-                'AssumeRolePolicyDocument': {
-                    'Version': '2012-10-17',
-                    'Statement': [
-                        {
-                            'Effect': 'Allow',
-                            'Principal': {
-                                'Service': [
-                                    'lambda.amazonaws.com'
-                                ]
-                            },
-                            'Action': [
-                                'sts:AssumeRole'
+                'AssumeRolePolicyDocument': assume_policy,
+                'ManagedPolicyArns': managed_policies,
+                'Policies': [
+                    {
+                        'PolicyName': 'allow-logs',
+                        'PolicyDocument': {
+                            'Version': '2012-10-17',
+                            'Statement': [
+                                {
+                                    'Effect': 'Allow',
+                                    'Action': [
+                                        'logs:*'
+                                    ],
+                                    'Resource': 'arn:aws:logs:*:*:*'
+                                }
                             ]
                         }
-                    ]
-                },
-                'ManagedPolicyArns': policies,
+                    }
+                ],
                 'RoleName': name
             }
        }
