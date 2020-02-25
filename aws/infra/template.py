@@ -12,6 +12,18 @@ class Template:
         self.keys = []
 
 
+    def _FnGetAtt(self, name, att):
+        return {'Fn::GetAtt': [name, att]}
+
+
+    def _FnJoin(self, delimiter, array):
+        return {'Fn::Join': [delimiter, array]}
+
+
+    def _Ref(self, name):
+        return {'Ref': name}
+
+
     def add_ec2_instance(self, name, instance_type, key_name, machine_image, user_data=''):
         if key_name not in self.keys:
             self.keys.append(key_name)
@@ -28,17 +40,50 @@ class Template:
             }
         }
 
+        iid = self._Ref(name)
+        az = self._FnGetAtt(name, 'AvailabilityZone')
+        ip = self._FnGetAtt(name, 'PublicIp')
+        dns = self._FnGetAtt(name, 'PublicDnsName')
+
+        """
+        This ugly block of code below encodes into the Cloud Formation template,
+        instructions for Cloud Formation to produce the instance's:
+            - Instance id (id)
+            - Availability zone (az)
+            - Public IP address (ip)
+            - Public DNS name (dns)
+        and then pack those values into a JSON object as an output of stack creation.
+        Each JSON object is keyed by the logical ID of the EC2 Instance.
+        """
         self.json['Outputs'][name] = {
-            'Value': {
-                'Fn::Join': [
-                    ', ', [
-                        {'Fn::Join': [': ', ['id',  {'Ref': name}]]},
-                        {'Fn::Join': [': ', ['az',  {'Fn::GetAtt': [name, 'AvailabilityZone']}]]},
-                        {'Fn::Join': [': ', ['ip',  {'Fn::GetAtt': [name, 'PublicIp']}]]},
-                        {'Fn::Join': [': ', ['dns', {'Fn::GetAtt': [name, 'PublicDnsName']}]]}
-                    ]
+            'Value': self._FnJoin(
+                delimiter='',
+                array=[
+                    '\"{',
+                    self._FnJoin(
+                        delimiter=', ',
+                        array=[
+                            self._FnJoin(
+                                delimiter=': ',
+                                array=['\\\"id\\\"',  self._FnJoin(delimiter='', array=['\\\"', iid, '\\\"'])]
+                            ),
+                            self._FnJoin(
+                                delimiter=': ',
+                                array=['\\\"az\\\"',  self._FnJoin(delimiter='', array=['\\\"', az, '\\\"'])]
+                            ),
+                            self._FnJoin(
+                                delimiter=': ',
+                                array=['\\\"ip\\\"',  self._FnJoin(delimiter='', array=['\\\"', ip, '\\\"'])]
+                            ),
+                            self._FnJoin(
+                                delimiter=': ',
+                                array=['\\\"dns\\\"', self._FnJoin(delimiter='', array=['\\\"', dns, '\\\"'])]
+                            )
+                        ]
+                    ),
+                    '}\"'
                 ]
-            }
+            )
         }
 
 
