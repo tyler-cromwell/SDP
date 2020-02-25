@@ -27,24 +27,17 @@ class Template:
                 }
             }
         }
-        self.json['Outputs']['InstanceId'] = {
+
+        self.json['Outputs'][name] = {
             'Value': {
-                'Ref': name
-            }
-        }
-        self.json['Outputs']['AvailabilityZone'] = {
-            'Value': {
-                'Fn::GetAtt': [name, 'AvailabilityZone']
-            }
-        }
-        self.json['Outputs']['PublicDns'] = {
-            'Value': {
-                'Fn::GetAtt': [name, 'PublicDnsName']
-            }
-        }
-        self.json['Outputs']['PublicIp'] = {
-            'Value': {
-                'Fn::GetAtt': [name, 'PublicIp']
+                'Fn::Join': [
+                    ', ', [
+                        {'Fn::Join': [': ', ['id',  {'Ref': name}]]},
+                        {'Fn::Join': [': ', ['az',  {'Fn::GetAtt': [name, 'AvailabilityZone']}]]},
+                        {'Fn::Join': [': ', ['ip',  {'Fn::GetAtt': [name, 'PublicIp']}]]},
+                        {'Fn::Join': [': ', ['dns', {'Fn::GetAtt': [name, 'PublicDnsName']}]]}
+                    ]
+                ]
             }
         }
 
