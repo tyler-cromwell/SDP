@@ -7,7 +7,7 @@ def create_stack(session, stack_name, template):
     response = {}
 
     for name in template.keys:
-        result = ec2client.describe_key_pairs(KeyNames=[name])
+        result = ec2client.describe_key_pairs(Filters=[{'Name': 'key-name', 'Values': [name]}])
 
         if len(result['KeyPairs']) == 0:
             response[name] = ec2client.create_key_pair(KeyName=name)
