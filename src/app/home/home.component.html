@@ -17,7 +17,8 @@
   <div class="row">
     <!-- class="waves-effect" permanently alters color, so please DO NOT USE -->
     <div class="col s3">
-      <a class="waves-light btn-small modal-trigger" href="#advanced-search-modal">Advanced Search</a>
+      <a class="waves-light btn-small modal-trigger" (click)="toggleModal()" href="#advanced-search-modal">Advanced Search</a>
+      <button class="waves-light btn-small modal-trigger" data-target="advanced-search-modal">Advanced Search</button>
     </div>
     <div class="col s3">
       <a class="waves-light btn-small" routerLink="/create" routerLinkActive="">Create Project</a>

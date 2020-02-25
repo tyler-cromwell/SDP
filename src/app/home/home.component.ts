@@ -14,10 +14,10 @@ export class HomeComponent implements OnInit {
   private projects = [];
 
   constructor(private client: AWSClientService) {
-    document.addEventListener('DOMContentLoaded', function() {
-      var elems = document.querySelectorAll('.modal');
-      var instances = M.Modal.init(elems);
-    });
+    // document.addEventListener('DOMContentLoaded', function() {
+    //   var elems = document.querySelectorAll('.modal');
+    //   var instances = M.Modal.init(elems);
+    // });
 
     this.client.getProjects().subscribe(data => {
         let items = JSON.parse(data)["Items"]
@@ -27,6 +27,11 @@ export class HomeComponent implements OnInit {
         }
       }
     )
+  }
+
+  toggleModal() {
+    var elems = document.querySelectorAll('.modal');
+    var instances = M.Modal.init(elems);
   }
 
   ngOnInit() { }
