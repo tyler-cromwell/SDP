@@ -8,7 +8,7 @@
           <input type="text" placeholder="Project name">
         </div>
         <div class="col s3">
-          <input type="submit" value="Search" class="waves-effect waves-light btn"/>
+          <a class="indigo accent-2 btn-floating"><i class="material-icons">search</i></a>
         </div>
       </div>
     </form>
@@ -18,10 +18,6 @@
     <!-- class="waves-effect" permanently alters color, so please DO NOT USE -->
     <div class="col s3">
       <a class="waves-light btn-small modal-trigger" (click)="toggleModal()" href="#advanced-search-modal">Advanced Search</a>
-      <button class="waves-light btn-small modal-trigger" data-target="advanced-search-modal">Advanced Search</button>
-    </div>
-    <div class="col s3">
-      <a class="waves-light btn-small" routerLink="/create" routerLinkActive="">Create Project</a>
     </div>
 
     <div id="advanced-search-modal" class="modal">
@@ -60,18 +56,14 @@
   </div>
 
   <div class="row">
-    <h3>Projects</h3>
-
-    <div class="col s12 m12" *ngFor="let project of projects">
-      <div class="card darken-1">
+    <h3 class="left left-align" style="margin:.5rem 0;">Projects</h3>
+    <a class="indigo accent-2 right right-align btn-large btn-floating" routerLink="/create" routerLinkActive=""><i class="material-icons">add</i></a>
+    <div class="col s12 m12" style="margin:.5rem 0;" *ngFor="let project of projects">
+      <div class="card hoverable darken-1" style="cursor:pointer;" routerLink="/browse/1" routerLinkActive="">
         <div class="card-content">
-          <span class="card-title">{{project.Name["S"]}}</span>
-          <p>{{project.Description["S"]}}</p>
-        </div>
-        <div class="card-action">
-          <a>{{project.Owner["S"]}}</a>
-          <a>{{project.Version["S"]}}</a>
-          <a class="secondary-content" routerLink="/browse/1" routerLinkActive=""><i class="material-icons">send</i></a>
+          <span class="card-title left left-align" style="font-weight:500;">{{project.Name["S"]}} -- {{project.Version["S"]}}</span>
+          <span class="card-title right right-align" style="font-size:1.3em;"><i>{{project.Owner["S"]}}</i></span>
+          <p style="clear:both; font-size:.9em;">{{project.Description["S"]}}</p>
         </div>
       </div>
     </div>
