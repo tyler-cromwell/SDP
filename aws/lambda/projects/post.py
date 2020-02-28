@@ -14,7 +14,7 @@ def main(event, context):
     client = boto3.client('dynamodb')
     size = len(list(client.scan(TableName='cse4940-projects')["Items"]))
 
-    result = client.put_item(
+    client.put_item(
         TableName='cse4940-projects',
         Item={
             'ProjectId': {
@@ -34,6 +34,15 @@ def main(event, context):
             },
             'Resources': {
                 'L': []
+            }
+        }
+    )
+    
+    result = client.get_item(
+        TableName='cse4940-projects',
+        Key={
+            'ProjectId': {
+                'N': str(size)
             }
         }
     )
