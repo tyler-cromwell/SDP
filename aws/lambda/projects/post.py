@@ -29,14 +29,20 @@ def main(event, context):
             'error': 'Owner does not exist'
         }
 
+    projectId: str = str(uuid.uuid1())
+
     result = table.put_item(
         Item={
-            'id': str(uuid.uuid1()),
+            'id': projectId,
             'name': event['name'],
             'owner': event['owner'],
             'description': event['description'],
             'version':event['version']
         }
     )
+    
+    result = table.query(
+        KeyConditionExpression=Key('id').eq(projectId)
+    )
 
-    return result
+    return result["Items"][0]
