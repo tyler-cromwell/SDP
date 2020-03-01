@@ -1,50 +1,30 @@
 import json
-
+import uuid
 import boto3
 
+# def isOwnerValid(email: str) -> bool:
+#     return True;
 
 def main(event, context):
-    required = ['name', 'owner', 'description']
+    dynamodb = boto3.resource('dynamodb')
+    table = dynamodb.Table('cse4940-projects')
+    print(json.dumps(event, indent=4, sort_keys=True))
+    
+    required = ['name', 'owner', 'description', 'version']
 
     if False in [k in event.keys() for k in required]:
         return {
             'error': 'Missing a required key'
         }
-    
-    client = boto3.client('dynamodb')
-    size = len(list(client.scan(TableName='cse4940-projects')["Items"]))
 
-    client.put_item(
-        TableName='cse4940-projects',
+    result = table.put_item(
         Item={
-            'ProjectId': {
-                'N': str(size)
-            },
-            'Name': {
-                'S': event['name']
-            },
-            'Owner': {
-                'S': event['owner']
-            },
-            'Version': {
-                'S': '1.0.0'
-            },
-            'Description': {
-                'S': event['description']
-            },
-            'Resources': {
-                'L': []
-            }
-        }
-    )
-    
-    result = client.get_item(
-        TableName='cse4940-projects',
-        Key={
-            'ProjectId': {
-                'N': str(size)
-            }
+            'id': str(uuid.uuid1()),
+            'name': event['name'],
+            'owner': event['owner'],
+            'description': event['description'],
+            'version':event['version']
         }
     )
 
-    return json.dumps(result)
+    return result
