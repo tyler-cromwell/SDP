@@ -1,8 +1,7 @@
 import json
-import uuid
 import boto3
 
-def main(event, context):  
+def main(event, context):
   required = ['firstName', 'lastName', 'email', 'role']
 
   if False in [k in event.keys() for k in required]:
@@ -10,27 +9,16 @@ def main(event, context):
       'error': 'Missing a required key'
     }
   
-  client = boto3.client('dynamodb')
+  dynamodb = boto3.resource('dynamodb')
+  table = dynamodb.Table('cse4940-users')
 
-  result = client.put_item(
-    TableName='cse4940-users',
+  result = table.put_item(
     Item={
-      'id': {
-        'S': str(uuid.uuid1())
-      },
-      'firstName': {
-        'S': event['firstName']
-      },
-      'lastName': {
-        'S': event['lastName']
-      },
-      'email': {
-        'S': event['email']
-      },
-      'role': {
-        'S': event['role']
-      }
+      'firstName': event['firstName'],
+      'lastName': event['lastName'],
+      'email': event['email'],
+      'role': event['role']
     }
   )
 
-  return json.dumps(result)
+  return result
