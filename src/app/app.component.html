@@ -8,7 +8,7 @@
 <nav class="blue">
   <div class="nav-wrapper">
     <a class="brand-logo center" routerLink="/" routerLinkActive="">AWS Server Management Tool</a>
-    <ul class="right hide-on-med-and-down">
+    <ul class="right hide-on-med-and-down" *ngIf="currentUser"> <!-- only displays if logged in -->
       <!--<li><span>Link</span></li>-->
       <li><span class="dropdown-trigger" data-target="user-dropdown">User<i class="material-icons right">arrow_drop_down</i></span></li>
     </ul>
