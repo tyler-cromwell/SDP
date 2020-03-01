@@ -1,8 +1,10 @@
 import json
-
 import boto3
 
-
 def main(event, context):
-    client = boto3.client('dynamodb')
-    return json.dumps(client.scan(TableName='cse4940-projects'))
+  dynamodb = boto3.resource('dynamodb')
+  table = dynamodb.Table('cse4940-projects')
+  result = table.scan(
+    Select="ALL_ATTRIBUTES"
+  )
+  return result["Items"]
