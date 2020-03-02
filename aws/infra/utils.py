@@ -1,6 +1,26 @@
 import datetime
 import json
 import yaml
+import random
+import string
+
+
+def stack_exists(client, stack_name):
+    try:
+        client.describe_stacks(StackName=stack_name)
+        return True
+    except:
+        return False
+
+
+def get_random_name(length=20):
+    store = string.ascii_letters + string.digits
+    return random.choice(string.ascii_letters) + ''.join([random.choice(store) for i in range(length - 1)])
+
+
+def read_credentials(filename):
+    with open(filename) as fp:
+        return tuple(fp.read().splitlines())
 
 
 def dicts_have_key_with_value(dicts, key, value):
@@ -24,7 +44,7 @@ def prettify_json(string):
 
     return json.dumps(
         string,
-        indent=4,
+        indent=2,
         sort_keys=True,
         default=_datetime_handler
     )
