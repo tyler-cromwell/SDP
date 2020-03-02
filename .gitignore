@@ -2,6 +2,9 @@
 *.swp
 src/confidential.json
 
+# resources and images
+src/assets/Blue Logo.jpg
+
 # compiled output
 /dist
 /tmp
