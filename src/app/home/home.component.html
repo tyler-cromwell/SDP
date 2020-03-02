@@ -63,9 +63,9 @@
     <div class="col s12 m12" *ngFor="let project of projects">
       <div class="card hoverable darken-1" style="cursor:pointer;" routerLink="/browse/1" routerLinkActive="">
         <div class="card-content">
-          <span class="card-title left left-align" style="font-weight:500;">{{project.Name["S"]}} -- {{project.Version["S"]}}</span>
-          <span class="card-title right right-align" style="font-size:1.3em;"><i>{{project.Owner["S"]}}</i></span>
-          <p style="clear:both; font-size:.9em;">{{project.Description["S"]}}</p>
+          <span class="card-title left left-align" style="font-weight:500;">{{project.name}} -- {{project.version}}</span>
+          <span class="card-title right right-align" style="font-size:1.3em;"><i>{{project.owner}}</i></span>
+          <p style="clear:both; font-size:.9em;">{{project.description}}</p>
         </div>
       </div>
     </div>
