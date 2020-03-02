@@ -16,13 +16,13 @@ export class HomeComponent implements OnInit {
   constructor(private client: AWSClientService) { }
   
   ngOnInit() {    
-      document.addEventListener('DOMContentLoaded', function() {
-        var elems = document.querySelectorAll('.modal');
-        var instances = M.Modal.init(elems);
-      });
-    
-      this.client.getProjects().subscribe(data => {                         
-          this.projects = data          
-      });
+    document.addEventListener('DOMContentLoaded', function() {
+      var elems = document.querySelectorAll('.modal');
+      var instances = M.Modal.init(elems);
+    });
+  
+    this.client.getProjects().subscribe(data => {                         
+      this.projects = data          
+    });
   }
 }
