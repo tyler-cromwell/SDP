@@ -1,4 +1,4 @@
-<ul id="user-dropdown" class="dropdown-content">
+<ul id="user-dropdown">
   <li><span>Change Password</span></li>
   <li class="divider"></li>
   <li><span>Logout</span></li>
@@ -8,7 +8,7 @@
 <nav class="indigo darken-3">
   <div class="nav-wrapper">
     <a class="brand-logo left left-align" style="margin-left: 1rem;" routerLink="/" routerLinkActive="">AWS Server Management Tool</a>
-    <ul class="right hide-on-med-and-down">
+    <ul class="right">
       <!--<li><span>Link</span></li>-->
       <li><span class="dropdown-trigger" data-target="user-dropdown">User<i class="material-icons right">arrow_drop_down</i></span></li>
     </ul>
@@ -20,7 +20,7 @@
   <router-outlet></router-outlet>
 </div>
 
-
+<!--
 <footer class="page-footer indigo">
   <div class="container">
     <div class="row">
@@ -38,11 +38,12 @@
       </div>
     </div>
   </div>
-
+  -->
+<footer class="page-footer" style="padding-top: 0; width: 100%; bottom: 0%; position: fixed;">
   <div class="footer-copyright indigo darken-3">
     <div class="container">
-      © 2019 Copyright ???
-      <a class="grey-text text-lighten-4 right">More Links</a>
+      © 2020 Copyright, Senior Design Project Team #5
+      <a target="_blank" href="https://github.com/tyler-cromwell/SDP" class="grey-text text-lighten-4 right">GitHub Project Link</a>
     </div>
   </div>
 </footer>
