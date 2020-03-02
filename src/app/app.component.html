@@ -1,14 +1,14 @@
 <ul id="user-dropdown" class="dropdown-content">
   <li><span>Change Password</span></li>
   <li class="divider"></li>
-  <li><span>Logout</span></li>
+  <li (click)="logout()"><span>Logout</span></li>
 </ul>
 
 
 <nav class="blue">
   <div class="nav-wrapper">
     <a class="brand-logo center" routerLink="/" routerLinkActive="">AWS Server Management Tool</a>
-    <ul class="right hide-on-med-and-down" *ngIf="currentUser"> <!-- only displays if logged in -->
+    <ul class="right hide-on-med-and-down" *ngIf="currentUser"> <!-- only displays if logged in  -->
       <!--<li><span>Link</span></li>-->
       <li><span class="dropdown-trigger" data-target="user-dropdown">User<i class="material-icons right">arrow_drop_down</i></span></li>
     </ul>
@@ -22,7 +22,7 @@
 
 
 <footer class="page-footer blue">
-  <div class="container"  *ngIf="currentUser"> <!-- only displays if logged in -->
+  <div class="container" *ngIf="currentUser"> <!-- only displays if logged in -->
     <div class="row">
       <div class="col l6 s12"> 
         <h5 class="white-text">Footer Content</h5>

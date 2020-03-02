@@ -1,7 +1,9 @@
 import { Component } from '@angular/core';
 import { AWSClientService } from '../awsclient.service';
 import * as M from "materialize-css/dist/js/materialize";
-
+import { Router } from '@angular/router';
+import { AuthenticationService } from './_services/Authentication.service';
+import { User } from './_helpers/user';
 
 @Component({
   selector: 'app-root',
@@ -12,14 +14,19 @@ import * as M from "materialize-css/dist/js/materialize";
 export class AppComponent {
   title: string = 'SDP';
   instances = [];
+  currentUser: User;
 
-  constructor(private client: AWSClientService) {
+  constructor(private client: AWSClientService, private router: Router,
+    private authenticationService: AuthenticationService) {
     document.addEventListener('DOMContentLoaded', function() {
       var elems = document.querySelectorAll('.dropdown-trigger');
       var options = {};
       var instances = M.Dropdown.init(elems, options);
     });
 
+    // CurrentUser Login Data
+    this.authenticationService.currentUser.subscribe(x => this.currentUser = x);
+  
     this.client.getInstances().subscribe(data => {
         let reservations = JSON.parse(data)["Reservations"]
 
@@ -33,6 +40,12 @@ export class AppComponent {
         }
       }
     )
+  }
+
+  // Logout current user
+  logout() {
+      this.authenticationService.logout();
+      this.router.navigate(['/login']);
   }
 
   ngOnInit() { }
