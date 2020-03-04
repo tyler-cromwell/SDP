@@ -16,7 +16,9 @@ export class AppComponent {
   constructor(private client: AWSClientService) {
     document.addEventListener('DOMContentLoaded', function() {
       var elems = document.querySelectorAll('.dropdown-trigger');
-      var options = {};
+      var options = {
+        "coverTrigger": false
+      };
       var instances = M.Dropdown.init(elems, options);
     });
 
