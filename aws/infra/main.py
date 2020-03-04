@@ -39,9 +39,10 @@ if __name__ == '__main__':
     LAMBDA_FUNCTION_NAME = args.lambda_function_name
     LAMBDA_FUNCTION_PATH = args.lambda_function_path
     API_NAME = 'FakeAPI'
-    API_KEY_NAME = 'FakeAPIKey'
-    API_USAGE_PLAN_NAME = 'FakeAPIUsagePlan'
+    API_DEPLOYMENT_NAME='InitialDeployment'
     API_STAGE_NAME = 'development'
+    API_USAGE_PLAN_NAME = 'FakeAPIUsagePlan'
+    API_KEY_NAME = 'FakeAPIKey'
 
     ACCESS, SECRET = utils.read_credentials(PATH)
 
@@ -77,7 +78,7 @@ if __name__ == '__main__':
         api_name=API_NAME
     )
     template.add_apigateway_deployment(
-        name='InitialDeployment',
+        name=API_DEPLOYMENT_NAME,
         api_name=API_NAME,
         stage_name=API_STAGE_NAME,
         methods=['FakeAPIMethod'+'GET']
@@ -87,7 +88,7 @@ if __name__ == '__main__':
         api_name=API_NAME,
         key_name=API_KEY_NAME,
         stage_name=API_STAGE_NAME,
-        deployment_name='InitialDeployment'
+        deployment_name=API_DEPLOYMENT_NAME
     )
     """
 

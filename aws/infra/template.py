@@ -45,6 +45,18 @@ class Template:
         }
 
 
+    def add_apigateway_stage(self, name, api_name, deployment_name):
+        self.json['Resources'][name] = {
+            'DependsOn': deployment_name,
+            'Type': 'AWS::ApiGateway::Stage',
+            'Properties': {
+                'DeploymentId': self._Ref(deployment_name),
+                'RestApiId': self._Ref(api_name),
+                'StageName': name
+            }
+        }
+
+
     def add_apigateway_usage_plan(self, name, api_name, key_name, stage_name, deployment_name):
         # Create the API Usage Plan and associate with a Stage.
         self.json['Resources'][name] = {
