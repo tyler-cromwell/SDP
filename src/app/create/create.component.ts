@@ -24,7 +24,7 @@ export class CreateComponent implements OnInit {
       this.projectDescription
     ).subscribe(
       data => {
-        console.log(JSON.parse(data))
+        console.log(data)
       }
     )
   }
