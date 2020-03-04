@@ -1,41 +1,48 @@
 import json
-
+import uuid
 import boto3
+from boto3.dynamodb.conditions import Key, Attr
 
+def isOwnerValid(email: str) -> bool:
+    dynamodb = boto3.resource('dynamodb')
+    table = dynamodb.Table('cse4940-users')
+    
+    result = table.query(
+        KeyConditionExpression=Key('email').eq(email)
+    )
+    
+    return len(result["Items"]) == 1
 
 def main(event, context):
-    required = ['name', 'owner', 'description']
+    dynamodb = boto3.resource('dynamodb')
+    table = dynamodb.Table('cse4940-projects')
+    
+    required = ['name', 'owner', 'description', 'version']
 
     if False in [k in event.keys() for k in required]:
         return {
             'error': 'Missing a required key'
         }
-    
-    client = boto3.client('dynamodb')
-    size = len(list(client.scan(TableName='cse4940-projects')["Items"]))
 
-    result = client.put_item(
-        TableName='cse4940-projects',
+    if not isOwnerValid(event['owner']):
+        return {
+            'error': 'Owner does not exist'
+        }
+
+    projectId: str = str(uuid.uuid1())
+
+    result = table.put_item(
         Item={
-            'ProjectId': {
-                'N': str(size)
-            },
-            'Name': {
-                'S': event['name']
-            },
-            'Owner': {
-                'S': event['owner']
-            },
-            'Version': {
-                'S': '1.0.0'
-            },
-            'Description': {
-                'S': event['description']
-            },
-            'Resources': {
-                'L': []
-            }
+            'id': projectId,
+            'name': event['name'],
+            'owner': event['owner'],
+            'description': event['description'],
+            'version':event['version']
         }
     )
+    
+    result = table.query(
+        KeyConditionExpression=Key('id').eq(projectId)
+    )
 
-    return json.dumps(result)
+    return result["Items"][0]

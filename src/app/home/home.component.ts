@@ -13,14 +13,12 @@ import * as M from "materialize-css/dist/js/materialize";
 export class HomeComponent implements OnInit {
   private projects: any = [];
 
-  constructor(private client: AWSClientService) {
-    // document.addEventListener('DOMContentLoaded', function() {
-    //   var elems = document.querySelectorAll('.modal');
-    //   var instances = M.Modal.init(elems);
-    // });
-
-    this.client.getProjects().subscribe(data => {              
-      this.projects = data;
+  constructor(private client: AWSClientService) { }
+  
+  ngOnInit() {    
+  
+    this.client.getProjects().subscribe(data => {                         
+      this.projects = data          
     });
   }
 
@@ -28,6 +26,4 @@ export class HomeComponent implements OnInit {
     var elems = document.querySelectorAll('.modal');
     var instances = M.Modal.init(elems);
   }
-
-  ngOnInit() { }
 }
