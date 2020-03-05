@@ -71,17 +71,21 @@ if __name__ == '__main__':
     template.add_apigateway_api(
         name=API_NAME
     )
+    template.add_apigateway_resource(
+        name='FakeAPIResource',
+        api_name=API_NAME
+    )
     template.add_apigateway_method(
         name='FakeAPIMethod',
         method_type='GET',
-        resource='RootResourceId',
-        api_name=API_NAME
+        api_name=API_NAME,
+        resource='FakeAPIResource'
     )
     template.add_apigateway_deployment(
         name=API_DEPLOYMENT_NAME,
         api_name=API_NAME,
         stage_name=API_STAGE_NAME,
-        methods=['FakeAPIMethod'+'GET']
+        methods=['FakeAPIMethod']
     )
     template.add_apigateway_usage_plan(
         name=API_USAGE_PLAN_NAME,

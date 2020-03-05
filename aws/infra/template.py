@@ -101,18 +101,31 @@ class Template:
         }
 
 
-    def add_apigateway_resource(self, name):
+    def add_apigateway_resource(self, name, api_name, parent=''):
+        parent_ref = (
+            self._Ref(parent)
+            if parent
+            else self._FnGetAtt(api_name, 'RootResourceId')
+        )
+
         self.json['Resources'][name] = {
             'Type': 'AWS::ApiGateway::Resource',
             'Properties': {
+                'ParentId': parent_ref,
+                'PathPart': name,
+                'RestApiId': self._Ref(api_name)
             }
         }
 
-        return {}
 
+    def add_apigateway_method(self, name, method_type, api_name, resource='', require_key=True):
+        resource_ref = (
+            self._Ref(resource)
+            if resource
+            else self._FnGetAtt(api_name, 'RootResourceId')
+        )
 
-    def add_apigateway_method(self, name, method_type, resource, api_name, require_key=True):
-        self.json['Resources'][name+method_type] = {
+        self.json['Resources'][name] = {
             'DependsOn': api_name,
             'Type': 'AWS::ApiGateway::Method',
             'Properties': {
@@ -122,7 +135,7 @@ class Template:
                 'Integration': {
                     'Type': 'MOCK'
                 },
-                'ResourceId': self._FnGetAtt(api_name, resource),
+                'ResourceId': resource_ref,
                 'RestApiId': self._Ref(api_name)
             }
         }
