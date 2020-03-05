@@ -25,10 +25,12 @@ if __name__ == '__main__':
                            required=False, default=DEFAULT_KEY_PAIR, help="name of EC2 key pair")
     my_parser.add_argument('-ec2n', '--ec2-name', action='store', type=str,
                            required=False, default=utils.get_random_name(), help="name of EC2 instance")
+    """
     my_parser.add_argument('-lfn', '--lambda-function-name', action='store', type=str,
                            required=False, default=utils.get_random_name(), help="name of lambda function")
     my_parser.add_argument('-lfnp', '--lambda-function-path', action='store',
                            type=str, required=False, help="path of lambda function")
+    """
 
     args = my_parser.parse_args()
 
@@ -36,8 +38,10 @@ if __name__ == '__main__':
     STACK_NAME = args.stack_name
     EC2_KEY_PAIR = args.ec2_key_pair
     EC2_NAME = args.ec2_name
+    """
     LAMBDA_FUNCTION_NAME = args.lambda_function_name
     LAMBDA_FUNCTION_PATH = args.lambda_function_path
+    """
     API_NAME = 'FakeAPI'
     API_DEPLOYMENT_NAME='InitialDeployment'
     API_STAGE_NAME = 'development'
@@ -52,16 +56,17 @@ if __name__ == '__main__':
     )
 
     template = template.Template()
-    """
     template.add_lambda_function(
-        name=LAMBDA_FUNCTION_NAME,
-        filename=LAMBDA_FUNCTION_PATH,
+        name='fakelambda',
+        filename='./get.py',
+        rolename='fakelambdarole',
         managed_policies=[
             'arn:aws:iam::aws:policy/AWSCloudFormationReadOnlyAccess',
             'arn:aws:iam::aws:policy/AmazonDynamoDBReadOnlyAccess',
             'arn:aws:iam::aws:policy/AmazonEC2ReadOnlyAccess'
         ]
     )
+    """
     template.add_dynamodb_table(
         name='FakeDB',
         reads=100,

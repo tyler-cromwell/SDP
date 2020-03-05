@@ -234,35 +234,33 @@ class Template:
         }
 
 
-    def add_lambda_function(self, name, filename, create_role=True, managed_policies=[]):
+    def add_lambda_function(self, name, filename, rolename, managed_policies=[]):
         with open(filename) as fp:
             code = fp.read()
 
-        rolename=name+'Role'
-
-        if create_role:
-            self.add_iam_role(
-                name=rolename,
-                managed_policies=managed_policies,
-                assume_policy={
-                    'Version': '2012-10-17',
-                    'Statement': [
-                        {
-                            'Effect': 'Allow',
-                            'Principal': {
-                                'Service': [
-                                    'lambda.amazonaws.com'
-                                ]
-                            },
-                            'Action': [
-                                'sts:AssumeRole'
+        self.add_iam_role(
+            name=rolename,
+            managed_policies=managed_policies,
+            assume_policy={
+                'Version': '2012-10-17',
+                'Statement': [
+                    {
+                        'Effect': 'Allow',
+                        'Principal': {
+                            'Service': [
+                                'lambda.amazonaws.com'
                             ]
-                        }
-                    ]
-                }
-            )
+                        },
+                        'Action': [
+                            'sts:AssumeRole'
+                        ]
+                    }
+                ]
+            }
+        )
 
         self.json['Resources'][name] = {
+            'DependsOn': rolename,
             'Type': 'AWS::Lambda::Function',
             'Properties': {
                 'Code': {
@@ -270,9 +268,7 @@ class Template:
                 },
                 'FunctionName': name,
                 'Handler': 'index.main',
-                'Role': {
-                    'Fn::GetAtt': [rolename, 'Arn']
-                },
+                'Role': self._FnGetAtt(rolename, 'Arn'),
                 'Runtime': 'python3.7'
             }
         }
