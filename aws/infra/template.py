@@ -142,6 +142,31 @@ class Template:
         }
 
 
+    def add_dynamodb_table(self, name, reads, writes):
+        self.json['Resources'][name] = {
+            'Type': 'AWS::DynamoDB::Table',
+            'Properties': {
+                'AttributeDefinitions': [
+                    {
+                        'AttributeName': 'id',
+                        'AttributeType': 'S'
+                    }
+                ],
+                'KeySchema': [
+                    {
+                        'AttributeName': 'id',
+                        'KeyType': 'HASH'
+                    }
+                ],
+                'ProvisionedThroughput': {
+                    'ReadCapacityUnits': reads,
+                    'WriteCapacityUnits': writes
+                },
+                'TableName': name
+            }
+        }
+
+
     def add_ec2_instance(self, name, instance_type, key_name, machine_image, user_data=''):
         if key_name not in self.keys:
             self.keys.append(key_name)

@@ -95,6 +95,11 @@ if __name__ == '__main__':
         deployment_name=API_DEPLOYMENT_NAME
     )
     """
+    template.add_dynamodb_table(
+        name='FakeDB',
+        reads=100,
+        writes=100
+    )
 
     cfclient = session.client('cloudformation')
 
