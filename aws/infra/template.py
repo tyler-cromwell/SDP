@@ -109,6 +109,7 @@ class Template:
         )
 
         self.json['Resources'][name] = {
+            'DependsOn': api_name,
             'Type': 'AWS::ApiGateway::Resource',
             'Properties': {
                 'ParentId': parent_ref,
