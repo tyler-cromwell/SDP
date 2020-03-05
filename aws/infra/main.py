@@ -62,6 +62,11 @@ if __name__ == '__main__':
             'arn:aws:iam::aws:policy/AmazonEC2ReadOnlyAccess'
         ]
     )
+    template.add_dynamodb_table(
+        name='FakeDB',
+        reads=100,
+        writes=100
+    )
     template.add_ec2_instance(
         name=EC2_NAME,
         instance_type='t2.micro',
@@ -95,11 +100,6 @@ if __name__ == '__main__':
         deployment_name=API_DEPLOYMENT_NAME
     )
     """
-    template.add_dynamodb_table(
-        name='FakeDB',
-        reads=100,
-        writes=100
-    )
 
     cfclient = session.client('cloudformation')
 

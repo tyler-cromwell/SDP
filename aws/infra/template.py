@@ -100,6 +100,10 @@ class Template:
             }
         }
 
+        self.json['Outputs'][key_name] = {
+            'Value': self._Ref(key_name)
+        }
+
 
     def add_apigateway_resource(self, name, api_name, parent=''):
         parent_ref = (
