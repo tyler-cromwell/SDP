@@ -56,16 +56,6 @@ if __name__ == '__main__':
     )
 
     template = template.Template()
-    template.add_lambda_function(
-        name='fakelambda',
-        filename='./get.py',
-        rolename='fakelambdarole',
-        managed_policies=[
-            'arn:aws:iam::aws:policy/AWSCloudFormationReadOnlyAccess',
-            'arn:aws:iam::aws:policy/AmazonDynamoDBReadOnlyAccess',
-            'arn:aws:iam::aws:policy/AmazonEC2ReadOnlyAccess'
-        ]
-    )
     """
     template.add_dynamodb_table(
         name='FakeDB',
@@ -78,6 +68,17 @@ if __name__ == '__main__':
         key_name=EC2_KEY_PAIR,
         machine_image='ami-04b9e92b5572fa0d1'
     )
+    """
+    template.add_lambda_function(
+        name='FakeLambda',
+        filename='./get.py',
+        rolename='FakeLambdaRole',
+        managed_policies=[
+            'arn:aws:iam::aws:policy/AWSCloudFormationReadOnlyAccess',
+            'arn:aws:iam::aws:policy/AmazonDynamoDBReadOnlyAccess',
+            'arn:aws:iam::aws:policy/AmazonEC2ReadOnlyAccess'
+        ]
+    )
     template.add_apigateway_api(
         name=API_NAME
     )
@@ -87,9 +88,12 @@ if __name__ == '__main__':
     )
     template.add_apigateway_method(
         name='FakeAPIMethod',
+        lambda_name='FakeLambda',
         method_type='GET',
         api_name=API_NAME,
-        resource='FakeAPIResource'
+        resource='FakeAPIResource',
+        full_path='FakeAPIResource',
+        require_key=False
     )
     template.add_apigateway_deployment(
         name=API_DEPLOYMENT_NAME,
@@ -104,7 +108,6 @@ if __name__ == '__main__':
         stage_name=API_STAGE_NAME,
         deployment_name=API_DEPLOYMENT_NAME
     )
-    """
 
     cfclient = session.client('cloudformation')
 

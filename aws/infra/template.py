@@ -20,6 +20,13 @@ class Template:
         return {'Fn::Join': [delimiter, array]}
 
 
+    def _FnSub(self, string, dic={}):
+        if dic == {}:
+            return {'Fn::Sub': string}
+        else:
+            return {'Fn::Sub': [string, dic]}
+
+
     def _Ref(self, name):
         return {'Ref': name}
 
@@ -123,22 +130,38 @@ class Template:
         }
 
 
-    def add_apigateway_method(self, name, method_type, api_name, resource='', require_key=True):
+    def add_apigateway_method(self, name, method_type, api_name, lambda_name, resource='', full_path='', require_key=True):
         resource_ref = (
             self._Ref(resource)
             if resource
             else self._FnGetAtt(api_name, 'RootResourceId')
         )
 
+        # Allow the API method permission to execute the Lambda function
+        self.json['Resources'][lambda_name+'Invoke'] = {
+            'Type': 'AWS::Lambda::Permission',
+            'Properties': {
+                'Action': 'lambda:InvokeFunction',
+                'FunctionName': self._FnGetAtt(lambda_name, 'Arn'),
+                'Principal': 'apigateway.amazonaws.com',
+                'SourceArn': self._FnSub('arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${'+api_name+'}/*/'+method_type+'/'+full_path)
+            }
+        }
+
         self.json['Resources'][name] = {
-            'DependsOn': api_name,
+            'DependsOn': [
+                api_name,
+                lambda_name
+            ],
             'Type': 'AWS::ApiGateway::Method',
             'Properties': {
                 'ApiKeyRequired': require_key,
                 'AuthorizationType': 'NONE',
                 'HttpMethod': method_type,
                 'Integration': {
-                    'Type': 'MOCK'
+                    'IntegrationHttpMethod': method_type,
+                    'Type': 'AWS',
+                    'Uri': self._FnSub('arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${'+lambda_name+'.Arn}/invocations')
                 },
                 'ResourceId': resource_ref,
                 'RestApiId': self._Ref(api_name)
@@ -146,7 +169,7 @@ class Template:
         }
 
 
-    def add_dynamodb_table(self, name, reads, writes):
+    def add_dynamodb_table(self, name, reads, writes, secondary):
         self.json['Resources'][name] = {
             'Type': 'AWS::DynamoDB::Table',
             'Properties': {
@@ -238,47 +261,26 @@ class Template:
         with open(filename) as fp:
             code = fp.read()
 
-        self.add_iam_role(
-            name=rolename,
-            managed_policies=managed_policies,
-            assume_policy={
-                'Version': '2012-10-17',
-                'Statement': [
-                    {
-                        'Effect': 'Allow',
-                        'Principal': {
-                            'Service': [
-                                'lambda.amazonaws.com'
-                            ]
-                        },
-                        'Action': [
-                            'sts:AssumeRole'
-                        ]
-                    }
-                ]
-            }
-        )
-
-        self.json['Resources'][name] = {
-            'DependsOn': rolename,
-            'Type': 'AWS::Lambda::Function',
-            'Properties': {
-                'Code': {
-                    'ZipFile': code
-                },
-                'FunctionName': name,
-                'Handler': 'index.main',
-                'Role': self._FnGetAtt(rolename, 'Arn'),
-                'Runtime': 'python3.7'
-            }
-        }
-
-
-    def add_iam_role(self, name, managed_policies, assume_policy):
-        self.json['Resources'][name] = {
+        # Create IAM role so function can write logs
+        self.json['Resources'][rolename] = {
             'Type': 'AWS::IAM::Role',
             'Properties': {
-                'AssumeRolePolicyDocument': assume_policy,
+                'AssumeRolePolicyDocument': {
+                    'Version': '2012-10-17',
+                    'Statement': [
+                        {
+                            'Effect': 'Allow',
+                            'Principal': {
+                                'Service': [
+                                    'lambda.amazonaws.com'
+                                ]
+                            },
+                            'Action': [
+                                'sts:AssumeRole'
+                            ]
+                        }
+                    ]
+                },
                 'ManagedPolicyArns': managed_policies,
                 'Policies': [
                     {
@@ -297,6 +299,20 @@ class Template:
                         }
                     }
                 ],
-                'RoleName': name
+                'RoleName': rolename
             }
-       }
+        }
+
+        self.json['Resources'][name] = {
+            'DependsOn': rolename,
+            'Type': 'AWS::Lambda::Function',
+            'Properties': {
+                'Code': {
+                    'ZipFile': code
+                },
+                'FunctionName': name,
+                'Handler': 'index.main',
+                'Role': self._FnGetAtt(rolename, 'Arn'),
+                'Runtime': 'python3.7'
+            }
+        }
