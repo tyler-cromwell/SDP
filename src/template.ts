@@ -1,6 +1,3 @@
-import { Injectable } from '@angular/core';
-
-
 export class Template {
   json: object;
   keys: string[];
