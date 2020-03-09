@@ -114,7 +114,8 @@ if __name__ == '__main__':
                 method_type=method,
                 api_name=API_NAME,
                 resource=resource,
-                full_path=resource      # Note: a resource could be nested
+                full_path=resource,     # Note: a resource could be nested
+                require_key=True
             )
 
         template.enable_apigateway_resource_cors(
