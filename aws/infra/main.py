@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import argparse
+import itertools
 import sys
 
 import boto3
@@ -45,8 +46,8 @@ if __name__ == '__main__':
     API_NAME = 'FakeAPI'
     API_DEPLOYMENT_NAME='InitialDeployment'
     API_STAGE_NAME = 'development'
-    API_USAGE_PLAN_NAME = 'FakeAPIUsagePlan'
-    API_KEY_NAME = 'FakeAPIKey'
+    API_USAGE_PLAN_NAME = API_NAME+'UsagePlan'
+    API_KEY_NAME = API_NAME+'Key'
 
     ACCESS, SECRET = utils.read_credentials(PATH)
 
@@ -79,31 +80,53 @@ if __name__ == '__main__':
             'arn:aws:iam::aws:policy/AmazonEC2ReadOnlyAccess'
         ]
     )
+
+    # Generate the API Gateway REST API
     template.add_apigateway_api(
         name=API_NAME
     )
-    template.add_apigateway_resource(
-        name='FakeAPIResource',
-        api_name=API_NAME
-    )
-    template.add_apigateway_method(
-        lambda_name='FakeLambda',
-        method_type='GET',
-        api_name=API_NAME,
-        resource='FakeAPIResource',
-        full_path='FakeAPIResource'
-    )
-    template.enable_apigateway_resource_cors(
-        resource_name='FakeAPIResource',
-        api_name=API_NAME,
-        methods=['FakeAPIResourceGET'],
-        allow_http_methods=['GET']
+    API_RESOURCES = ['FakeAPIResource']
+    API_RESOURCE_METHODS = {
+        'FakeAPIResource': ['GET', 'POST']
+    }
+    for resource in API_RESOURCES:
+        prefixed_methods = [resource+m for m in API_RESOURCE_METHODS[resource]]
+
+        template.add_apigateway_resource(
+            name=resource,
+            api_name=API_NAME
+        )
+
+        for method in API_RESOURCE_METHODS[resource]:
+            template.add_apigateway_method(
+                lambda_name='FakeLambda',       # Warning: Lambda functions can be different
+                method_type=method,
+                api_name=API_NAME,
+                resource=resource,
+                full_path=resource      # Note: a resource could be nested
+            )
+
+        template.enable_apigateway_resource_cors(
+            resource_name=resource,
+            api_name=API_NAME,
+            methods=prefixed_methods,
+            allow_http_methods=API_RESOURCE_METHODS[resource]
+        )
+
+    all_methods = list(
+        itertools.chain.from_iterable(
+            [
+                [
+                    k+s for s in API_RESOURCE_METHODS[k]+['OPTIONS']
+                ] for k in API_RESOURCE_METHODS.keys()
+            ]
+        )
     )
     template.add_apigateway_deployment(
         name=API_DEPLOYMENT_NAME,
         api_name=API_NAME,
         stage_name=API_STAGE_NAME,
-        methods=['FakeAPIResourceGET', 'FakeAPIResourceOPTIONS']
+        methods=all_methods
     )
     template.add_apigateway_usage_plan(
         name=API_USAGE_PLAN_NAME,
@@ -113,6 +136,7 @@ if __name__ == '__main__':
         deployment_name=API_DEPLOYMENT_NAME
     )
 
+    # Submit the template to Cloud Formation for stack construction
     cfclient = session.client('cloudformation')
 
     if utils.stack_exists(cfclient, STACK_NAME):
