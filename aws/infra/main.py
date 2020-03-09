@@ -87,19 +87,23 @@ if __name__ == '__main__':
         api_name=API_NAME
     )
     template.add_apigateway_method(
-        name='FakeAPIMethod',
         lambda_name='FakeLambda',
         method_type='GET',
         api_name=API_NAME,
         resource='FakeAPIResource',
-        full_path='FakeAPIResource',
-        require_key=False
+        full_path='FakeAPIResource'
+    )
+    template.enable_apigateway_resource_cors(
+        resource_name='FakeAPIResource',
+        api_name=API_NAME,
+        methods=['FakeAPIResourceGET'],
+        allow_http_methods=['GET']
     )
     template.add_apigateway_deployment(
         name=API_DEPLOYMENT_NAME,
         api_name=API_NAME,
         stage_name=API_STAGE_NAME,
-        methods=['FakeAPIMethod']
+        methods=['FakeAPIResourceGET', 'FakeAPIResourceOPTIONS']
     )
     template.add_apigateway_usage_plan(
         name=API_USAGE_PLAN_NAME,

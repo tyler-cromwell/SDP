@@ -130,7 +130,80 @@ class Template:
         }
 
 
-    def add_apigateway_method(self, name, method_type, api_name, lambda_name, resource='', full_path='', require_key=True):
+    def enable_apigateway_resource_cors(self, resource_name, api_name, require_key=False, methods=[], allow_http_methods=[]):
+        allow_http_methods.append('OPTIONS')
+
+        resource_ref = (
+            self._Ref(resource_name)
+            if resource_name
+            else self._FnGetAtt(api_name, 'RootResourceId')
+        )
+
+        # Create the OPTIONS method
+        self.json['Resources'][resource_name+'OPTIONS'] = {
+            'DependsOn': [
+                api_name,
+                resource_name,
+            ] + methods,
+            'Type': 'AWS::ApiGateway::Method',
+            'Properties': {
+                'ApiKeyRequired': require_key,
+                'AuthorizationType': 'NONE',
+                'HttpMethod': 'OPTIONS',
+                'Integration': {
+                    'IntegrationResponses': [
+                        {
+                            'ResponseParameters': {
+                                'method.response.header.Access-Control-Allow-Headers': "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'",
+                                'method.response.header.Access-Control-Allow-Methods': '\''+(','.join(allow_http_methods))+'\'',
+                                'method.response.header.Access-Control-Allow-Origin': "'*'"
+                            },
+                            'ResponseTemplates': {
+                                'application/json': ''
+                            },
+                            'StatusCode': '200'
+                        }
+                    ],
+                    'RequestTemplates': {
+                        'application/json': ''
+                    },
+                    'Type': 'MOCK'
+                },
+                'MethodResponses': [
+                    {
+                        'ResponseModels': {
+                            'application/json': 'Empty'
+                        },
+                        'ResponseParameters': {
+                            'method.response.header.Access-Control-Allow-Headers': str(False),
+                            'method.response.header.Access-Control-Allow-Methods': str(False),
+                            'method.response.header.Access-Control-Allow-Origin': str(False)
+                        },
+                        'StatusCode': '200'
+                    }
+                ],
+                'ResourceId': resource_ref,
+                'RestApiId': self._Ref(api_name)
+            }
+        }
+
+        # Update each method/integration response for existing methods
+        for method in methods:
+            iresponses = self.json['Resources'][method]['Properties']['Integration']['IntegrationResponses']
+            mresponses = self.json['Resources'][method]['Properties']['MethodResponses']
+
+            for iresponse in iresponses:
+                iresponse['ResponseParameters'] = {
+                    'method.response.header.Access-Control-Allow-Origin': "'*'"
+                }
+
+            for mresponse in mresponses:
+                mresponse['ResponseParameters'] = {
+                    'method.response.header.Access-Control-Allow-Origin': str(False)
+                }
+
+
+    def add_apigateway_method(self, method_type, api_name, lambda_name, resource='', full_path='', require_key=False):
         resource_ref = (
             self._Ref(resource)
             if resource
@@ -148,7 +221,7 @@ class Template:
             }
         }
 
-        self.json['Resources'][name] = {
+        self.json['Resources'][resource+method_type] = {
             'DependsOn': [
                 api_name,
                 lambda_name
