@@ -148,21 +148,10 @@ class Template:
             }
         }
 
-        self.json['Resources'][name+'ResponseModel'] = {
-            'Type': 'AWS::ApiGateway::Model',
-            'Properties': {
-                'ContentType': 'application/json',
-                'Name': name+'ResponseModel',
-                'RestApiId': self._Ref(api_name),
-                'Schema': {}
-            }
-        }
-
         self.json['Resources'][name] = {
             'DependsOn': [
                 api_name,
-                lambda_name,
-                name+'ResponseModel'
+                lambda_name
             ],
             'Type': 'AWS::ApiGateway::Method',
             'Properties': {
@@ -185,7 +174,7 @@ class Template:
                 'MethodResponses': [
                     {
                         'ResponseModels': {
-                            'application/json': name+'ResponseModel'
+                            'application/json': 'Empty'
                         },
                         'StatusCode': '200'
                     }
