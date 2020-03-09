@@ -211,7 +211,7 @@ class Template:
         )
 
         # Allow the API method permission to execute the Lambda function
-        self.json['Resources'][lambda_name+'Invoke'] = {
+        self.json['Resources'][resource+method_type+'Invoke'+lambda_name] = {
             'Type': 'AWS::Lambda::Permission',
             'Properties': {
                 'Action': 'lambda:InvokeFunction',

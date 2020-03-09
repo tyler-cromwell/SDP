@@ -43,11 +43,26 @@ if __name__ == '__main__':
     LAMBDA_FUNCTION_NAME = args.lambda_function_name
     LAMBDA_FUNCTION_PATH = args.lambda_function_path
     """
-    API_NAME = 'FakeAPI'
-    API_DEPLOYMENT_NAME='InitialDeployment'
+    API_NAME = 'FakeCSE4940API'
+    API_DEPLOYMENT_NAME = API_NAME+'InitialDeployment'
     API_STAGE_NAME = 'development'
     API_USAGE_PLAN_NAME = API_NAME+'UsagePlan'
     API_KEY_NAME = API_NAME+'Key'
+    API_RESOURCES = ['Projects', 'Stacks']
+    API_RESOURCE_METHODS = {
+        'Projects': ['DELETE', 'GET', 'POST'],
+        'Stacks': ['POST']
+    }
+    API_LAMBDAS = {
+        'Projects': {
+            'DELETE': 'FakeLambda',
+            'GET': 'FakeLambda',
+            'POST': 'FakeLambda',
+        },
+        'Stacks': {
+            'POST': 'FakeLambda'
+        }
+    }
 
     ACCESS, SECRET = utils.read_credentials(PATH)
 
@@ -85,10 +100,6 @@ if __name__ == '__main__':
     template.add_apigateway_api(
         name=API_NAME
     )
-    API_RESOURCES = ['FakeAPIResource']
-    API_RESOURCE_METHODS = {
-        'FakeAPIResource': ['GET', 'POST']
-    }
     for resource in API_RESOURCES:
         prefixed_methods = [resource+m for m in API_RESOURCE_METHODS[resource]]
 
@@ -99,7 +110,7 @@ if __name__ == '__main__':
 
         for method in API_RESOURCE_METHODS[resource]:
             template.add_apigateway_method(
-                lambda_name='FakeLambda',       # Warning: Lambda functions can be different
+                lambda_name=API_LAMBDAS[resource][method],
                 method_type=method,
                 api_name=API_NAME,
                 resource=resource,
@@ -140,11 +151,11 @@ if __name__ == '__main__':
     cfclient = session.client('cloudformation')
 
     if utils.stack_exists(cfclient, STACK_NAME):
-        print('Stack "{}" exists!'.format(STACK_NAME))
+        print('Stack "{}" already exists!'.format(STACK_NAME))
     else:
         response = client.create_stack(
             session=session,
             stack_name=STACK_NAME,
             template=template
         )
-        print('Stack "{}" created!'.format(STACK_NAME))
+        print('Stack "{}" uploaded.'.format(STACK_NAME))
