@@ -148,10 +148,21 @@ class Template:
             }
         }
 
+        self.json['Resources'][name+'ResponseModel'] = {
+            'Type': 'AWS::ApiGateway::Model',
+            'Properties': {
+                'ContentType': 'application/json',
+                'Name': name+'ResponseModel',
+                'RestApiId': self._Ref(api_name),
+                'Schema': {}
+            }
+        }
+
         self.json['Resources'][name] = {
             'DependsOn': [
                 api_name,
-                lambda_name
+                lambda_name,
+                name+'ResponseModel'
             ],
             'Type': 'AWS::ApiGateway::Method',
             'Properties': {
@@ -159,10 +170,26 @@ class Template:
                 'AuthorizationType': 'NONE',
                 'HttpMethod': method_type,
                 'Integration': {
-                    'IntegrationHttpMethod': method_type,
+                    'IntegrationHttpMethod': 'POST',
+                    'IntegrationResponses': [
+                        {
+                            'ResponseTemplates': {
+                                'application/json': ''
+                            },
+                            'StatusCode': '200'
+                        }
+                    ],
                     'Type': 'AWS',
                     'Uri': self._FnSub('arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${'+lambda_name+'.Arn}/invocations')
                 },
+                'MethodResponses': [
+                    {
+                        'ResponseModels': {
+                            'application/json': name+'ResponseModel'
+                        },
+                        'StatusCode': '200'
+                    }
+                ],
                 'ResourceId': resource_ref,
                 'RestApiId': self._Ref(api_name)
             }
