@@ -205,3 +205,4 @@ if __name__ == '__main__':
             template=template
         )
         print('Stack "{}" uploaded.'.format(STACK_NAME))
+        print(utils.prettify_json(response))
