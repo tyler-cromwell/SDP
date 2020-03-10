@@ -1,30 +1,33 @@
-<nav class="indigo darken-3" id="navbar">
-  <div class="nav-wrapper">
-    <a class="brand-logo left left-align" style="margin-left: 1rem;" routerLink="/" routerLinkActive="">Cloud Developer Management Console</a>
-    <ul class="right right-align">
-      <li><span>John Doe</span></li>
-      <li class="dropdown-trigger" style="padding-right: 1rem; padding-left: 1rem;" data-target="user-dropdown"><i class="material-icons prefix">account_box</i></li>
-    </ul>
+<div style="min-height:100vh; margin-bottom:-50px;">
+  <nav class="indigo darken-3" id="navbar">
+    <div class="nav-wrapper">
+      <a class="brand-logo left left-align" style="margin-left: 1rem;" routerLink="/" routerLinkActive="">Cloud Developer Management Console</a>
+      <ul class="right right-align">
+        <li><span>John Doe</span></li>
+        <li class="dropdown-trigger" style="padding-right: 1rem; padding-left: 1rem;" data-target="user-dropdown"><i class="material-icons prefix">account_box</i></li>
+      </ul>
+    </div>
+  </nav>
+
+  <ul id="user-dropdown" class="dropdown-content">
+    <li><span>Change Password</span></li>
+    <li class="divider"></li>
+    <li><span>Logout</span></li>
+  </ul>
+
+
+  <div class="container">
+    <router-outlet></router-outlet>
   </div>
-</nav>
-
-<ul id="user-dropdown" class="dropdown-content">
-  <li><span>Change Password</span></li>
-  <li class="divider"></li>
-  <li><span>Logout</span></li>
-</ul>
 
 
-<div class="container" style="margin-bottom: 50px;">
-  <router-outlet></router-outlet>
 </div>
 
-
-<footer class="page-footer" style="padding-top: 0; width: 100%; bottom: 0%; position: inherit;">
-  <div class="footer-copyright indigo darken-3">
-    <div class="container">
-      © 2020 Copyright, Senior Design Project Team #5
-      <a target="_blank" href="https://github.com/tyler-cromwell/SDP" class="grey-text text-lighten-4 right">GitHub Project Link</a>
+  <footer class="page-footer" style="padding-top: 0; width: 100%; bottom: 0%; position: inherit; background-color: #fff;">
+    <div class="footer-copyright indigo darken-3" style="width: 100%;">
+      <div class="container">
+        © 2020 Copyright, Senior Design Project Team #5
+        <a target="_blank" href="https://github.com/tyler-cromwell/SDP" class="grey-text text-lighten-4 right">GitHub Project Link</a>
+      </div>
     </div>
-  </div>
-</footer>
+  </footer>
