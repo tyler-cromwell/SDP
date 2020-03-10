@@ -210,7 +210,7 @@ class Template:
         )
 
         # Allow the API method permission to execute the Lambda function
-        self.json['Resources'][resource+method_type+'Invoke'+lambda_name] = {
+        self.json['Resources'][lambda_name+'Permission'] = {
             'Type': 'AWS::Lambda::Permission',
             'Properties': {
                 'Action': 'lambda:InvokeFunction',
@@ -260,7 +260,7 @@ class Template:
         }
 
 
-    def add_dynamodb_table(self, name, reads, writes, secondary):
+    def add_dynamodb_table(self, name, reads, writes):
         self.json['Resources'][name] = {
             'Type': 'AWS::DynamoDB::Table',
             'Properties': {

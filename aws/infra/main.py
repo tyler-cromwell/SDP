@@ -37,15 +37,16 @@ if __name__ == '__main__':
     STACK_NAME = args.stack_name
     EC2_KEY_PAIR = args.ec2_key_pair
     EC2_NAME = args.ec2_name
-    API_NAME = 'FakeCSE4940API'
+    API_NAME = 'API'
     API_DEPLOYMENT_NAME = API_NAME+'InitialDeployment'
     API_STAGE_NAME = 'development'
     API_USAGE_PLAN_NAME = API_NAME+'UsagePlan'
     API_KEY_NAME = API_NAME+'Key'
-    API_RESOURCES = ['Projects', 'Stacks']
+    API_RESOURCES = ['Projects', 'Stacks', 'Users']
     API_RESOURCE_METHODS = {
         'Projects': ['DELETE', 'GET', 'POST'],
-        'Stacks': ['POST']
+        'Stacks': ['POST'],
+        'Users': ['GET', 'POST']
     }
     API_LAMBDAS = {
         'Projects': {
@@ -55,6 +56,10 @@ if __name__ == '__main__':
         },
         'Stacks': {
             'POST': 'StacksPOSTLambda'
+        },
+        'Users': {
+            'GET': 'UsersGETLambda',
+            'POST': 'UsersPOSTLambda'
         }
     }
 
@@ -67,11 +72,6 @@ if __name__ == '__main__':
 
     template = template.Template()
     """
-    template.add_dynamodb_table(
-        name='FakeDB',
-        reads=100,
-        writes=100
-    )
     template.add_ec2_instance(
         name=EC2_NAME,
         instance_type='t2.micro',
@@ -79,6 +79,17 @@ if __name__ == '__main__':
         machine_image='ami-04b9e92b5572fa0d1'
     )
     """
+    # Generate Database tables
+    template.add_dynamodb_table(
+        name='ProjectsTable',
+        reads=1000,
+        writes=1000
+    )
+    template.add_dynamodb_table(
+        name='UsersTable',
+        reads=1000,
+        writes=1000
+    )
 
     # Generate Lambda functions
     template.add_lambda_function(
@@ -111,6 +122,22 @@ if __name__ == '__main__':
         rolename='StacksPOSTLambdaRole',
         managed_policies=[
             'arn:aws:iam::aws:policy/AWSCloudFormationFullAccess',
+        ]
+    )
+    template.add_lambda_function(
+        name='UsersGETLambda',
+        filename=str(THIS_DIR)+'/../lambda/users/get.py',
+        rolename='UsersGETLambdaRole',
+        managed_policies=[
+            'arn:aws:iam::aws:policy/AmazonDynamoDBReadOnlyAccess',
+        ]
+    )
+    template.add_lambda_function(
+        name='UsersPOSTLambda',
+        filename=str(THIS_DIR)+'/../lambda/users/post.py',
+        rolename='UsersPOSTLambdaRole',
+        managed_policies=[
+            'arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess',
         ]
     )
 

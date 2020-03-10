@@ -10,7 +10,7 @@ def main(event, context):
     }
   
   dynamodb = boto3.resource('dynamodb')
-  table = dynamodb.Table('cse4940-users')
+  table = dynamodb.Table('UsersTable')
 
   result = table.put_item(
     Item={

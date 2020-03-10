@@ -32,7 +32,7 @@ export class AWSClientService {
 
   createProject(name: string, owner: string, description: string) {
     return this.http.post<string>(
-      this.url+"/projects",
+      this.url+"/Projects",
       {
         name: name,
         owner: owner,
@@ -44,7 +44,7 @@ export class AWSClientService {
 
   createStack(name: string, template: Template) {
     return this.http.post<string>(
-      this.url+"/stacks",
+      this.url+"/Stacks",
       {
         name: name,
         template: template.json,
@@ -63,7 +63,7 @@ export class AWSClientService {
 
   getProjects() {
     return this.http.get<string>(
-      this.url+"/projects",
+      this.url+"/Projects",
       this.headers
     )
   }

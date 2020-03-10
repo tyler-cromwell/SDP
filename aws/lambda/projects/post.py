@@ -6,7 +6,7 @@ from boto3.dynamodb.conditions import Key, Attr
 
 def isOwnerValid(email: str) -> bool:
     dynamodb = boto3.resource('dynamodb')
-    table = dynamodb.Table('cse4940-users')
+    table = dynamodb.Table('UsersTable')
     
     result = table.query(
         KeyConditionExpression=Key('email').eq(email)
@@ -17,7 +17,7 @@ def isOwnerValid(email: str) -> bool:
 
 def main(event, context):
     dynamodb = boto3.resource('dynamodb')
-    table = dynamodb.Table('cse4940-projects')
+    table = dynamodb.Table('ProjectsTable')
     
     required = ['name', 'owner', 'description', 'version']
 
