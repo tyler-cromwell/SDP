@@ -21,6 +21,7 @@ if __name__ == '__main__':
 
     DEFAULT_KEY_PAIR = "MyEC2KeyPair01"
 
+    # Define command line interface
     my_parser.add_argument('-p', '--path', action='store', type=str,
                            required=True, help="path to AWS credentials file")
     my_parser.add_argument('-sn', '--stack-name', action='store', type=str,
@@ -78,6 +79,8 @@ if __name__ == '__main__':
         machine_image='ami-04b9e92b5572fa0d1'
     )
     """
+
+    # Generate Lambda functions
     template.add_lambda_function(
         name='ProjectsDELETELambda',
         filename=str(THIS_DIR)+'/../lambda/projects/delete.py',
@@ -129,7 +132,7 @@ if __name__ == '__main__':
                 method_type=method,
                 api_name=API_NAME,
                 resource=resource,
-                full_path=resource,     # Note: a resource could be nested
+                full_path=resource,     # Note: resource nesting must be accounted for
                 require_key=True
             )
 
