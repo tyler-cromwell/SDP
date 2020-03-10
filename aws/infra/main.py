@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import argparse
 import itertools
+import pathlib
 import sys
 
 import boto3
@@ -9,6 +10,8 @@ import botocore
 import client
 import template
 import utils
+
+THIS_DIR = pathlib.Path(__file__).parent.absolute()
 
 
 if __name__ == '__main__':
@@ -26,12 +29,6 @@ if __name__ == '__main__':
                            required=False, default=DEFAULT_KEY_PAIR, help="name of EC2 key pair")
     my_parser.add_argument('-ec2n', '--ec2-name', action='store', type=str,
                            required=False, default=utils.get_random_name(), help="name of EC2 instance")
-    """
-    my_parser.add_argument('-lfn', '--lambda-function-name', action='store', type=str,
-                           required=False, default=utils.get_random_name(), help="name of lambda function")
-    my_parser.add_argument('-lfnp', '--lambda-function-path', action='store',
-                           type=str, required=False, help="path of lambda function")
-    """
 
     args = my_parser.parse_args()
 
@@ -39,10 +36,6 @@ if __name__ == '__main__':
     STACK_NAME = args.stack_name
     EC2_KEY_PAIR = args.ec2_key_pair
     EC2_NAME = args.ec2_name
-    """
-    LAMBDA_FUNCTION_NAME = args.lambda_function_name
-    LAMBDA_FUNCTION_PATH = args.lambda_function_path
-    """
     API_NAME = 'FakeCSE4940API'
     API_DEPLOYMENT_NAME = API_NAME+'InitialDeployment'
     API_STAGE_NAME = 'development'
@@ -55,12 +48,12 @@ if __name__ == '__main__':
     }
     API_LAMBDAS = {
         'Projects': {
-            'DELETE': 'FakeLambda',
-            'GET': 'FakeLambda',
-            'POST': 'FakeLambda',
+            'DELETE': 'ProjectsDELETELambda',
+            'GET': 'ProjectsGETLambda',
+            'POST': 'ProjectsPOSTLambda',
         },
         'Stacks': {
-            'POST': 'FakeLambda'
+            'POST': 'StacksPOSTLambda'
         }
     }
 
@@ -86,13 +79,35 @@ if __name__ == '__main__':
     )
     """
     template.add_lambda_function(
-        name='FakeLambda',
-        filename='./get.py',
-        rolename='FakeLambdaRole',
+        name='ProjectsDELETELambda',
+        filename=str(THIS_DIR)+'/../lambda/projects/delete.py',
+        rolename='ProjectsDELETELambdaRole',
         managed_policies=[
-            'arn:aws:iam::aws:policy/AWSCloudFormationReadOnlyAccess',
+            'arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess',
+        ]
+    )
+    template.add_lambda_function(
+        name='ProjectsGETLambda',
+        filename=str(THIS_DIR)+'/../lambda/projects/get.py',
+        rolename='ProjectsGETLambdaRole',
+        managed_policies=[
             'arn:aws:iam::aws:policy/AmazonDynamoDBReadOnlyAccess',
-            'arn:aws:iam::aws:policy/AmazonEC2ReadOnlyAccess'
+        ]
+    )
+    template.add_lambda_function(
+        name='ProjectsPOSTLambda',
+        filename=str(THIS_DIR)+'/../lambda/projects/post.py',
+        rolename='ProjectsPOSTLambdaRole',
+        managed_policies=[
+            'arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess',
+        ]
+    )
+    template.add_lambda_function(
+        name='StacksPOSTLambda',
+        filename=str(THIS_DIR)+'/../lambda/stacks/post.py',
+        rolename='StacksPOSTLambdaRole',
+        managed_policies=[
+            'arn:aws:iam::aws:policy/AWSCloudFormationFullAccess',
         ]
     )
 
