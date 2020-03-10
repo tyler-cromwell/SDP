@@ -130,7 +130,7 @@ class Template:
         }
 
 
-    def enable_apigateway_resource_cors(self, resource_name, api_name, require_key=False, methods=[], allow_http_methods=[]):
+    def enable_apigateway_resource_cors(self, resource_name, api_name, methods=[], allow_http_methods=[]):
         allow_http_methods.append('OPTIONS')
 
         resource_ref = (
@@ -147,7 +147,6 @@ class Template:
             ] + methods,
             'Type': 'AWS::ApiGateway::Method',
             'Properties': {
-                'ApiKeyRequired': require_key,
                 'AuthorizationType': 'NONE',
                 'HttpMethod': 'OPTIONS',
                 'Integration': {
@@ -161,11 +160,11 @@ class Template:
                             'ResponseTemplates': {
                                 'application/json': ''
                             },
-                            'StatusCode': '200'
+                            'StatusCode': 200
                         }
                     ],
                     'RequestTemplates': {
-                        'application/json': ''
+                        'application/json': '{\n \"statusCode\": 200\n}'
                     },
                     'Type': 'MOCK'
                 },
@@ -175,11 +174,11 @@ class Template:
                             'application/json': 'Empty'
                         },
                         'ResponseParameters': {
-                            'method.response.header.Access-Control-Allow-Headers': str(False),
-                            'method.response.header.Access-Control-Allow-Methods': str(False),
-                            'method.response.header.Access-Control-Allow-Origin': str(False)
+                            'method.response.header.Access-Control-Allow-Headers': str(True),
+                            'method.response.header.Access-Control-Allow-Methods': str(True),
+                            'method.response.header.Access-Control-Allow-Origin': str(True)
                         },
-                        'StatusCode': '200'
+                        'StatusCode': 200
                     }
                 ],
                 'ResourceId': resource_ref,
@@ -199,7 +198,7 @@ class Template:
 
             for mresponse in mresponses:
                 mresponse['ResponseParameters'] = {
-                    'method.response.header.Access-Control-Allow-Origin': str(False)
+                    'method.response.header.Access-Control-Allow-Origin': str(True)
                 }
 
 
@@ -238,9 +237,12 @@ class Template:
                             'ResponseTemplates': {
                                 'application/json': ''
                             },
-                            'StatusCode': '200'
+                            'StatusCode': 200
                         }
                     ],
+                    'RequestTemplates': {
+                        'application/json': '{\n \"statusCode\": 200\n}'
+                    },
                     'Type': 'AWS',
                     'Uri': self._FnSub('arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${'+lambda_name+'.Arn}/invocations')
                 },
@@ -249,7 +251,7 @@ class Template:
                         'ResponseModels': {
                             'application/json': 'Empty'
                         },
-                        'StatusCode': '200'
+                        'StatusCode': 200
                     }
                 ],
                 'ResourceId': resource_ref,

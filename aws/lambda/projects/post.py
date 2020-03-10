@@ -3,6 +3,7 @@ import uuid
 import boto3
 from boto3.dynamodb.conditions import Key, Attr
 
+
 def isOwnerValid(email: str) -> bool:
     dynamodb = boto3.resource('dynamodb')
     table = dynamodb.Table('cse4940-users')
@@ -12,6 +13,7 @@ def isOwnerValid(email: str) -> bool:
     )
     
     return len(result["Items"]) == 1
+
 
 def main(event, context):
     dynamodb = boto3.resource('dynamodb')

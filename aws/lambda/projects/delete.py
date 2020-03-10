@@ -12,7 +12,6 @@ def main(event, context):
         }
     
     client = boto3.client('dynamodb')
-
     result = client.delete_item(
         TableName='cse4940-projects',
         Key={
