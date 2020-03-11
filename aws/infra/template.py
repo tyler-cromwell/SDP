@@ -163,6 +163,7 @@ class Template:
                             'StatusCode': 200
                         }
                     ],
+                    'PassthroughBehavior': 'NEVER',
                     'RequestTemplates': {
                         'application/json': '{\n \"statusCode\": 200\n}'
                     },
@@ -240,9 +241,7 @@ class Template:
                             'StatusCode': 200
                         }
                     ],
-                    'RequestTemplates': {
-                        'application/json': '{\n \"statusCode\": 200\n}'
-                    },
+                    'PassthroughBehavior': 'WHEN_NO_TEMPLATES',
                     'Type': 'AWS',
                     'Uri': self._FnSub('arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${'+lambda_name+'.Arn}/invocations')
                 },

@@ -36,7 +36,8 @@ export class AWSClientService {
       {
         name: name,
         owner: owner,
-        description: description
+        description: description,
+        version: "1.0.0"
       },
       this.headers
     );

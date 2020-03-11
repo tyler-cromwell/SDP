@@ -8,8 +8,8 @@ def isOwnerValid(email: str) -> bool:
     dynamodb = boto3.resource('dynamodb')
     table = dynamodb.Table('UsersTable')
     
-    result = table.query(
-        KeyConditionExpression=Key('email').eq(email)
+    result = table.scan(
+        FilterExpression=Attr('email').eq(email)
     )
     
     return len(result["Items"]) == 1
