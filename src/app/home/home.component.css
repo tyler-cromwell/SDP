@@ -1,0 +1,18 @@
+.container-header {
+  display: flow-root;
+  margin-bottom: .5rem;
+}
+
+.logo-width {
+  max-width: 85%;
+  display: block;
+  margin: 3rem auto;
+}
+
+.row {
+  margin-bottom: 1rem;
+}
+
+.row-2 {
+  margin-bottom: 1.5rem;
+}

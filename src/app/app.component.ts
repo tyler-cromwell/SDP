@@ -20,7 +20,9 @@ export class AppComponent {
     private authenticationService: AuthenticationService) {
     document.addEventListener('DOMContentLoaded', function() {
       var elems = document.querySelectorAll('.dropdown-trigger');
-      var options = {};
+      var options = {
+        "coverTrigger": false
+      };
       var instances = M.Dropdown.init(elems, options);
     });
 

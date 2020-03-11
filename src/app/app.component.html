@@ -1,48 +1,35 @@
-<ul id="user-dropdown" class="dropdown-content">
-  <li><span>Change Password</span></li>
-  <li class="divider"></li>
-  <li (click)="logout()"><span>Logout</span></li>
-</ul>
+
+<div style="min-height:100vh; margin-bottom:-50px;">
+  <nav class="indigo darken-3" id="navbar">
+    <div class="nav-wrapper">
+      <a class="brand-logo left left-align" style="margin-left: 1rem;" routerLink="/" routerLinkActive="">Cloud Developer Management Console</a>
+      <ul class="right right-align">
+        <li><span>John Doe</span></li>
+        <li class="dropdown-trigger" style="padding-right: 1rem; padding-left: 1rem;" data-target="user-dropdown"><i class="material-icons prefix">account_box</i></li>
+      </ul>
+    </div>
+  </nav>
+
+  <ul id="user-dropdown" class="dropdown-content">
+    <li><span>Change Password</span></li>
+    <li class="divider"></li>
+    <li><span>Logout</span></li>
+  </ul>
 
 
-<nav class="blue">
-  <div class="nav-wrapper">
-    <a class="brand-logo center" routerLink="/" routerLinkActive="">AWS Server Management Tool</a>
-    <ul class="right hide-on-med-and-down" *ngIf="currentUser"> <!-- only displays if logged in  -->
-      <!--<li><span>Link</span></li>-->
-      <li><span class="dropdown-trigger" data-target="user-dropdown">User<i class="material-icons right">arrow_drop_down</i></span></li>
-    </ul>
+  <div class="container">
+    <router-outlet></router-outlet>
   </div>
-</nav>
 
 
-<div class="container">
-  <router-outlet></router-outlet>
 </div>
 
 
-<footer class="page-footer blue">
-  <div class="container" *ngIf="currentUser"> <!-- only displays if logged in -->
-    <div class="row">
-      <div class="col l6 s12"> 
-        <h5 class="white-text">Footer Content</h5>
-        <p class="grey-text text-lighten-4">You can use rows and columns here to organize your footer content.</p>
-      </div>
-
-      <div class="col l4 offset-l2 s12">
-        <h5 class="white-text">Links</h5>
-        <ul>
-          <li><a class="grey-text text-lighten-3">Link 1</a></li>
-          <li><a class="grey-text text-lighten-3">Link 2</a></li>
-        </ul>
+  <footer class="page-footer" style="padding-top: 0; width: 100%; bottom: 0%; position: inherit; background-color: #fff;">
+    <div class="footer-copyright indigo darken-3" style="width: 100%;">
+      <div class="container">
+        © 2020 Copyright, Senior Design Project Team #5
+        <a target="_blank" href="https://github.com/tyler-cromwell/SDP" class="grey-text text-lighten-4 right">GitHub Project Link</a>
       </div>
     </div>
-  </div>
-
-  <div class="footer-copyright">
-    <div class="container">
-      © 2019 Copyright ???
-      <a class="grey-text text-lighten-4 right">More Links</a>
-    </div>
-  </div>
-</footer>
+  </footer>

@@ -1,26 +1,27 @@
 <div id="home">
-  <div class="row">
-    <h3>Search</h3>
 
+  <img class="responsive-img logo-width" src="../assets/Blue Logo.jpg" placeholder="Make sure you have the logo in the assets folder!">
+
+  <div class="row">
     <form action="#!" class="col s12">
       <div class="row">
-        <div class="col s9">
-          <input type="text" placeholder="Project name">
-        </div>
-        <div class="col s3">
-          <input type="submit" value="Search" class="waves-effect waves-light btn"/>
+        <div class="col s1"></div>
+        <div class="col s10">
+          <input type="text" placeholder="Enter project name...">
         </div>
       </div>
     </form>
   </div>
 
+  <div class="row" style="display: table;">
+      <a style="margin: 0px 1rem;" class="indigo accent-2 btn-small modal-trigger" (click)="toggleModal()" href="#advanced-search-modal">Advanced Search</a>
+      <a style="margin: 0px 1rem;" class="indigo accent-2 btn-small">Search</a>
+  </div>
+
   <div class="row">
     <!-- class="waves-effect" permanently alters color, so please DO NOT USE -->
     <div class="col s3">
-      <a class="waves-light btn-small modal-trigger" href="#advanced-search-modal">Advanced Search</a>
-    </div>
-    <div class="col s3">
-      <a class="waves-light btn-small" routerLink="/create" routerLinkActive="">Create Project</a>
+
     </div>
 
     <div id="advanced-search-modal" class="modal">
@@ -58,19 +59,17 @@
     </div>
   </div>
 
-  <div class="row">
-    <h3>Projects</h3>
-
+  <div class="row container-2">
+    <div class="container-header row-2">
+      <h3 class="left left-align" style="margin:0; line-height:inherit;">Projects</h3>
+      <a class="indigo accent-2 right right-align btn-large btn-floating" routerLink="/create" routerLinkActive=""><i class="material-icons">add</i></a>
+    </div>
     <div class="col s12 m12" *ngFor="let project of projects">
-      <div class="card darken-1">
+      <div class="card hoverable darken-1" style="cursor:pointer;" routerLink="/browse/1" routerLinkActive="">
         <div class="card-content">
-          <span class="card-title">{{project.Name["S"]}}</span>
-          <p>{{project.Description["S"]}}</p>
-        </div>
-        <div class="card-action">
-          <a>{{project.Owner["S"]}}</a>
-          <a>{{project.Version["S"]}}</a>
-          <a class="secondary-content" routerLink="/browse/1" routerLinkActive=""><i class="material-icons">send</i></a>
+          <span class="card-title left left-align" style="font-weight:500;">{{project.name}} -- {{project.version}}</span>
+          <span class="card-title right right-align" style="font-size:1.3em;"><i>{{project.owner}}</i></span>
+          <p style="clear:both; font-size:.9em;">{{project.description}}</p>
         </div>
       </div>
     </div>

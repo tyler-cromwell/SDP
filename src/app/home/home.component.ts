@@ -11,23 +11,19 @@ import * as M from "materialize-css/dist/js/materialize";
   providers: [AWSClientService]
 })
 export class HomeComponent implements OnInit {
-  private projects = [];
+  private projects: any = [];
 
-  constructor(private client: AWSClientService) {
-    document.addEventListener('DOMContentLoaded', function() {
-      var elems = document.querySelectorAll('.modal');
-      var instances = M.Modal.init(elems);
+  constructor(private client: AWSClientService) { }
+  
+  ngOnInit() {    
+  
+    this.client.getProjects().subscribe(data => {                         
+      this.projects = data          
     });
-
-    this.client.getProjects().subscribe(data => {
-        let items = JSON.parse(data)["Items"]
-
-        if (items.length) {
-          this.projects = items
-        }
-      }
-    )
   }
 
-  ngOnInit() { }
+  toggleModal() {
+    var elems = document.querySelectorAll('.modal');
+    var instances = M.Modal.init(elems);
+  }
 }
