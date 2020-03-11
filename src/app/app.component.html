@@ -3,7 +3,7 @@
   <nav class="indigo darken-3" id="navbar">
     <div class="nav-wrapper">
       <a class="brand-logo left left-align" style="margin-left: 1rem;" routerLink="/" routerLinkActive="">Cloud Developer Management Console</a>
-      <ul class="right right-align">
+      <ul class="right right-align" *ngIf="currentUser"> <!-- only displays if logged in  -->
         <li><span>John Doe</span></li>
         <li class="dropdown-trigger" style="padding-right: 1rem; padding-left: 1rem;" data-target="user-dropdown"><i class="material-icons prefix">account_box</i></li>
       </ul>
@@ -13,7 +13,7 @@
   <ul id="user-dropdown" class="dropdown-content">
     <li><span>Change Password</span></li>
     <li class="divider"></li>
-    <li><span>Logout</span></li>
+    <li (click)="logout()"><span>Logout</span></li>
   </ul>
 
 
