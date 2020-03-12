@@ -1,5 +1,7 @@
 import json
 
+import utils
+
 
 class Template:
     def __init__(self, description='', version='2010-09-09'):
@@ -29,6 +31,10 @@ class Template:
 
     def _Ref(self, name):
         return {'Ref': name}
+
+
+    def save(self, filename):
+        utils.dict_to_yaml(self.json, filename)
 
 
     def add_apigateway_api(self, name):

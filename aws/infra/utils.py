@@ -29,7 +29,7 @@ def dicts_have_key_with_value(dicts, key, value):
 
 def dict_to_yaml(dictionary, filename):
     with open(filename, 'w') as fobject:
-        yaml.dumps(
+        yaml.dump(
             dictionary,
             fobject,
             default_flow_style=False
