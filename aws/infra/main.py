@@ -8,7 +8,7 @@ import boto3
 import botocore
 
 import client
-import template
+from template import LambdaParams, Template
 import utils
 
 THIS_DIR = pathlib.Path(__file__).parent.absolute()
@@ -50,27 +50,50 @@ if __name__ == '__main__':
     }
     API_LAMBDAS = {
         'Projects': {
-            'DELETE': 'ProjectsDELETELambda',
-            'GET': 'ProjectsGETLambda',
-            'POST': 'ProjectsPOSTLambda',
+            'DELETE': LambdaParams(
+                'ProjectsDELETELambda',
+                '/../lambda/projects/delete.py',
+                ['arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess']
+            ),
+            'GET': LambdaParams(
+                'ProjectsGETLambda',
+                '/../lambda/projects/get.py',
+                ['arn:aws:iam::aws:policy/AmazonDynamoDBReadOnlyAccess']
+            ),
+            'POST': LambdaParams(
+                'ProjectsPOSTLambda',
+                '/../lambda/projects/post.py',
+                ['arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess']
+            )
         },
         'Stacks': {
-            'POST': 'StacksPOSTLambda'
+            'POST': LambdaParams(
+                'StacksPOSTLambda',
+                '/../lambda/stacks/post.py',
+                ['arn:aws:iam::aws:policy/AWSCloudFormationFullAccess']
+            )
         },
         'Users': {
-            'GET': 'UsersGETLambda',
-            'POST': 'UsersPOSTLambda'
+            'GET': LambdaParams(
+                'UsersGETLambda',
+                '/../lambda/users/get.py',
+                ['arn:aws:iam::aws:policy/AmazonDynamoDBReadOnlyAccess']
+            ),
+            'POST': LambdaParams(
+                'UsersPOSTLambda',
+                '/../lambda/users/post.py',
+                ['arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess']
+            )
         }
     }
 
     ACCESS, SECRET = utils.read_credentials(PATH)
-
     session = boto3.session.Session(
         aws_access_key_id=ACCESS,
         aws_secret_access_key=SECRET,
     )
 
-    template = template.Template()
+    template = Template()
     """
     template.add_ec2_instance(
         name=EC2_NAME,
@@ -91,56 +114,6 @@ if __name__ == '__main__':
         writes=1000
     )
 
-    # Generate Lambda functions
-    template.add_lambda_function(
-        name='ProjectsDELETELambda',
-        filename=str(THIS_DIR)+'/../lambda/projects/delete.py',
-        rolename='ProjectsDELETELambdaRole',
-        managed_policies=[
-            'arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess',
-        ]
-    )
-    template.add_lambda_function(
-        name='ProjectsGETLambda',
-        filename=str(THIS_DIR)+'/../lambda/projects/get.py',
-        rolename='ProjectsGETLambdaRole',
-        managed_policies=[
-            'arn:aws:iam::aws:policy/AmazonDynamoDBReadOnlyAccess',
-        ]
-    )
-    template.add_lambda_function(
-        name='ProjectsPOSTLambda',
-        filename=str(THIS_DIR)+'/../lambda/projects/post.py',
-        rolename='ProjectsPOSTLambdaRole',
-        managed_policies=[
-            'arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess',
-        ]
-    )
-    template.add_lambda_function(
-        name='StacksPOSTLambda',
-        filename=str(THIS_DIR)+'/../lambda/stacks/post.py',
-        rolename='StacksPOSTLambdaRole',
-        managed_policies=[
-            'arn:aws:iam::aws:policy/AWSCloudFormationFullAccess',
-        ]
-    )
-    template.add_lambda_function(
-        name='UsersGETLambda',
-        filename=str(THIS_DIR)+'/../lambda/users/get.py',
-        rolename='UsersGETLambdaRole',
-        managed_policies=[
-            'arn:aws:iam::aws:policy/AmazonDynamoDBReadOnlyAccess',
-        ]
-    )
-    template.add_lambda_function(
-        name='UsersPOSTLambda',
-        filename=str(THIS_DIR)+'/../lambda/users/post.py',
-        rolename='UsersPOSTLambdaRole',
-        managed_policies=[
-            'arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess',
-        ]
-    )
-
     # Generate the API Gateway REST API
     template.add_apigateway_api(
         name=API_NAME
@@ -154,8 +127,17 @@ if __name__ == '__main__':
         )
 
         for method in API_RESOURCE_METHODS[resource]:
+            function = API_LAMBDAS[resource][method]
+
+            template.add_lambda_function(
+                name=function.name,
+                filename=str(THIS_DIR)+function.file,
+                rolename=function.role,
+                managed_policies=function.policies
+            )
+
             template.add_apigateway_method(
-                lambda_name=API_LAMBDAS[resource][method],
+                lambda_name=function.name,
                 method_type=method,
                 api_name=API_NAME,
                 resource=resource,
@@ -171,13 +153,10 @@ if __name__ == '__main__':
         )
 
     all_methods = list(
-        itertools.chain.from_iterable(
-            [
-                [
-                    k+s for s in API_RESOURCE_METHODS[k]+['OPTIONS']
-                ] for k in API_RESOURCE_METHODS.keys()
-            ]
-        )
+        itertools.chain.from_iterable([
+            [k+s for s in API_RESOURCE_METHODS[k]+['OPTIONS']]
+            for k in API_RESOURCE_METHODS.keys()
+        ])
     )
     template.add_apigateway_deployment(
         name=API_DEPLOYMENT_NAME,

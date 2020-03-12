@@ -3,6 +3,14 @@ import json
 import utils
 
 
+class LambdaParams:
+    def __init__(self, function_name, file_name, managed_policies=[]):
+        self.name = function_name
+        self.file = file_name
+        self.role = function_name+'Role'
+        self.policies = managed_policies
+
+
 class Template:
     def __init__(self, description='', version='2010-09-09'):
         self.json = {
