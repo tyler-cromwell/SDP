@@ -19,11 +19,6 @@
   </div>
 
   <div class="row">
-    <!-- class="waves-effect" permanently alters color, so please DO NOT USE -->
-    <div class="col s3">
-
-    </div>
-
     <div id="advanced-search-modal" class="modal">
       <div class="modal-content">
         <h4>Advanced Search</h4>
@@ -64,6 +59,7 @@
       <h3 class="left left-align" style="margin:0; line-height:inherit;">Projects</h3>
       <a class="indigo accent-2 right right-align btn-large btn-floating" routerLink="/create" routerLinkActive=""><i class="material-icons">add</i></a>
     </div>
+    
     <div class="col s12 m12" *ngFor="let project of projects">
       <div class="card hoverable darken-1" style="cursor:pointer;" [routerLink] = "['/browse', project.name]" routerLinkActive="">
         <div class="card-content">
@@ -73,5 +69,13 @@
         </div>
       </div>
     </div>
+
+    <div *ngIf="projects.length === 0" style="background-color: #ff9800;" class="card">
+      <div class="card-content">
+        <span class="card-title" style="color: white;">
+          <b>Currently, no projects exist!</b>          
+        </span>        
+      </div>
+    </div>    
   </div>
 </div>
