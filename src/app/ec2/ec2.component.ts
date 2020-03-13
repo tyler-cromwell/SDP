@@ -4,7 +4,6 @@ import { NgForm } from '@angular/forms';
 import { AWSClientService } from 'src/awsclient.service';
 import { Template } from 'src/template'
 
-
 @Component({
   selector: 'app-ec2',
   templateUrl: './ec2.component.html',
@@ -14,7 +13,16 @@ export class Ec2Component implements OnInit {
   @ViewChild('instanceTypeSelect', {static:true}) instanceTypeSelect: ElementRef;
   @ViewChild('machineImageSelect', {static:true}) machineImageSelect: ElementRef;
 
-  constructor(private client: AWSClientService) { }
+  private ec2Name: string = this.randomString();
+  private ec2KeyPair: string = "OurEC2Keypair01";
+  private instanceTypes: string[] = ["t2.micro"];
+  private machineImages: string[] = ["ami-0e38b48473ea57778"];
+
+  randomString(): string {
+    return Math.random().toString(36).substring(7);
+  }
+
+  constructor(private client: AWSClientService, private detailsService: DetailsService) { }
 
   ngOnInit() {
   }
@@ -25,12 +33,17 @@ export class Ec2Component implements OnInit {
   }
 
   onSubmit(form: NgForm) {
-    let {name, instanceType, keyName, machineImage} = form.value;    
+    let {name, instanceType, keyName, machineImage} = form.value;   
+    console.log("name = " + name) 
+    console.log("instance type = " + instanceType) 
+    console.log("key name = " + keyName) 
+    console.log("machine Image = " + machineImage) 
     let template: Template = new Template();
     template.addEC2Instance(name, instanceType, keyName, machineImage);
-    this.client.createStack(name+"stack", template).subscribe(
+    this.client.createStack(this.randomString(), template).subscribe(
       data => {
-        console.log(JSON.parse(data))
+        this.detailsService.statusUpdated.emit(1);
+        this.detailsService.lambdaFunctions.push(data);
       }
     );
   }
