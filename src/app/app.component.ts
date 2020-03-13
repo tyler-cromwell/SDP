@@ -22,18 +22,5 @@ export class AppComponent {
       "coverTrigger": false
     };
     M.Dropdown.init(elems, options); 
-
-    this.client.getInstances().subscribe(data => {
-      let reservations = JSON.parse(data)["Reservations"]
-
-      if (reservations.length) {
-        this.instances = reservations.map(res => {
-            return res["Instances"][0]
-          }
-        )
-      } else {
-        this.instances = []
-      }
-    });
   }
 }
