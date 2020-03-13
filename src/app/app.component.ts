@@ -12,57 +12,28 @@ import * as M from "materialize-css/dist/js/materialize";
 export class AppComponent {
   instances = [];
 
-  constructor(private client: AWSClientService) {
-    document.addEventListener('DOMContentLoaded', function() {
-      var elems = document.querySelectorAll('.dropdown-trigger');
-      var options = {
-        "coverTrigger": false
-      };
-      var instances = M.Dropdown.init(elems, options);
-    });
-
-    this.client.getInstances().subscribe(data => {
-        let reservations = JSON.parse(data)["Reservations"]
-
-        if (reservations.length) {
-          this.instances = reservations.map(res => {
-              return res["Instances"][0]
-            }
-          )
-        } else {
-          this.instances = []
-        }
-      }
-    )
-  }
+  constructor(private client: AWSClientService) { }
 
   ngOnInit() { }
 
-  handleGetInstances(event: Event) {
+  ngAfterViewInit() {
+    var elems = document.querySelectorAll('.dropdown-trigger');
+    var options = {
+      "coverTrigger": false
+    };
+    M.Dropdown.init(elems, options); 
+
     this.client.getInstances().subscribe(data => {
-        let reservations = JSON.parse(data)["Reservations"]
+      let reservations = JSON.parse(data)["Reservations"]
 
-        if (reservations.length) {
-          this.instances = reservations.map(res => {
-              return res["Instances"][0]
-            }
-          )
-        } else {
-          this.instances = []
-        }
+      if (reservations.length) {
+        this.instances = reservations.map(res => {
+            return res["Instances"][0]
+          }
+        )
+      } else {
+        this.instances = []
       }
-    )
-  }
-
-  handleCreateInstance(event: Event) {
-    /*
-    this.client.createInstance(
-      "t2.micro",
-      "ami-04b9e92b5572fa0d1"
-    ).subscribe(data => {
-        console.log(JSON.parse(data))
-      }
-    )
-    */
+    });
   }
 }
