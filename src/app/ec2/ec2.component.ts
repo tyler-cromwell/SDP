@@ -36,15 +36,17 @@ export class Ec2Component implements OnInit {
 
   onSubmit(form: NgForm) {
     let {name, instanceType, keyName, machineImage} = form.value;   
+    console.log(form)
     console.log("name = " + name) 
     console.log("instance type = " + instanceType) 
     console.log("key name = " + keyName) 
     console.log("machine Image = " + machineImage) 
-    let template: Template = new Template();
-    template.addEC2Instance(name, instanceType, keyName, machineImage);
-    this.client.createStack(this.randomString(), template).subscribe(
-      data => {
-      }
-    );
+    // let template: Template = new Template();
+    // template.addEC2Instance(name, instanceType, keyName, machineImage);
+    // this.client.createStack(this.randomString(), template).subscribe(
+    //   data => {
+
+    //   }
+    // );
   }
 }

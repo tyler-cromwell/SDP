@@ -18,12 +18,9 @@
     <div class="row">
       <div class="input-field col s12">
         <select #instanceTypeSelect name="instanceType" ngModel required>          
-          <option             
-            *ngFor="let instanceType of instanceTypes; let i = index" 
-            [value]="instanceType"
-            [selected]="i === 0"
-          >
-            {{instanceType}}
+          <option value="" disabled>Choose an instance type</option>
+          <option *ngFor="let instanceType of instanceTypes" [ngValue]="instanceType">
+            {{ instanceType }}
           </option>          
         </select>
         <label>Instance Type</label>
@@ -33,13 +30,10 @@
     <div class="row">
       <div class="input-field col s12">
         <select #machineImageSelect name="machineImage" ngModel required>
-          <option 
-            *ngFor="let machineImage of machineImages; let i = index"
-            [value]="machineImage"
-            [selected]="i === 0"
-          >
-            {{machineImage}}
-          </option>
+          <option value="" disabled>Choose a machine image</option>
+          <option *ngFor="let machineImage of machineImages" [ngValue]="machineImage">            
+            {{ machineImage }}
+          </option>          
         </select>
         <label>Machine Image</label>
       </div>
@@ -54,6 +48,5 @@
         <i class="material-icons right">send</i>
       </button>
     </div>
-
   </form>
 </div>
