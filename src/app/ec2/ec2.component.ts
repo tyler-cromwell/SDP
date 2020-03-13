@@ -42,8 +42,6 @@ export class Ec2Component implements OnInit {
     template.addEC2Instance(name, instanceType, keyName, machineImage);
     this.client.createStack(this.randomString(), template).subscribe(
       data => {
-        this.detailsService.statusUpdated.emit(1);
-        this.detailsService.lambdaFunctions.push(data);
       }
     );
   }
