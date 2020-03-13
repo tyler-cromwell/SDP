@@ -24,12 +24,14 @@ export class Ec2Component implements OnInit {
 
   constructor(private client: AWSClientService) { }
 
-  ngOnInit() {
-  }
+  ngOnInit() { }
 
   ngAfterViewInit() {
     M.FormSelect.init(this.instanceTypeSelect.nativeElement, {});    
     M.FormSelect.init(this.machineImageSelect.nativeElement, {});    
+    setTimeout(() => {
+      M.updateTextFields();
+    }, 100);
   }
 
   onSubmit(form: NgForm) {
