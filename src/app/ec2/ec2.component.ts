@@ -22,7 +22,7 @@ export class Ec2Component implements OnInit {
     return Math.random().toString(36).substring(7);
   }
 
-  constructor(private client: AWSClientService, private detailsService: DetailsService) { }
+  constructor(private client: AWSClientService) { }
 
   ngOnInit() {
   }
