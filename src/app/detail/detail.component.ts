@@ -9,6 +9,7 @@ import * as M from "materialize-css/dist/js/materialize";
 })
 export class DetailComponent implements OnInit {    
   private projectName: string;
+  private ec2Instances = [];
 
   constructor(private activatedRoute: ActivatedRoute) { }
 
@@ -19,7 +20,13 @@ export class DetailComponent implements OnInit {
   }
 
   ngAfterViewInit() {    
+    let tabs = document.querySelectorAll('.tabs');    
+    M.Tabs.init(tabs, {});
     let elems = document.querySelectorAll('.collapsible');    
     M.Collapsible.init(elems, {});
+  }
+
+  ec2Created(ec2Instace) {
+    this.ec2Instances.push(ec2Instace);    
   }
 }
