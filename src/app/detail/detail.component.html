@@ -12,11 +12,11 @@
             <i class="material-icons left" style="padding-top: 12px; margin: 0px;">settings</i>
           </a>
         </li> 
-        <li class="tab col s3">
+        <li class="tab col s3" (click)="onEC2View()">
           <a href="#test1">
             EC2
             <i class="material-icons left" style="padding-top: 12px; margin: 0px;">cloud_queue</i>
-            <span class="new badge blue" style="margin-top: 12px;">1</span>
+            <span *ngIf="newEC2InstanceCount > 0" class="new badge blue" style="margin-top: 12px;">{{ newEC2InstanceCount }}</span>
           </a>
         </li>
         <li class="tab col s3">

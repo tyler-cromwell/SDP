@@ -9,6 +9,7 @@ import * as M from "materialize-css/dist/js/materialize";
 })
 export class DetailComponent implements OnInit {    
   private projectName: string;
+  private newEC2InstanceCount = 0;
   private ec2Instances = [];
 
   constructor(private activatedRoute: ActivatedRoute) { }
@@ -27,6 +28,13 @@ export class DetailComponent implements OnInit {
   }
 
   ec2Created(ec2Instace) {
-    this.ec2Instances.push(ec2Instace);    
+    this.ec2Instances.push(ec2Instace);   
+    this.newEC2InstanceCount += 1; 
+  }
+
+  onEC2View() {
+    setTimeout(() => {
+      this.newEC2InstanceCount = 0;
+    }, 1000);
   }
 }
