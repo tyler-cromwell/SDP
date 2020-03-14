@@ -42,13 +42,26 @@ if __name__ == '__main__':
     API_STAGE_NAME = 'development'
     API_USAGE_PLAN_NAME = API_NAME+'UsagePlan'
     API_KEY_NAME = API_NAME+'Key'
-    API_RESOURCES = ['Projects', 'Stacks', 'Users']
+    API_RESOURCES = ['Instances', 'Projects', 'Stacks', 'Users']
     API_RESOURCE_METHODS = {
+        'Instances': ['GET', 'POST'],
         'Projects': ['DELETE', 'GET', 'POST'],
         'Stacks': ['POST'],
         'Users': ['GET', 'POST']
     }
     API_LAMBDAS = {
+        'Instances': {
+            'GET': LambdaParams(
+                'InstancesGETLambda',
+                '/../lambda/instances/get.py',
+                ['arn:aws:iam::aws:policy/AmazonEC2ReadOnlyAccess']
+            ),
+            'POST': LambdaParams(
+                'InstancesPOSTLambda',
+                '/../lambda/instances/post.py',
+                ['arn:aws:iam::aws:policy/AmazonEC2FullAccess']
+            )
+        },
         'Projects': {
             'DELETE': LambdaParams(
                 'ProjectsDELETELambda',
