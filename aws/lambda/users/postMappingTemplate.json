@@ -1,0 +1,6 @@
+{
+  "firstName" : $input.json('$.lastName'), 
+  "lastName" : $input.json('$.email'),
+  "email" : $input.json('$.firstName'),
+  "role" : $input.json('$.role') 
+}
