@@ -1,6 +1,5 @@
 <div class="row">
-  <form class="col s12" (ngSubmit)="onSubmit(f)" #f="ngForm">    
-
+  <form class="col s12" (ngSubmit)="onSubmit(f)" #f="ngForm">
     <div class="row">
       <div class="input-field col s12">
         <input id="name" type="text" name="name" ngModel required [(ngModel)]="ec2Name">
@@ -41,12 +40,24 @@
     
     <div class="row">
       <button 
-        class="btn waves-effect waves-light" 
+        [disabled]="isLoading"
+        class="indigo accent-2 btn-small"
         type="submit"  
       >
         Submit
-        <i class="material-icons right">send</i>
-      </button>
+        <div *ngIf="isLoading" class="preloader-wrapper small active" style="width: 15px; height: 15px;">
+          <div class="spinner-layer spinner-green-only">
+            <div class="circle-clipper left">
+              <div class="circle"></div>
+            </div><div class="gap-patch">
+              <div class="circle"></div>
+            </div><div class="circle-clipper right">
+              <div class="circle"></div>
+            </div>
+          </div>
+        </div>    
+      </button> 
     </div>
+
   </form>
 </div>
