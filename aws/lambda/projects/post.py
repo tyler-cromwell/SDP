@@ -3,19 +3,21 @@ import uuid
 import boto3
 from boto3.dynamodb.conditions import Key, Attr
 
+
 def isOwnerValid(email: str) -> bool:
     dynamodb = boto3.resource('dynamodb')
-    table = dynamodb.Table('cse4940-users')
+    table = dynamodb.Table('UsersTable')
     
-    result = table.query(
-        KeyConditionExpression=Key('email').eq(email)
+    result = table.scan(
+        FilterExpression=Attr('email').eq(email)
     )
     
     return len(result["Items"]) == 1
 
+
 def main(event, context):
     dynamodb = boto3.resource('dynamodb')
-    table = dynamodb.Table('cse4940-projects')
+    table = dynamodb.Table('ProjectsTable')
     
     required = ['name', 'owner', 'description', 'version']
 

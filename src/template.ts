@@ -12,6 +12,20 @@ export class Template {
     this.keys = [];
   }
 
+  addLambdaFunction(name: string, handler: string, role: string, code: string, runtime: string) {
+    this.json["Resources"][name] = {
+      "Type": "AWS::Lambda::Function",
+      "Properties" : { 
+        "Code": {
+          "ZipFile": code
+        }
+      },
+      "Handler": handler,
+      "Role": role,
+      "Runtime": runtime,      
+    }
+  }
+
   addEC2Instance(name: string, instanceType: string, keyName: string, machineImage: string, userData: string = "") {
     if (this.keys.indexOf(keyName) == -1) {
       this.keys.push(keyName);
