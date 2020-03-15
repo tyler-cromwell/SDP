@@ -35,17 +35,25 @@
     </div>
 
     <div id="test1" class="col s12">
-      <h4>EC2 Instances</h4>
-      <ul class="collapsible">
-        <li *ngFor="let ec2Instance of ec2Instances">
-          <div class="collapsible-header">{{ ec2Instance.name }}</div>
-          <div class="collapsible-body">
-            <p>Instance Type: {{ ec2Instance.instanceType }}</p>
-            <p>Machine Image: {{ ec2Instance.machineImage }}</p>
-            <p>Key Name: {{ ec2Instance.keyName }}</p>
-          </div>
-        </li>
-      </ul>
+      <div *ngIf="ec2Instances.length > 0">
+        <table class="striped">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Instance Type</th>
+              <th>Key</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr *ngFor="let ec2Instance of ec2Instances">
+              <td>{{ ec2Instance.name }}</td>
+              <td>{{ ec2Instance.instanceType }}</td>
+              <td>{{ ec2Instance.keyName }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
 
     <div id="test2" class="col s12">Test 2</div>
@@ -63,5 +71,4 @@
       </ul>      
     </div> 
   </div>
-
 </div>
