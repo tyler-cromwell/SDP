@@ -9,63 +9,90 @@ import { Template } from './template';
 })
 export class AWSClientService {
   private url = Confidential['url'];
-  private headers = {
+  private options: any = {
     headers: new HttpHeaders({
       'x-api-key': Confidential['x-api-key']
     })
   }
 
-  constructor(private http:HttpClient) { }
+  constructor(private http: HttpClient) { }
 
   createInstance(instanceType: string, machineImage: string) {
     return this.http.post<string>(
-      this.url+"/instances",
+      this.url + "/instances",
       {
         type: instanceType,
         ami: machineImage,
         minCount: "1",
         maxCount: "1"
       },
-      this.headers
+      this.options
     );
   }
 
   createProject(name: string, owner: string, description: string) {
     return this.http.post<string>(
-      this.url+"/Projects",
+      this.url + "/Projects",
       {
         name: name,
         owner: owner,
         description: description,
         version: "1.0.0"
       },
-      this.headers
+      this.options
     );
   }
 
   createStack(name: string, template: Template) {
     return this.http.post<string>(
-      this.url+"/Stacks",
+      this.url + "/Stacks",
       {
         name: name,
         template: template.json,
         keys: JSON.stringify(template.keys)
       },
-      this.headers
+      this.options
     )
   }
 
   getInstances() {
     return this.http.get<string>(
-      this.url+"/instances",
-      this.headers
+      this.url + "/instances",
+      this.options
     )
   }
 
   getProjects() {
     return this.http.get<string>(
-      this.url+"/Projects",
-      this.headers
+      this.url + "/Projects",
+      this.options
+    )
+  }
+
+  getProject(name: string) {
+    this.options.params = { name }
+    return this.http.get(
+      this.url + "/Projects",
+      this.options
+    )
+  }
+
+  postEC2Instance(name: string, projectId: string, machineImage: string, keyName: string,
+                  instanceType: string, userData: string, state: string) {
+    let payload = { name, projectId, machineImage, keyName, instanceType, userData, state };
+    console.log(payload);
+    return this.http.post<string>(
+      this.url + "/ec2resources",
+      payload,
+      this.options
+    );
+  }
+
+  getEC2Resources(projectId: string) {
+    this.options.params = { projectId };
+    return this.http.get(
+      this.url + "/ec2resources",
+      this.options
     )
   }
 }
