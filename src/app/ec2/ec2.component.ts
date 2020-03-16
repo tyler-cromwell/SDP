@@ -10,7 +10,7 @@ import { Template } from 'src/template'
   styleUrls: ['./ec2.component.css']
 })
 export class Ec2Component implements OnInit {
-  @Input() projectId: string = "qwe12re1";
+  @Input() projectId: string;
   @Output() ec2Created: EventEmitter<any> = new EventEmitter();
   @ViewChild('instanceTypeSelect', {static:true}) instanceTypeSelect: ElementRef;
   @ViewChild('machineImageSelect', {static:true}) machineImageSelect: ElementRef;  
@@ -29,9 +29,7 @@ export class Ec2Component implements OnInit {
     this.isLoading = false;
   }
 
-  ngOnInit() { 
-    
-  }
+  ngOnInit() { }
 
   ngAfterViewInit() {
     M.FormSelect.init(this.instanceTypeSelect.nativeElement, {});    
@@ -43,12 +41,6 @@ export class Ec2Component implements OnInit {
 
   onSubmit(form: NgForm) {
     let {name, instanceType, keyName, machineImage} = form.value;   
-    // let template: Template = new Template();
-    // template.addEC2Instance(name, instanceType, keyName, machineImage);
-    // this.client.createStack(this.randomString(), template).subscribe(
-    //   data => {
-    //   }
-    // );
     this.isLoading = true;
     setTimeout(() => {
       this.isLoading = false;
@@ -59,7 +51,8 @@ export class Ec2Component implements OnInit {
       instanceType,
       machineImage,
       keyName,
-      isLive: true
+      userData: "None", // TODO: get from UI
+      state: "live" // TODO: get dynamic value
     });
   }
 }

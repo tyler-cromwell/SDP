@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router'
 import * as M from "materialize-css/dist/js/materialize";
+import { AWSClientService } from 'src/awsclient.service';
 
 @Component({
   selector: 'app-detail',
@@ -8,18 +9,23 @@ import * as M from "materialize-css/dist/js/materialize";
   styleUrls: ['./detail.component.css']
 })
 export class DetailComponent implements OnInit {
+  private projectName: string;
   private projectId: string;
   private newEC2InstanceCount: number;
   private ec2Instances: any;
+  private isLoadingEC2: boolean = false;
 
-  constructor(private activatedRoute: ActivatedRoute) {
+  constructor(private activatedRoute: ActivatedRoute, private client: AWSClientService) {
     this.newEC2InstanceCount = 0;
     this.ec2Instances = [];
   }
 
   ngOnInit() {
     this.activatedRoute.params.subscribe(params => {
-      this.projectId = params['id'];
+      this.projectName = params['id'];
+    });
+    this.client.getProject(this.projectName).subscribe(data => {
+      this.projectId = data[0]['id'];
     });
   }
 
@@ -31,12 +37,19 @@ export class DetailComponent implements OnInit {
   }
 
   ec2Created(ec2Instace) {
-    this.ec2Instances.push(ec2Instace);
+    let { name, projectId, machineImage, keyName, 
+      instanceType, userData, state } = ec2Instace;    
+    this.client.postEC2Instance(name, projectId, 
+      machineImage, keyName, instanceType, userData, state).subscribe();
     this.newEC2InstanceCount += 1;
   }
 
   onEC2View() {
-    // load EC2 resources for projectId
+    this.isLoadingEC2 = true; 
+    this.client.getEC2Resources(this.projectId).subscribe(data => {
+      this.ec2Instances = data;
+      this.isLoadingEC2 = false;  
+    });
     setTimeout(() => {
       this.newEC2InstanceCount = 0;
     }, 1000);
