@@ -1,6 +1,6 @@
 <div id="detail">
   <div class="row">
-    <h3>{{projectId}} Details</h3>
+    <h3>{{ projectName }}</h3>
   </div>
   
   <div class="row">
@@ -35,25 +35,49 @@
     </div>
 
     <div id="test1" class="col s12">
-      <div *ngIf="ec2Instances.length > 0">
-        <table class="striped">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Instance Type</th>
-              <th>Key</th>
-            </tr>
-          </thead>
+      <div *ngIf="isLoadingEC2; then thenBlock else elseBlock"></div>
+      
+      <ng-template #thenBlock>
+        <div *ngIf="isLoadingEC2" class="preloader-wrapper small active">
+          <div class="spinner-layer spinner-green-only">
+            <div class="circle-clipper left">
+              <div class="circle"></div>
+            </div><div class="gap-patch">
+              <div class="circle"></div>
+            </div><div class="circle-clipper right">
+              <div class="circle"></div>
+            </div>
+          </div>
+        </div>
+      </ng-template>
 
-          <tbody>
-            <tr *ngFor="let ec2Instance of ec2Instances">
-              <td>{{ ec2Instance.name }}</td>
-              <td>{{ ec2Instance.instanceType }}</td>
-              <td>{{ ec2Instance.keyName }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+      <ng-template #elseBlock>
+        <div *ngIf="ec2Instances.length > 0">
+          <table class="striped">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Instance Type</th>
+                <th>Machine Image</th>
+                <th>Key</th>
+                <th>User Data</th>
+                <th>State</th>
+              </tr>
+            </thead>
+  
+            <tbody>
+              <tr *ngFor="let ec2Instance of ec2Instances">
+                <td>{{ ec2Instance.name }}</td>
+                <td>{{ ec2Instance.instanceType }}</td>
+                <td>{{ ec2Instance.machineImage }}</td>
+                <td>{{ ec2Instance.keyName }}</td>
+                <td>{{ ec2Instance.userData }}</td>
+                <td>{{ ec2Instance.state }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </ng-template>
     </div>
 
     <div id="test2" class="col s12">Test 2</div>
@@ -65,7 +89,7 @@
         <li>
           <div class="collapsible-header"><i class="material-icons">filter_drama</i>Create EC2 Instance</div>
           <div class="collapsible-body">
-            <app-ec2 (ec2Created)="ec2Created($event)"></app-ec2>
+            <app-ec2 [projectId]="projectId" (ec2Created)="ec2Created($event)"></app-ec2>
           </div>
         </li>
       </ul>      
