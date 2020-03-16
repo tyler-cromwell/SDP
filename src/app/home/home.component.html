@@ -63,7 +63,7 @@
     </div>
 
     <div class="col s12 m12" *ngFor="let project of projects">
-      <div class="card hoverable darken-1" style="cursor:pointer;" [routerLink]="['/browse', project.id]"
+      <div class="card hoverable darken-1" style="cursor:pointer;" [routerLink]="['/browse', project.name]"
         routerLinkActive="">
         <div class="card-content">
           <span class="card-title left left-align" style="font-weight:500;">{{project.name}} --
