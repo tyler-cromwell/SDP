@@ -125,13 +125,13 @@ if __name__ == '__main__':
     # Generate Database tables
     template.add_dynamodb_table(
         name='ProjectsTable',
-        reads=1000,
-        writes=1000
+        reads=1,
+        writes=1
     )
     template.add_dynamodb_table(
         name='UsersTable',
-        reads=1000,
-        writes=1000
+        reads=1,
+        writes=1
     )
 
     # Generate the API Gateway REST API
