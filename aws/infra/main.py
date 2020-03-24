@@ -20,10 +20,13 @@ if __name__ == '__main__':
     )
 
     DEFAULT_KEY_PAIR = "MyEC2KeyPair01"
+    REGION_NAME = 'us-east-2'
 
     # Define command line interface
     my_parser.add_argument('-p', '--path', action='store', type=str,
                            required=True, help="path to AWS credentials file")
+    my_parser.add_argument('-r', '--region', action='store', type=str,
+                           required=False, default=REGION_NAME, help="AWS region")
     my_parser.add_argument('-sn', '--stack-name', action='store', type=str,
                            required=False, default=utils.get_random_name(), help="name of CloudFormation stack")
     my_parser.add_argument('-ec2k', '--ec2-key-pair', action='store', type=str,
@@ -101,10 +104,14 @@ if __name__ == '__main__':
     }
 
     ACCESS, SECRET = utils.read_credentials(PATH)
+    session = boto3.Session(ACCESS, SECRET, region_name=REGION_NAME)
+    
+    """
     session = boto3.session.Session(
         aws_access_key_id=ACCESS,
-        aws_secret_access_key=SECRET,
+        aws_secret_access_key=SECRET,        
     )
+    """
 
     template = Template()
     """
@@ -118,13 +125,13 @@ if __name__ == '__main__':
     # Generate Database tables
     template.add_dynamodb_table(
         name='ProjectsTable',
-        reads=1000,
-        writes=1000
+        reads=1,
+        writes=1
     )
     template.add_dynamodb_table(
         name='UsersTable',
-        reads=1000,
-        writes=1000
+        reads=1,
+        writes=1
     )
 
     # Generate the API Gateway REST API
