@@ -10,14 +10,9 @@ def main(event, context):
         return {
             'error': 'Missing a required key'
         }
-
-  if False in [k in event.keys() for k in required]:
-    return {
-      'error': 'Missing a required key'
-    }
   
-  dynamodb = boto3.resource('dynamodb')
-  table = dynamodb.Table('UsersTable')
+    dynamodb = boto3.resource('dynamodb')
+    table = dynamodb.Table('UsersTable')
 
     result = table.put_item(
         Item={
@@ -29,8 +24,4 @@ def main(event, context):
         }
     )
 
-<<<<<<< HEAD
-  return result
-=======
     return result
->>>>>>> api
