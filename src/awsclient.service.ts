@@ -82,7 +82,7 @@ export class AWSClientService {
     let payload = { name, projectId, machineImage, keyName, instanceType, userData, state };
     console.log(payload);
     return this.http.post<string>(
-      this.url + "/ec2resources",
+      this.url + "/EC2resources",
       payload,
       this.options
     );
@@ -91,7 +91,7 @@ export class AWSClientService {
   getEC2Resources(projectId: string) {
     this.options.params = { projectId };
     return this.http.get(
-      this.url + "/ec2resources",
+      this.url + "/EC2resources",
       this.options
     )
   }
