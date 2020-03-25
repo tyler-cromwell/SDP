@@ -3,7 +3,6 @@ import argparse
 import itertools
 import pathlib
 import sys
-import json
 
 import boto3
 import botocore
