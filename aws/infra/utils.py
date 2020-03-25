@@ -52,3 +52,7 @@ def prettify_json(string):
 
 def sort_key(dictionary, sortkey):
     return sorted(dictionary, key=lambda k: k[sortkey])
+
+def read_mapping_template(filepath):
+    with open(filepath, 'r') as f:
+        return f.read()

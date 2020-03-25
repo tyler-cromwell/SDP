@@ -4,11 +4,12 @@ import utils
 
 
 class LambdaParams:
-    def __init__(self, function_name, file_name, managed_policies=[]):
+    def __init__(self, function_name, file_name, managed_policies=[], mapping_template=''):
         self.name = function_name
         self.file = file_name
         self.role = function_name+'Role'
         self.policies = managed_policies
+        self.mapping_template = mapping_template
 
 
 class Template:
@@ -217,7 +218,7 @@ class Template:
                 }
 
 
-    def add_apigateway_method(self, method_type, api_name, lambda_name, resource='', full_path='', require_key=False):
+    def add_apigateway_method(self, method_type, api_name, lambda_name, resource='', full_path='', require_key=False, mapping_template=''):
         resource_ref = (
             self._Ref(resource)
             if resource
@@ -233,7 +234,7 @@ class Template:
                 'Principal': 'apigateway.amazonaws.com',
                 'SourceArn': self._FnSub('arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${'+api_name+'}/*/'+method_type+'/'+full_path)
             }
-        }
+        }   
 
         self.json['Resources'][resource+method_type] = {
             'DependsOn': [
@@ -246,7 +247,7 @@ class Template:
                 'AuthorizationType': 'NONE',
                 'HttpMethod': method_type,
                 'Integration': {
-                    'IntegrationHttpMethod': 'POST',
+                    'IntegrationHttpMethod': method_type,
                     'IntegrationResponses': [
                         {
                             'ResponseTemplates': {
@@ -256,6 +257,9 @@ class Template:
                         }
                     ],
                     'PassthroughBehavior': 'WHEN_NO_TEMPLATES',
+                    "RequestTemplates": {
+                        "application/json": mapping_template
+                    },    
                     'Type': 'AWS',
                     'Uri': self._FnSub('arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${'+lambda_name+'.Arn}/invocations')
                 },

@@ -3,6 +3,7 @@ import argparse
 import itertools
 import pathlib
 import sys
+import json
 
 import boto3
 import botocore
@@ -45,14 +46,29 @@ if __name__ == '__main__':
     API_STAGE_NAME = 'development'
     API_USAGE_PLAN_NAME = API_NAME+'UsagePlan'
     API_KEY_NAME = API_NAME+'Key'
-    API_RESOURCES = ['Instances', 'Projects', 'Stacks', 'Users']
+    API_RESOURCES = ['Instances', 'Projects', 'Stacks', 'Users', 'EC2Resources']
     API_RESOURCE_METHODS = {
         'Instances': ['GET', 'POST'],
         'Projects': ['DELETE', 'GET', 'POST'],
         'Stacks': ['POST'],
-        'Users': ['GET', 'POST']
+        'Users': ['GET', 'POST'],
+        'EC2Resources': ['GET', 'POST']
     }
     API_LAMBDAS = {
+        'EC2Resources': {
+            'GET': LambdaParams(
+                'EC2ResourcesGETLambda',
+                '/../lambda/ec2Resources/get.py',
+                ['arn:aws:iam::aws:policy/AmazonDynamoDBReadOnlyAccess'],
+                utils.read_mapping_template("../lambda/ec2Resources/GETMappingTemplate")
+            ),
+            'POST': LambdaParams(
+                'EC2ResourcesPOSTLambda',
+                '/../lambda/ec2Resources/post.py',
+                ['arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess'],
+                utils.read_mapping_template("../lambda/ec2Resources/POSTMappingTemplate")
+            )
+        },
         'Instances': {
             'GET': LambdaParams(
                 'InstancesGETLambda',
@@ -74,12 +90,14 @@ if __name__ == '__main__':
             'GET': LambdaParams(
                 'ProjectsGETLambda',
                 '/../lambda/projects/get.py',
-                ['arn:aws:iam::aws:policy/AmazonDynamoDBReadOnlyAccess']
+                ['arn:aws:iam::aws:policy/AmazonDynamoDBReadOnlyAccess'],
+                utils.read_mapping_template("../lambda/projects/GETMappingTemplate")
             ),
             'POST': LambdaParams(
                 'ProjectsPOSTLambda',
                 '/../lambda/projects/post.py',
-                ['arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess']
+                ['arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess'],
+                utils.read_mapping_template("../lambda/projects/POSTMappingTemplate")
             )
         },
         'Stacks': {
@@ -92,13 +110,14 @@ if __name__ == '__main__':
         'Users': {
             'GET': LambdaParams(
                 'UsersGETLambda',
-                '/../lambda/users/get.py',
-                ['arn:aws:iam::aws:policy/AmazonDynamoDBReadOnlyAccess']
+                '/../lambda/users/get.py',     
+                ['arn:aws:iam::aws:policy/AmazonDynamoDBReadOnlyAccess']        
             ),
             'POST': LambdaParams(
                 'UsersPOSTLambda',
                 '/../lambda/users/post.py',
-                ['arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess']
+                ['arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess'],
+                utils.read_mapping_template("../lambda/users/postMappingTemplate")
             )
         }
     }
@@ -133,6 +152,11 @@ if __name__ == '__main__':
         reads=1,
         writes=1
     )
+    template.add_dynamodb_table(
+        name='EC2ResourcesTable',
+        reads=1,
+        writes=1
+    )
 
     # Generate the API Gateway REST API
     template.add_apigateway_api(
@@ -162,7 +186,8 @@ if __name__ == '__main__':
                 api_name=API_NAME,
                 resource=resource,
                 full_path=resource,     # Note: resource nesting must be accounted for
-                require_key=True
+                require_key=True,
+                mapping_template=function.mapping_template
             )
 
         template.enable_apigateway_resource_cors(
