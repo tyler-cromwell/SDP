@@ -1,0 +1,9 @@
+{
+  "name": $input.json('$.name'),
+  "machineImage": $input.json('$.machineImage'),
+  "instanceType": $input.json('$.instanceType'),
+  "userData": $input.json('$.userData'),
+  "keyName": $input.json('$.keyName'),
+  "state": $input.json('$.state'),
+  "projectId": $input.json('$.projectId')
+}
