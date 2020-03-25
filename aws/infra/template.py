@@ -247,7 +247,7 @@ class Template:
                 'AuthorizationType': 'NONE',
                 'HttpMethod': method_type,
                 'Integration': {
-                    'IntegrationHttpMethod': method_type,
+                    'IntegrationHttpMethod': 'POST',
                     'IntegrationResponses': [
                         {
                             'ResponseTemplates': {
@@ -256,10 +256,7 @@ class Template:
                             'StatusCode': 200
                         }
                     ],
-                    'PassthroughBehavior': 'WHEN_NO_TEMPLATES',
-                    "RequestTemplates": {
-                        "application/json": mapping_template
-                    },    
+                    'PassthroughBehavior': 'WHEN_NO_TEMPLATES',   
                     'Type': 'AWS',
                     'Uri': self._FnSub('arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${'+lambda_name+'.Arn}/invocations')
                 },
@@ -275,6 +272,11 @@ class Template:
                 'RestApiId': self._Ref(api_name)
             }
         }
+
+        if mapping_template != '':
+             self.json['Resources'][resource+method_type]["Properties"]["Integration"]["RequestTemplates"] = {                
+                "application/json": mapping_template
+             }
 
 
     def add_dynamodb_table(self, name, reads, writes):
