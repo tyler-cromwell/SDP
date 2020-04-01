@@ -103,7 +103,10 @@ if __name__ == '__main__':
             'POST': LambdaParams(
                 'StacksPOSTLambda',
                 '/../lambda/stacks/post.py',
-                ['arn:aws:iam::aws:policy/AWSCloudFormationFullAccess']
+                [
+                    'arn:aws:iam::aws:policy/AWSCloudFormationFullAccess',
+                    'arn:aws:iam::aws:policy/AmazonEC2FullAccess'
+                ]
             )
         },
         'Users': {
