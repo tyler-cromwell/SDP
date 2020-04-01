@@ -58,8 +58,12 @@
   <div class="row container-2">
     <div class="container-header row-2">
       <h3 class="left left-align" style="margin:0; line-height:inherit;">Projects</h3>
-      <a class="indigo accent-2 right right-align btn-large btn-floating" routerLink="/create" routerLinkActive=""><i
-          class="material-icons">add</i></a>
+      <a class="indigo accent-2 right right-align btn-large btn-floating" routerLink="/create" routerLinkActive="">
+        <i class="material-icons">add</i>
+      </a>
+      <a style="margin-right: 5px;" class="indigo accent-2 right right-align btn-large btn-floating" routerLink="/create-user">
+        <i class="material-icons">person_add</i>
+      </a>
     </div>
 
     <div class="col s12 m12" *ngFor="let project of projects">

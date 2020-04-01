@@ -6,12 +6,14 @@ import { FormsModule } from '@angular/forms';
 import { AppRoutingModule, routingComponents } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { Ec2Component } from './ec2/ec2.component';
+import { CreateUserComponent } from './create-user/create-user.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     routingComponents,
-    Ec2Component
+    Ec2Component,
+    CreateUserComponent
   ],
   imports: [
     BrowserModule,

@@ -1,0 +1,33 @@
+<div class="row">
+  <h3>Create User</h3>
+  <form class="col s12" (ngSubmit)="onSubmit(f)" #f="ngForm">
+    <div class="row">
+      <div class="input-field col s6">
+        <label for="firstName">First Name</label>
+        <input type="text" id="firstName" name="firstName" ngModel>
+      </div>
+      <div class="input-field col s6">
+        <label for="firstName">Last Name</label>
+        <input type="text" id="lastName" name="lastName" ngModel>
+      </div>
+    </div>
+    
+    <div class="row">
+      <div class="input-field col s12">
+        <label for="role">Role</label>
+        <input type="text" id="role" name="role" ngModel>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="input-field col s12">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" ngModel>
+      </div>
+    </div>
+
+    <button class="btn waves-effect waves-light" type="submit" name="action">Create
+      <i class="material-icons right">send</i>
+    </button>
+  </form>
+</div>
