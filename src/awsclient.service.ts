@@ -2,7 +2,8 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import * as Confidential from './confidential.json';
 import { Template } from './template';
-
+import { Observable } from 'rxjs';
+import { User } from './models/User';
 
 @Injectable({
   providedIn: 'root'
@@ -15,7 +16,7 @@ export class AWSClientService {
     })
   }
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
   createInstance(instanceType: string, machineImage: string) {
     return this.http.post<string>(
@@ -94,5 +95,17 @@ export class AWSClientService {
       this.url + "/EC2Resources",
       this.options
     )
+  }
+
+  postUser(user: User) {
+    return this.http.post<string>(
+      this.url + "/Users",
+      user,
+      this.options
+    );
+  }
+
+  getUsers(): Observable<User[]> {
+    return this.http.get<User[]>(this.url + "/Users", <Object>this.options);
   }
 }
