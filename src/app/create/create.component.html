@@ -17,6 +17,19 @@
         </div>
       </div>
 
+      <!-- <div class="row">
+        <div class="input-field col s12">
+          <p>{{owners | json}}</p>
+          <select #ownerSelect name="owner" ngModel required>          
+            <option value="" disabled>Choose a project owner</option>
+            <option *ngFor="let owner of owners" [value]="owner">
+              {{owner}}
+            </option>
+          </select>
+          <label>Project Owner</label>
+        </div>
+      </div> -->
+
       <div class="row">
         <div class="input-field col s12">
           <textarea id="project_description" class="materialize-textarea" name="textarea_project_description" [(ngModel)]="projectDescription" required></textarea>
@@ -28,5 +41,4 @@
         <button type="submit" class="btn btn-small">Create Project</button>
       </div>
     </form>
-  </div>
 </div>
