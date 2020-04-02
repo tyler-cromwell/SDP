@@ -10,7 +10,7 @@ import { Template } from 'src/template';
   styleUrls: ['./ec2.component.css']
 })
 export class Ec2Component implements OnInit, AfterViewInit {
-  @Input() projectId: string;
+  @Input() project: string;
   @Output() ec2Created: EventEmitter<any> = new EventEmitter();
   @ViewChild('instanceTypeSelect', {static:true}) instanceTypeSelect: ElementRef;
   @ViewChild('machineImageSelect', {static:true}) machineImageSelect: ElementRef;  
@@ -52,7 +52,7 @@ export class Ec2Component implements OnInit, AfterViewInit {
       this.isLoading = false;
     }, 2000);
     this.ec2Created.emit({
-      projectId: this.projectId,
+      projectId: this.project['id'],
       name,
       instanceType,
       machineImage,
