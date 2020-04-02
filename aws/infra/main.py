@@ -135,14 +135,7 @@ if __name__ == '__main__':
     """
 
     template = Template()
-    """
-    template.add_ec2_instance(
-        name=EC2_NAME,
-        instance_type='t2.micro',
-        key_name=EC2_KEY_PAIR,
-        machine_image='ami-04b9e92b5572fa0d1'
-    )
-    """
+
     # Generate Database tables
     template.add_dynamodb_table(
         name='ProjectsTable',
@@ -219,9 +212,19 @@ if __name__ == '__main__':
         deployment_name=API_DEPLOYMENT_NAME
     )
 
+
     # Submit the template to Cloud Formation for stack construction
     if client.stack_exists(session, STACK_NAME):
         print('Stack "{}" already exists!'.format(STACK_NAME))
+        try:
+            response = client.update_stack(
+                session,
+                STACK_NAME,
+                template
+            )
+            print(utils.prettify_json(response))
+        except:
+            pass
     else:
         response = client.create_stack(
             session=session,
