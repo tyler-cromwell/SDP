@@ -19,7 +19,7 @@ def main(event, context):
     dynamodb = boto3.resource('dynamodb')
     table = dynamodb.Table('ProjectsTable')
     
-    required = ['name', 'owner', 'description', 'version']
+    required = ['name', 'owner', 'description', 'version', 'template']
 
     if False in [k in event.keys() for k in required]:
         return {
@@ -39,7 +39,8 @@ def main(event, context):
             'name': event['name'],
             'owner': event['owner'],
             'description': event['description'],
-            'version':event['version']
+            'version': event['version'],
+            'template': event['template']
         }
     )
     

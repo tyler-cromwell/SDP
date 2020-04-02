@@ -31,14 +31,15 @@ export class AWSClientService {
     );
   }
 
-  createProject(name: string, owner: string, description: string) {
+  createProject(name: string, owner: string, description: string, template: Template) {
     return this.http.post<string>(
       this.url + "/Projects",
       {
         name: name,
         owner: owner,
         description: description,
-        version: "1.0.0"
+        version: "1.0.0",
+        template: JSON.stringify(template.json)
       },
       this.options
     );

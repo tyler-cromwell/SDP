@@ -2,5 +2,6 @@
   "name" : $input.json("$.name"), 
   "owner" : $input.json("$.owner"),
   "description" : $input.json("$.description"),
-  "version" : $input.json("$.version")
+  "version" : $input.json("$.version"),
+  "template" : $input.json("$.template")
 }
