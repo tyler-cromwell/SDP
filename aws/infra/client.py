@@ -19,3 +19,12 @@ def create_stack(session, stack_name, template):
     )
 
     return response
+
+
+def stack_exists(session, stack_name):
+    try:
+        cfclient.session.client('cloudformation')
+        cfclient.describe_stacks(StackName=stack_name)
+        return False
+    except:
+        return True

@@ -5,14 +5,6 @@ import random
 import string
 
 
-def stack_exists(client, stack_name):
-    try:
-        client.describe_stacks(StackName=stack_name)
-        return True
-    except:
-        return False
-
-
 def get_random_name(length=20):
     store = string.ascii_letters + string.digits
     return random.choice(string.ascii_letters) + ''.join([random.choice(store) for i in range(length - 1)])

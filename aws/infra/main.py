@@ -130,7 +130,7 @@ if __name__ == '__main__':
     """
     session = boto3.session.Session(
         aws_access_key_id=ACCESS,
-        aws_secret_access_key=SECRET,        
+        aws_secret_access_key=SECRET,
     )
     """
 
@@ -220,9 +220,7 @@ if __name__ == '__main__':
     )
 
     # Submit the template to Cloud Formation for stack construction
-    cfclient = session.client('cloudformation')
-
-    if utils.stack_exists(cfclient, STACK_NAME):
+    if client.stack_exists(session, STACK_NAME):
         print('Stack "{}" already exists!'.format(STACK_NAME))
     else:
         response = client.create_stack(
