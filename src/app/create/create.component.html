@@ -4,36 +4,36 @@
 
     <form name="form_project" (submit)="onSubmit()">
       <div class="row">
-        <div class="input-field col s6">
+        <div class="input-field col s12">
           <input id="project_name" type="text" class="validate" name="input_project_name" [(ngModel)]="projectName" required>
           <label for="project_name">Project Name</label>
         </div>
-
-        <div class="input-field col s6">
-          <i class="material-icons prefix">account_circle</i>
-          <input id="project_owner" type="email" class="validate" name="input_project_owner" [(ngModel)]="projectOwner" required>
-          <label for="project_owner">Project Owner</label>
-          <span class="helper-text" data-error="Incorrect format" data-success="">Email address</span>
-        </div>
       </div>
-
-      <!-- <div class="row">
-        <div class="input-field col s12">
-          <p>{{owners | json}}</p>
-          <select #ownerSelect name="owner" ngModel required>          
-            <option value="" disabled>Choose a project owner</option>
-            <option *ngFor="let owner of owners" [value]="owner">
-              {{owner}}
-            </option>
-          </select>
-          <label>Project Owner</label>
-        </div>
-      </div> -->
 
       <div class="row">
         <div class="input-field col s12">
           <textarea id="project_description" class="materialize-textarea" name="textarea_project_description" [(ngModel)]="projectDescription" required></textarea>
           <label for="project_description">Project Description</label>
+        </div>
+      </div>
+
+      <div class = "row">
+        <div class="input-field col s12">
+          <ul class="collapsible">
+            <li>
+              <div class="collapsible-header"><i class="material-icons">people</i>Select Project Owner</div>
+              <div class="collapsible-body">
+                <ul class="collection">                  
+                  <li *ngFor="let owner of owners; let i = index" 
+                    class="collection-item"
+                    [class.active]="selectedIndex === i"
+                    (click)="setIndex(i, owner.email)">
+                    {{ owner.email }}
+                </li>
+              </ul>                
+              </div>
+            </li>
+          </ul>    
         </div>
       </div>
 

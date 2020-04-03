@@ -31,14 +31,15 @@ export class AWSClientService {
     );
   }
 
-  createProject(name: string, owner: string, description: string) {
+  createProject(name: string, owner: string, description: string, template: Template) {
     return this.http.post<string>(
       this.url + "/Projects",
       {
         name: name,
         owner: owner,
         description: description,
-        version: "1.0.0"
+        version: "1.0.0",
+        template: JSON.stringify(template.json)
       },
       this.options
     );
@@ -107,5 +108,33 @@ export class AWSClientService {
 
   getUsers(): Observable<User[]> {
     return this.http.get<User[]>(this.url + "/Users", <Object>this.options);
+  }
+
+  updateProject(id: string, name: string, owner: string, description: string, version: string, template: Template) {
+      console.log(template);
+    return this.http.put<string>(
+      this.url + "/Projects",
+      {
+        id: id,
+        name: name,
+        owner: owner,
+        description: description,
+        version: version,
+        template: JSON.stringify(template.json)
+      },
+      this.options
+    );
+  }
+
+  updateStack(name: string, template: Template) {
+    return this.http.put<string>(
+      this.url + "/Stacks",
+      {
+        name: name,
+        template: template.json,
+        keys: JSON.stringify(template.keys)
+      },
+      this.options
+    )
   }
 }

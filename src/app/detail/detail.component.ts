@@ -9,8 +9,8 @@ import { AWSClientService } from 'src/awsclient.service';
   styleUrls: ['./detail.component.css']
 })
 export class DetailComponent implements OnInit {
+  private project: object;
   private projectName: string;
-  private projectId: string;
   private newEC2InstanceCount: number;
   private ec2Instances: any;
   private isLoadingEC2: boolean = false;
@@ -25,7 +25,7 @@ export class DetailComponent implements OnInit {
       this.projectName = params['id'];
     });
     this.client.getProject(this.projectName).subscribe(data => {
-      this.projectId = data[0]['id'];
+      this.project = data[0];
     });
   }
 
@@ -36,17 +36,15 @@ export class DetailComponent implements OnInit {
     M.Collapsible.init(elems, {});
   }
 
-  ec2Created(ec2Instace) {
-    let { name, projectId, machineImage, keyName, 
-      instanceType, userData, state } = ec2Instace;    
-    this.client.postEC2Instance(name, projectId, 
-      machineImage, keyName, instanceType, userData, state).subscribe();
+  ec2Created(ec2Instance) {
+    let { name, projectId, machineImage, keyName, instanceType, userData, state } = ec2Instance;
+    this.client.postEC2Instance(name, projectId, machineImage, keyName, instanceType, userData, state).subscribe();
     this.newEC2InstanceCount += 1;
   }
 
   onEC2View() {
     this.isLoadingEC2 = true; 
-    this.client.getEC2Resources(this.projectId).subscribe(data => {
+    this.client.getEC2Resources(this.project['id']).subscribe(data => {
       this.ec2Instances = data;
       this.isLoadingEC2 = false;  
     });

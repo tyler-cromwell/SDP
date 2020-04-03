@@ -4,32 +4,72 @@ import boto3
 from boto3.dynamodb.conditions import Key, Attr
 
 
-def isOwnerValid(email: str) -> bool:
-    dynamodb = boto3.resource('dynamodb')
+dynamodb = boto3.resource('dynamodb')
+
+
+class Project:
+    name: str
+    owner: str
+    description: str
+    version: str
+
+    def __init__(self, event):
+        self.name = event['name']
+        self.owner = event['owner']
+        self.description = event['description']
+        self.version = event['version']
+
+
+def get_missing_keys(required_keys, actual_keys):
+    missing_keys = []
+    for key in required_keys:
+        if key not in actual_keys:
+            missing_keys.append(key)
+    return missing_keys
+
+
+def isOwnerValid(project: Project) -> bool:
     table = dynamodb.Table('UsersTable')
-    
     result = table.scan(
-        FilterExpression=Attr('email').eq(email)
+        FilterExpression=Attr('email').eq(project.owner)
     )
-    
     return len(result["Items"]) == 1
 
 
-def main(event, context):
-    dynamodb = boto3.resource('dynamodb')
+def isProjectValid(project: Project) -> bool:
     table = dynamodb.Table('ProjectsTable')
-    
-    required = ['name', 'owner', 'description', 'version']
+    result = table.scan(
+        FilterExpression=Key('name').eq(
+            project.name) & Key('owner').eq(project.owner)
+    )
+    return True if result["Count"] == 0 else False
 
-    if False in [k in event.keys() for k in required]:
-        return {
-            'error': 'Missing a required key'
-        }
 
-    if not isOwnerValid(event['owner']):
-        return {
-            'error': 'Owner does not exist'
-        }
+def build_response(error_msg: str, status_code: str):
+    return {
+        "ErrorMessage": error_msg,
+        "StatusCode": status_code
+    }
+
+def main(event, context):
+    table = dynamodb.Table('ProjectsTable')
+    required = ['name', 'owner', 'description', 'version', 'template']
+
+    missing_keys = get_missing_keys(required, event.keys())
+
+    if len(missing_keys) > 0:
+        return build_response("Missing require keys: {}".format(missing_keys), "400")
+
+    project: Project = Project(event)
+
+    if not isOwnerValid(project):
+        return build_response("Owner does not exist", "400")
+
+    if not isProjectValid(project):
+        return build_response(
+            "Bad Request (project '{}' with project owner '{}' already exist)".format(project.name, project.owner),
+            "400"
+        )
 
     projectId: str = str(uuid.uuid1())
 
@@ -39,10 +79,11 @@ def main(event, context):
             'name': event['name'],
             'owner': event['owner'],
             'description': event['description'],
-            'version':event['version']
+            'version': event['version'],
+            'template': event['template']
         }
     )
-    
+
     result = table.query(
         KeyConditionExpression=Key('id').eq(projectId)
     )
