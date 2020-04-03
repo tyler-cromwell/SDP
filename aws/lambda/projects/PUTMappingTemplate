@@ -1,5 +1,6 @@
 {
-  "name" : $input.json("$.name"), 
+  "id" : $input.json("$.id"),
+  "name" : $input.json("$.name"),
   "owner" : $input.json("$.owner"),
   "description" : $input.json("$.description"),
   "version" : $input.json("$.version"),

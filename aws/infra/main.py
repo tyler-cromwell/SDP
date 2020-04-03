@@ -48,8 +48,8 @@ if __name__ == '__main__':
     API_RESOURCES = ['Instances', 'Projects', 'Stacks', 'Users', 'EC2Resources']
     API_RESOURCE_METHODS = {
         'Instances': ['GET', 'POST'],
-        'Projects': ['DELETE', 'GET', 'POST'],
-        'Stacks': ['POST'],
+        'Projects': ['DELETE', 'GET', 'POST', 'PUT'],
+        'Stacks': ['POST', 'PUT'],
         'Users': ['GET', 'POST'],
         'EC2Resources': ['GET', 'POST']
     }
@@ -97,12 +97,26 @@ if __name__ == '__main__':
                 '/../lambda/projects/post.py',
                 ['arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess'],
                 utils.read_mapping_template("../lambda/projects/POSTMappingTemplate")
+            ),
+            'PUT': LambdaParams(
+                'ProjectsPUTLambda',
+                '/../lambda/projects/put.py',
+                ['arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess'],
+                utils.read_mapping_template("../lambda/projects/PUTMappingTemplate")
             )
         },
         'Stacks': {
             'POST': LambdaParams(
                 'StacksPOSTLambda',
                 '/../lambda/stacks/post.py',
+                [
+                    'arn:aws:iam::aws:policy/AWSCloudFormationFullAccess',
+                    'arn:aws:iam::aws:policy/AmazonEC2FullAccess'
+                ]
+            ),
+            'PUT': LambdaParams(
+                'StacksPUTLambda',
+                '/../lambda/stacks/put.py',
                 [
                     'arn:aws:iam::aws:policy/AWSCloudFormationFullAccess',
                     'arn:aws:iam::aws:policy/AmazonEC2FullAccess'

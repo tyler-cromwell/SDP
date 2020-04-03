@@ -89,7 +89,7 @@
         <li>
           <div class="collapsible-header"><i class="material-icons">filter_drama</i>Create EC2 Instance</div>
           <div class="collapsible-body">
-            <app-ec2 [projectId]="projectId" (ec2Created)="ec2Created($event)"></app-ec2>
+            <app-ec2 [project]="project" (ec2Created)="ec2Created($event)"></app-ec2>
           </div>
         </li>
       </ul>      

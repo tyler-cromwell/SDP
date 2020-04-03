@@ -53,8 +53,7 @@ def build_response(error_msg: str, status_code: str):
 
 def main(event, context):
     table = dynamodb.Table('ProjectsTable')
-
-    required = ['name', 'owner', 'description', 'version']
+    required = ['name', 'owner', 'description', 'version', 'template']
 
     missing_keys = get_missing_keys(required, event.keys())
 
@@ -80,7 +79,8 @@ def main(event, context):
             'name': event['name'],
             'owner': event['owner'],
             'description': event['description'],
-            'version': event['version']
+            'version': event['version'],
+            'template': event['template']
         }
     )
 
