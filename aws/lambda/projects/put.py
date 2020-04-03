@@ -12,7 +12,6 @@ def main(event, context):
             'error': 'Missing a required key'
         }
 
-    print(event)
     result = table.update_item(
         Key={
             'id': event['id']
