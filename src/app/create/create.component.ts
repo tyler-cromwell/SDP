@@ -1,4 +1,4 @@
-import { Component, ViewChild, ElementRef, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 
 import * as M from "materialize-css/dist/js/materialize";
 import { AWSClientService } from '../../awsclient.service';
@@ -13,24 +13,25 @@ export class CreateComponent implements OnInit {
   projectName: string;
   projectOwner: string;
   projectDescription: string;
-  owners: string[];
-  // @ViewChild('ownerSelect', {static:true}) ownerSelect: ElementRef;
+  owners: User[];
+  selectedIndex: number = null;
 
-  constructor(private client: AWSClientService) {  
-    this.owners = [];
-  }
-
-  ngOnInit() {
-    // M.FormSelect.init(this.ownerSelect.nativeElement, {});      
+  constructor(private client: AWSClientService) { }
+  
+  // TODO: unsubscribe observable (ngdestroy)
+  ngOnInit() {    
     this.client.getUsers().subscribe((data: User[]) => {
-      for (let user of data) {
-        console.log("email: " + user.email);
-        this.owners.push(user.email);
-      }    
-    });
+      this.owners = data;
+      if (data.length > 0) {
+        this.selectedIndex = 0;
+        this.projectOwner = this.owners[0].email;
+      }      
+    });    
   }
   
-  ngAfterViewInit() {    
+  ngAfterViewInit() {
+    let elems = document.querySelectorAll('.collapsible');
+    M.Collapsible.init(elems, {});
   }
 
   onSubmit() {
@@ -43,5 +44,11 @@ export class CreateComponent implements OnInit {
         console.log(data)
       }
     );
+  }
+
+  setIndex(index: number, owner: string) {
+    this.projectOwner = owner;
+    this.selectedIndex = index;
+    console.log("changed project owner to: " + this.projectOwner);
   }
 }
