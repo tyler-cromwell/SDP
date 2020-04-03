@@ -12,6 +12,10 @@ export class Template {
     this.keys = [];
   }
 
+  isEmpty() {
+    return Object.keys(this.json['Resources']).length == 0
+  }
+
   addLambdaFunction(name: string, handler: string, role: string, code: string, runtime: string) {
     this.json["Resources"][name] = {
       "Type": "AWS::Lambda::Function",
