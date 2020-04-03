@@ -30,7 +30,10 @@ export class Template {
     }
   }
 
-  addEC2Instance(name: string, instanceType: string, keyName: string, machineImage: string, userData: string = "") {
+  /*
+   * "userData" parameter must not be an empty string (''), otherwise DynamoDB will not store it.
+   */
+  addEC2Instance(name: string, instanceType: string, keyName: string, machineImage: string, userData: string = "# Comment") {
     if (this.keys.indexOf(keyName) == -1) {
       this.keys.push(keyName);
     }

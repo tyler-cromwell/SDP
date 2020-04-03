@@ -12,25 +12,27 @@ def main(event, context):
             'error': 'Missing a required key'
         }
 
-    # Find and delete the original row
-    result = table.scan(
-        FilterExpression=Key('id').eq(event['id'])
-    )
-
-    table.delete_item(
+    print(event)
+    result = table.update_item(
         Key={
             'id': event['id']
-        }
+        },
+        ExpressionAttributeNames={
+            '#n': 'name',
+            '#o': 'owner',
+            '#d': 'description',
+            '#v': 'version',
+            '#t': 'template',
+        },
+        ExpressionAttributeValues={
+            ':n': event['name'],
+            ':o': event['owner'],
+            ':d': event['description'],
+            ':v': event['version'],
+            ':t': event['template']
+        },
+        UpdateExpression='SET #n = :n, #o = :o, #d = :d, #v = :v, #t = :t'
     )
-
-    # Reconstruct row with updated values
-    item = result['Items'][0]
-
-    for key in event.keys():
-        item[key] = event[key]
-
-    # Save updated row & return result
-    result = table.put_item(Item=item)
     
     result = table.query(
         KeyConditionExpression=Key('id').eq(event['id'])

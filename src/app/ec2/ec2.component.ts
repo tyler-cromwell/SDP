@@ -64,7 +64,7 @@ export class Ec2Component implements OnInit, AfterViewInit {
     });    
 
     let template = new Template();
-    template.json = JSON.parse(this.project['template']);
+    template.json = this.project['template'];
 
     /*
      * Stacks cannot be created without at least 1 resource,
@@ -73,7 +73,7 @@ export class Ec2Component implements OnInit, AfterViewInit {
     let create: Boolean = template.isEmpty();
     let stackName: string = this.project['name'].replace(/\s/g, '');
     template.addEC2Instance(name, instanceType, keyName, machineImage);
-    this.project['template'] = JSON.stringify(template.json);
+    this.project['template'] = template.json;
 
     // Update the project row in ProjectsTable.
     this.client.updateProject(

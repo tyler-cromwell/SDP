@@ -39,7 +39,7 @@ export class AWSClientService {
         owner: owner,
         description: description,
         version: "1.0.0",
-        template: JSON.stringify(template.json)
+        template: template.json
       },
       this.options
     );
@@ -82,7 +82,6 @@ export class AWSClientService {
   postEC2Instance(name: string, projectId: string, machineImage: string, keyName: string,
                   instanceType: string, userData: string, state: string) {
     let payload = { name, projectId, machineImage, keyName, instanceType, userData, state };
-    console.log(payload);
     return this.http.post<string>(
       this.url + "/EC2Resources",
       payload,
@@ -111,7 +110,6 @@ export class AWSClientService {
   }
 
   updateProject(id: string, name: string, owner: string, description: string, version: string, template: Template) {
-      console.log(template);
     return this.http.put<string>(
       this.url + "/Projects",
       {
@@ -120,7 +118,7 @@ export class AWSClientService {
         owner: owner,
         description: description,
         version: version,
-        template: JSON.stringify(template.json)
+        template: template.json
       },
       this.options
     );
