@@ -109,4 +109,32 @@ export class AWSClientService {
   getUsers(): Observable<User[]> {
     return this.http.get<User[]>(this.url + "/Users", <Object>this.options);
   }
+
+  updateProject(id: string, name: string, owner: string, description: string, version: string, template: Template) {
+      console.log(template);
+    return this.http.put<string>(
+      this.url + "/Projects",
+      {
+        id: id,
+        name: name,
+        owner: owner,
+        description: description,
+        version: version,
+        template: JSON.stringify(template.json)
+      },
+      this.options
+    );
+  }
+
+  updateStack(name: string, template: Template) {
+    return this.http.put<string>(
+      this.url + "/Stacks",
+      {
+        name: name,
+        template: template.json,
+        keys: JSON.stringify(template.keys)
+      },
+      this.options
+    )
+  }
 }

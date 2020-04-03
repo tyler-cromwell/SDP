@@ -97,12 +97,26 @@ if __name__ == '__main__':
                 '/../lambda/projects/post.py',
                 ['arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess'],
                 utils.read_mapping_template("../lambda/projects/POSTMappingTemplate")
+            ),
+            'PUT': LambdaParams(
+                'ProjectsPUTLambda',
+                '/../lambda/projects/put.py',
+                ['arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess'],
+                utils.read_mapping_template("../lambda/projects/PUTMappingTemplate")
             )
         },
         'Stacks': {
             'POST': LambdaParams(
                 'StacksPOSTLambda',
                 '/../lambda/stacks/post.py',
+                [
+                    'arn:aws:iam::aws:policy/AWSCloudFormationFullAccess',
+                    'arn:aws:iam::aws:policy/AmazonEC2FullAccess'
+                ]
+            ),
+            'PUT': LambdaParams(
+                'StacksPUTLambda',
+                '/../lambda/stacks/put.py',
                 [
                     'arn:aws:iam::aws:policy/AWSCloudFormationFullAccess',
                     'arn:aws:iam::aws:policy/AmazonEC2FullAccess'

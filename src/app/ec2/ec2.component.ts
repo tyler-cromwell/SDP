@@ -46,11 +46,13 @@ export class Ec2Component implements OnInit, AfterViewInit {
   }
 
   onSubmit(form: NgForm) {
-    let {name, instanceType, keyName, machineImage} = form.value;   
+    let {name, instanceType, keyName, machineImage} = form.value;
     this.isLoading = true;
+
     setTimeout(() => {
       this.isLoading = false;
     }, 2000);
+
     this.ec2Created.emit({
       projectId: this.project['id'],
       name,
@@ -60,10 +62,33 @@ export class Ec2Component implements OnInit, AfterViewInit {
       userData: "None", // TODO: get from UI
       state: "live" // TODO: get dynamic value
     });    
+
     let template = new Template();
+    template.json = JSON.parse(this.project['template']);
+
+    /*
+     * Stacks cannot be created without at least 1 resource,
+     * So check if any already exist in the template.
+     */
+    let create: Boolean = template.isEmpty();
+    let stackName: string = this.project['name'].replace(/\s/g, '');
     template.addEC2Instance(name, instanceType, keyName, machineImage);
-    this.client.createStack(name+"EC2Instace", template).subscribe(value => {
-      console.log("create stack repsonse: " + JSON.stringify(value));
-    });
+    this.project['template'] = JSON.stringify(template.json);
+
+    // Update the project row in ProjectsTable.
+    this.client.updateProject(
+      this.project['id'],
+      this.project['name'],
+      this.project['owner'],
+      this.project['description'],
+      this.project['version'],
+      template
+    ).subscribe();
+
+    if (create) {
+        this.client.createStack(stackName, template).subscribe();
+    } else {
+        this.client.updateStack(stackName, template).subscribe();
+    }
   }
 }
