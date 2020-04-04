@@ -79,6 +79,16 @@ export class AWSClientService {
     );
   }
 
+  deleteProject(id: string) {
+    return this.http.delete<string>(
+      this.url + "/Projects",
+      {
+        id: id
+      },
+      this.options
+    );
+  }
+
   getProjects() {
     return this.http.get<string>(
       this.url + "/Projects",

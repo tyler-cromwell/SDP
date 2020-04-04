@@ -84,7 +84,11 @@ if __name__ == '__main__':
             'DELETE': LambdaParams(
                 'ProjectsDELETELambda',
                 '/../lambda/projects/delete.py',
-                ['arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess']
+                [
+                    'arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess',
+                    'arn:aws:iam::aws:policy/AmazonEC2FullAccess',
+                    'arn:aws:iam::aws:policy/AWSCloudFormationFullAccess'
+                ]
             ),
             'GET': LambdaParams(
                 'ProjectsGETLambda',
