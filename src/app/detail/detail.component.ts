@@ -11,14 +11,11 @@ import { AWSClientService } from 'src/awsclient.service';
 export class DetailComponent implements OnInit {
   private project: object;
   private projectName: string;
-  private newEC2InstanceCount: number;
-  private ec2Instances: any;
+  private newEC2InstanceCount: number = 0;
+  private ec2Instances: any = null;
   private isLoadingEC2: boolean = false;
 
-  constructor(private activatedRoute: ActivatedRoute, private client: AWSClientService) {
-    this.newEC2InstanceCount = 0;
-    this.ec2Instances = [];
-  }
+  constructor(private activatedRoute: ActivatedRoute, private client: AWSClientService) { }
 
   ngOnInit() {
     this.activatedRoute.params.subscribe(params => {
@@ -44,9 +41,11 @@ export class DetailComponent implements OnInit {
 
   onEC2View() {
     this.isLoadingEC2 = true; 
-    this.client.getEC2Resources(this.project['id']).subscribe(data => {
+    this.client.getEC2Resources(this.project['name']).subscribe(data => {
       this.ec2Instances = data;
-      this.isLoadingEC2 = false;  
+      this.isLoadingEC2 = false;
+      this.ec2Instances = data.Reservations
+      console.log(this.ec2Instances)
     });
     setTimeout(() => {
       this.newEC2InstanceCount = 0;

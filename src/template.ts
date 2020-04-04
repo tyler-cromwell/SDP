@@ -30,7 +30,10 @@ export class Template {
     }
   }
 
-  addEC2Instance(name: string, instanceType: string, keyName: string, machineImage: string, userData: string = "") {
+  /*
+   * "userData" parameter must not be an empty string (''), otherwise DynamoDB will not store it.
+   */
+  addEC2Instance(project_name: string, name: string, instanceType: string, keyName: string, machineImage: string, userData: string = "# Comment") {
     if (this.keys.indexOf(keyName) == -1) {
       this.keys.push(keyName);
     }
@@ -43,28 +46,19 @@ export class Template {
         "KeyName": keyName,
         "UserData": {
           "Fn::Base64": userData
-        }
+        },
+        "Tags" : [
+          {
+              "Key" : "ProjectName",
+              "Value" : project_name
+          }
+        ]
       }
     };
 
     this.json["Outputs"]["InstanceId"] = {
       "Value": {
         "Ref": name
-      }
-    };
-    this.json["Outputs"]["AvailabilityZone"] = {
-      "Value": {
-        "Fn::GetAtt": [name, "AvailabilityZone"]
-      }
-    };
-    this.json["Outputs"]["PublicDns"] = {
-      "Value": {
-        "Fn::GetAtt": [name, "PublicDnsName"]
-      }
-    };
-    this.json["Outputs"]["PublicIp"] = {
-      "Value": {
-        "Fn::GetAtt": [name, "PublicIp"]
       }
     };
   }
