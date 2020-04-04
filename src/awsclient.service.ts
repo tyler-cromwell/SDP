@@ -18,6 +18,20 @@ export class AWSClientService {
 
   constructor(private http: HttpClient) {}
 
+////////////////////////////////////////////////////////////////////////////////
+// /EC2Resources
+
+  getEC2Resources(projectId: string) {
+    this.options.params = { projectId };
+    return this.http.get(
+      this.url + "/EC2Resources",
+      this.options
+    )
+  }
+
+////////////////////////////////////////////////////////////////////////////////
+// Instances
+
   createInstance(instanceType: string, machineImage: string) {
     return this.http.post<string>(
       this.url + "/instances",
@@ -31,6 +45,26 @@ export class AWSClientService {
     );
   }
 
+  getInstances() {
+    return this.http.get<string>(
+      this.url + "/instances",
+      this.options
+    )
+  }
+
+  postEC2Instance(name: string, projectId: string, machineImage: string, keyName: string,
+                  instanceType: string, userData: string, state: string) {
+    let payload = { name, projectId, machineImage, keyName, instanceType, userData, state };
+    return this.http.post<string>(
+      this.url + "/EC2Resources",
+      payload,
+      this.options
+    );
+  }
+
+////////////////////////////////////////////////////////////////////////////////
+// /Projects
+
   createProject(name: string, owner: string, description: string, template: Template) {
     return this.http.post<string>(
       this.url + "/Projects",
@@ -43,25 +77,6 @@ export class AWSClientService {
       },
       this.options
     );
-  }
-
-  createStack(name: string, template: Template) {
-    return this.http.post<string>(
-      this.url + "/Stacks",
-      {
-        name: name,
-        template: template.json,
-        keys: JSON.stringify(template.keys)
-      },
-      this.options
-    )
-  }
-
-  getInstances() {
-    return this.http.get<string>(
-      this.url + "/instances",
-      this.options
-    )
   }
 
   getProjects() {
@@ -79,36 +94,6 @@ export class AWSClientService {
     )
   }
 
-  postEC2Instance(name: string, projectId: string, machineImage: string, keyName: string,
-                  instanceType: string, userData: string, state: string) {
-    let payload = { name, projectId, machineImage, keyName, instanceType, userData, state };
-    return this.http.post<string>(
-      this.url + "/EC2Resources",
-      payload,
-      this.options
-    );
-  }
-
-  getEC2Resources(projectId: string) {
-    this.options.params = { projectId };
-    return this.http.get(
-      this.url + "/EC2Resources",
-      this.options
-    )
-  }
-
-  postUser(user: User) {
-    return this.http.post<string>(
-      this.url + "/Users",
-      user,
-      this.options
-    );
-  }
-
-  getUsers(): Observable<User[]> {
-    return this.http.get<User[]>(this.url + "/Users", <Object>this.options);
-  }
-
   updateProject(id: string, name: string, owner: string, description: string, version: string, template: Template) {
     return this.http.put<string>(
       this.url + "/Projects",
@@ -124,6 +109,21 @@ export class AWSClientService {
     );
   }
 
+////////////////////////////////////////////////////////////////////////////////
+// /Stacks
+
+  createStack(name: string, template: Template) {
+    return this.http.post<string>(
+      this.url + "/Stacks",
+      {
+        name: name,
+        template: template.json,
+        keys: JSON.stringify(template.keys)
+      },
+      this.options
+    )
+  }
+
   updateStack(name: string, template: Template) {
     return this.http.put<string>(
       this.url + "/Stacks",
@@ -134,5 +134,20 @@ export class AWSClientService {
       },
       this.options
     )
+  }
+
+////////////////////////////////////////////////////////////////////////////////
+// /Users
+
+  postUser(user: User) {
+    return this.http.post<string>(
+      this.url + "/Users",
+      user,
+      this.options
+    );
+  }
+
+  getUsers(): Observable<User[]> {
+    return this.http.get<User[]>(this.url + "/Users", <Object>this.options);
   }
 }
