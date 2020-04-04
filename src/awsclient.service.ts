@@ -89,8 +89,8 @@ export class AWSClientService {
     );
   }
 
-  getEC2Resources(projectId: string) {
-    this.options.params = { projectId };
+  getEC2Resources(projectName: string) {
+    this.options.params = { projectName };
     return this.http.get(
       this.url + "/EC2Resources",
       this.options
