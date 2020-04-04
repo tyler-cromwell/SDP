@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit, ViewChild, ElementRef, Output, EventEmitter, Input } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, Output, EventEmitter, Input } from '@angular/core';
 import * as M from "materialize-css/dist/js/materialize";
 import { NgForm } from '@angular/forms';
 import { AWSClientService } from 'src/awsclient.service';
@@ -9,7 +9,7 @@ import { Template } from 'src/template';
   templateUrl: './ec2.component.html',
   styleUrls: ['./ec2.component.css']
 })
-export class Ec2Component implements OnInit, AfterViewInit {
+export class Ec2Component implements OnInit {
   @Input() project: string;
   @Output() ec2Created: EventEmitter<any> = new EventEmitter();
   @ViewChild('instanceTypeSelect', {static:true}) instanceTypeSelect: ElementRef;
@@ -72,7 +72,7 @@ export class Ec2Component implements OnInit, AfterViewInit {
      */
     let create: Boolean = template.isEmpty();
     let stackName: string = this.project['name'].replace(/\s/g, '');
-    template.addEC2Instance(name, instanceType, keyName, machineImage);
+    template.addEC2Instance(this.project['name'], name, instanceType, keyName, machineImage);
     this.project['template'] = template.json;
 
     // Update the project row in ProjectsTable.
@@ -85,10 +85,14 @@ export class Ec2Component implements OnInit, AfterViewInit {
       template
     ).subscribe();
 
-    if (create) {
-        this.client.createStack(stackName, template).subscribe();
-    } else {
-        this.client.updateStack(stackName, template).subscribe();
+    if (create) {      
+      this.client.createStack(stackName, template).subscribe(data => {
+        console.log("CREATE STACK RESP: " + JSON.stringify(data));
+      });
+    } else {      
+        this.client.updateStack(stackName, template).subscribe(data => {
+          console.log("UPDATE STACK RESP: " + JSON.stringify(data));
+        });
     }
   }
 }
