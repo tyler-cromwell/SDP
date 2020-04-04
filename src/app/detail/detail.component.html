@@ -52,27 +52,29 @@
       </ng-template>
 
       <ng-template #elseBlock>
-        <div *ngIf="ec2Instances.length > 0">
+        <div *ngIf="ec2Instances">
           <table class="striped">
             <thead>
               <tr>
-                <th>Name</th>
+                <th>Instance ID</th>
                 <th>Instance Type</th>
-                <th>Machine Image</th>
-                <th>Key</th>
-                <th>User Data</th>
+                <th>Availability Zone</th>
                 <th>State</th>
+                <th>Key Name</th>
+                <th>Launch Time</th>
+                <th>Image Id</th>
               </tr>
             </thead>
   
             <tbody>
               <tr *ngFor="let ec2Instance of ec2Instances">
-                <td>{{ ec2Instance.name }}</td>
-                <td>{{ ec2Instance.instanceType }}</td>
-                <td>{{ ec2Instance.machineImage }}</td>
-                <td>{{ ec2Instance.keyName }}</td>
-                <td>{{ ec2Instance.userData }}</td>
-                <td>{{ ec2Instance.state }}</td>
+                <td>{{ ec2Instance.Instances[0].InstanceId }}</td>
+                <td>{{ ec2Instance.Instances[0].InstanceType }}</td>
+                <td>{{ ec2Instance.Instances[0].Placement.AvailabilityZone }}</td>
+                <td>{{ ec2Instance.Instances[0].State.Name }}</td>
+                <td>{{ ec2Instance.Instances[0].KeyName }}</td>
+                <td>{{ ec2Instance.Instances[0].LaunchTime }}</td>
+                <td>{{ ec2Instance.Instances[0].ImageId }}</td>
               </tr>
             </tbody>
           </table>
