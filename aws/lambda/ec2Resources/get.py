@@ -1,7 +1,7 @@
 import json
+import datetime
 
 import boto3
-from boto3.dynamodb.conditions import Key, Attr
 
 
 def main(event, context):
@@ -23,6 +23,11 @@ def main(event, context):
         }
     ]
 
-    response = json.dumps(client.describe_instances(Filters=custom_filter))
-
+    def myconverter(o):
+        if isinstance(o, datetime.datetime):
+            return o.__str__()
+ 
+    response = client.describe_instances(Filters=custom_filter)
+    response = json.dumps(response, default = myconverter) # serialize datetimes object to string format
+    response = json.loads(response) # deserialize from string
     return response
