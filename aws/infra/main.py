@@ -58,10 +58,13 @@ if __name__ == '__main__':
             'GET': LambdaParams(
                 'EC2ResourcesGETLambda',
                 '/../lambda/ec2Resources/get.py',
-                ['arn:aws:iam::aws:policy/AmazonDynamoDBReadOnlyAccess'],
+                [
+                    'arn:aws:iam::aws:policy/AmazonDynamoDBReadOnlyAccess', # TODO: remove
+                    'arn:aws:iam::aws:policy/AmazonEC2FullAccess'
+                ],
                 utils.read_mapping_template("../lambda/ec2Resources/GETMappingTemplate")
             ),
-            'POST': LambdaParams(
+            'POST': LambdaParams( # TODO: remove
                 'EC2ResourcesPOSTLambda',
                 '/../lambda/ec2Resources/post.py',
                 ['arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess'],
