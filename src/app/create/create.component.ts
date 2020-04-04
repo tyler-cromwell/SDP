@@ -43,11 +43,7 @@ export class CreateComponent implements OnInit {
       this.projectOwner,
       this.projectDescription,
       template
-    ).subscribe(
-      data => {
-        console.log(data)
-      }
-    );
+    ).subscribe();
   }
 
   setIndex(index: number, owner: string) {
