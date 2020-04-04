@@ -41,10 +41,10 @@ export class DetailComponent implements OnInit {
 
   onEC2View() {
     this.isLoadingEC2 = true; 
-    this.client.getEC2Resources(this.project['name']).subscribe(data => {
+    this.client.getEC2Resources(this.project['name']).subscribe(data=> {
       this.ec2Instances = data;
       this.isLoadingEC2 = false;
-      this.ec2Instances = data.Reservations
+      this.ec2Instances = data["Reservations"]
       console.log(this.ec2Instances)
     });
     setTimeout(() => {
