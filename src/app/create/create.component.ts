@@ -49,6 +49,5 @@ export class CreateComponent implements OnInit {
   setIndex(index: number, owner: string) {
     this.projectOwner = owner;
     this.selectedIndex = index;
-    console.log("changed project owner to: " + this.projectOwner);
   }
 }

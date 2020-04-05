@@ -6,19 +6,20 @@ import boto3
 def main(event, context):
     cfclient = boto3.client('cloudformation')
     dbclient = boto3.client('dynamodb')
-    required = ['id']
 
-    if False in [k in event.keys() for k in required]:
+    if 'id' not in event.keys():
         return {
-            'error': 'Missing a required key'
+            'error': 'Key \'id\' missing'
         }
+
+    pid = event['id']
 
     # Look up the project row
     project = dbclient.get_item(
         TableName='ProjectsTable',
         Key={
             'id': {
-                'S': event['id']
+                'S': pid
             }
         }
     )
@@ -36,13 +37,13 @@ def main(event, context):
         },
         ExpressionAttributeValues={
             ':id': {
-                'S': event['id']
+                'S': pid
             }
         },
         FilterExpression='projectId = :id',
         ProjectionExpression='#id'
     )
-    
+
     # Delete the associated rows from "EC2ResourcesTable" table
     for row in response['Items']:
         response = dbclient.delete_item(
@@ -59,7 +60,7 @@ def main(event, context):
         TableName='ProjectsTable',
         Key={
             'id': {
-                'S': event['id']
+                'S': pid
             }
         }
     )

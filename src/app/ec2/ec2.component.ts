@@ -86,13 +86,9 @@ export class Ec2Component implements OnInit {
     ).subscribe();
 
     if (create) {      
-      this.client.createStack(stackName, template).subscribe(data => {
-        console.log("CREATE STACK RESP: " + JSON.stringify(data));
-      });
+      this.client.createStack(stackName, template).subscribe();
     } else {      
-        this.client.updateStack(stackName, template).subscribe(data => {
-          console.log("UPDATE STACK RESP: " + JSON.stringify(data));
-        });
+      this.client.updateStack(stackName, template).subscribe();
     }
   }
 }
