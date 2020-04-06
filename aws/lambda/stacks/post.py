@@ -4,31 +4,42 @@ import boto3
 
 
 def main(event, context):
-    required = ['name', 'template', 'keys']
+    required = set(['stackName', 'template'])
 
-    if False in [k in event.keys() for k in required]:
-        return {
-            'error': 'Missing required key'
+    missing_keys = required - set(event.keys())
+
+    if len(missing_keys) > 0:
+        return {            
+            "ErrorMessage": "missing required key(s): {}".format(missing_keys),
+            "StatusCode": "400"    
         }
     
-    response = {'stack': {}, 'keys': {}}
-    stack_name = event['name']
-    keys = json.loads(event['keys'])
+    response = {
+        'stackId': '',
+        'keys': []
+    }
+
     template = event['template']
-    cfclient = boto3.client('cloudformation')
+
     ec2client = boto3.client('ec2')
 
-    for i, name in enumerate(keys):
-        result = ec2client.describe_key_pairs(Filters=[{'Name': 'key-name', 'Values': [name]}])
-        
-        if len(result['KeyPairs']) == 0:
-            response['keys'][name] = ec2client.create_key_pair(KeyName=name)
-        else:
-            response['keys'][name] = result['KeyPairs'][i]
+    # Check if EC2 resources types have specified EC2 key pair name exists and, if not, create a key pair and add to response 
+    for resource in template['Resources'].values():
+        resourceType = resource['Type']
+        keyName = resource["Properties"]["KeyName"]     
+        if resourceType == 'AWS::EC2::Instance':
+            result = ec2client.describe_key_pairs(Filters=[{'Name': 'key-name', 'Values': [keyName]}])             
+            if len(result['KeyPairs']) == 0:
+                response['keys'].append(ec2client.create_key_pair(KeyName=keyName))
+            # else:
+            #     print("result = " + json.dumps(resource, indent=4))
+            #     resource['keys'].append(result['KeyPairs'][0])                        
+              
+    cfclient = boto3.client('cloudformation')    
 
-    response['stack'][stack_name] = cfclient.create_stack(
-        StackName=stack_name,
-        TemplateBody=json.dumps(template)
-    )
+    response['stackId'] = cfclient.update_stack(
+        StackName=event['stackName'],
+        TemplateBody=json.dumps(event['template'])
+    )["StackId"]
 
     return response
