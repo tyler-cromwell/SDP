@@ -14,7 +14,7 @@ export class CreateUserComponent implements OnInit {
   ngOnInit() {
   }
 
-  onSubmit(form: NgForm) {        
+  onSubmit(form: NgForm) {
     this.client.postUser(form.value).subscribe();
   }
 }
