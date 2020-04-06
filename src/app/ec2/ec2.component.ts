@@ -1,8 +1,9 @@
 import { Component, OnInit, ViewChild, ElementRef, Output, EventEmitter, Input } from '@angular/core';
+import { FormGroup, FormControl, Validators, FormArray } from '@angular/forms';
+
 import * as M from "materialize-css/dist/js/materialize";
-import { NgForm } from '@angular/forms';
 import { AWSClientService } from 'src/awsclient.service';
-import { Template } from 'src/template';
+import { Project } from 'src/models/Project';
 
 @Component({
   selector: 'app-ec2',
@@ -10,89 +11,61 @@ import { Template } from 'src/template';
   styleUrls: ['./ec2.component.css']
 })
 export class Ec2Component implements OnInit {
-  @Input() project: string;
-  @Output() ec2Created: EventEmitter<any> = new EventEmitter();
-  @ViewChild('instanceTypeSelect', {static:true}) instanceTypeSelect: ElementRef;
-  @ViewChild('machineImageSelect', {static:true}) machineImageSelect: ElementRef;  
-
-  private ec2Name: string = this.randomString();
-  private ec2KeyPair: string = "OurEC2Keypair01";
+  @Input() private project: Project;
+  @Output() private create: EventEmitter<any> = new EventEmitter();
+  @ViewChild('instanceTypeSelect', { static: true }) private instanceTypeSelect: ElementRef;
+  @ViewChild('machineImageSelect', { static: true }) private machineImageSelect: ElementRef;
+  @ViewChild('keyPairActionSelect', { static: true }) private keyPairActionSelect: ElementRef;  
+  @ViewChild('fileInput', { static: true }) fileInput: ElementRef;
+  @ViewChild('fileName', { static: true }) fileName: ElementRef;
+  
+  private createForm: FormGroup;
   private instanceTypes: string[] = ["t2.micro"];
   private machineImages: string[] = ["ami-0e38b48473ea57778"];
-  public isLoading: boolean;  
+  private createNewKeyPair: Boolean = false;
+  private initialFormValues = null;
 
-  randomString(length=10): string {
-    let result = '';
-    let characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
-    let charactersLength = characters.length;
-    for (let i = 0; i < length; i++) {
-       result += characters.charAt(Math.floor(Math.random() * charactersLength));
-    }
-    return result;
+  constructor(private client: AWSClientService) { }
+
+  ngOnInit() { 
+    this.createForm = new FormGroup({
+      'logicalId': new FormControl(null, Validators.required),
+      'instanceType': new FormControl(this.instanceTypes[0]),
+      'keyName': new FormControl(null),
+      'machineImage': new FormControl(this.machineImages[0]),
+      'userData': new FormControl(null)
+    });    
   }
-
-  constructor(private client: AWSClientService) { 
-    this.isLoading = false;
-  }
-
-  ngOnInit() { }
 
   ngAfterViewInit() {
     M.FormSelect.init(this.instanceTypeSelect.nativeElement, {});    
     M.FormSelect.init(this.machineImageSelect.nativeElement, {});
-    setTimeout(() => {
-      M.updateTextFields();
-    }, 100);
+    M.FormSelect.init(this.keyPairActionSelect.nativeElement, {});
+    M.updateTextFields();    
+    this.initialFormValues = this.createForm.value;
   }
 
-  onSubmit(form: NgForm) {
-    let {name, instanceType, keyName, machineImage} = form.value;
-    this.isLoading = true;
+  onFileChange(e) {
+    let file = e.target.files[0];
+    let fileReader = new FileReader();
+    fileReader.readAsText(file);
 
-    setTimeout(() => {
-      this.isLoading = false;
-    }, 2000);
+    fileReader.onloadend = (e) => {
+      this.createForm.patchValue({
+        'userData': fileReader.result
+      });      
+    };
+  }
 
-    this.ec2Created.emit({
-      projectId: this.project['id'],
-      name,
-      instanceType,
-      machineImage,
-      keyName,
-      userData: "None", // TODO: get from UI
-      state: "live" // TODO: get dynamic value
-    });    
+  onSubmit() {    
+    console.log(this.createForm.value);
+    this.create.emit(this.createForm.value);  
 
-    let template = new Template();
-    template.json = this.project['template'];
+    this.createForm.reset(this.initialFormValues);
 
-    /*
-     * Stacks cannot be created without at least 1 resource,
-     * So check if any already exist in the template.
-     */
-    let create: Boolean = template.isEmpty();
-    let stackName: string = this.project['name'].replace(/\s/g, '');
-    template.addEC2Instance(this.project['name'], name, instanceType, keyName, machineImage);
-    this.project['template'] = template.json;
-
-    // Update the project row in ProjectsTable.
-    this.client.updateProject(
-      this.project['id'],
-      this.project['name'],
-      this.project['owner'],
-      this.project['description'],
-      this.project['version'],
-      template
-    ).subscribe();
-
-    if (create) {      
-      this.client.createStack(stackName, template).subscribe(data => {
-        console.log("CREATE STACK RESP: " + JSON.stringify(data));
-      });
-    } else {      
-        this.client.updateStack(stackName, template).subscribe(data => {
-          console.log("UPDATE STACK RESP: " + JSON.stringify(data));
-        });
-    }
+    // Reset controls not part of FormGroup manually
+    this.createNewKeyPair = false;
+    this.fileInput.nativeElement.value = "";
+    this.fileName.nativeElement.value = "";
   }
 }
