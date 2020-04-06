@@ -37,7 +37,7 @@ def main(event, context):
               
     cfclient = boto3.client('cloudformation')    
 
-    response['stackId'] = cfclient.update_stack(
+    response['stackId'] = cfclient.create_stack(
         StackName=event['stackName'],
         TemplateBody=json.dumps(event['template'])
     )["StackId"]
