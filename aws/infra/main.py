@@ -45,42 +45,20 @@ if __name__ == '__main__':
     API_STAGE_NAME = 'development'
     API_USAGE_PLAN_NAME = API_NAME+'UsagePlan'
     API_KEY_NAME = API_NAME+'Key'
-    API_RESOURCES = ['Instances', 'Projects', 'Stacks', 'Users', 'EC2Resources']
+    API_RESOURCES = ['Projects', 'Stacks', 'Users', 'EC2Resources']
     API_RESOURCE_METHODS = {
-        'Instances': ['GET', 'POST'],
         'Projects': ['DELETE', 'GET', 'POST', 'PUT'],
         'Stacks': ['POST', 'PUT'],
         'Users': ['GET', 'POST'],
-        'EC2Resources': ['GET', 'POST']
+        'EC2Resources': ['GET']
     }
     API_LAMBDAS = {
         'EC2Resources': {
             'GET': LambdaParams(
                 'EC2ResourcesGETLambda',
                 '/../lambda/ec2Resources/get.py',
-                [
-                    'arn:aws:iam::aws:policy/AmazonDynamoDBReadOnlyAccess', # TODO: remove
-                    'arn:aws:iam::aws:policy/AmazonEC2FullAccess'
-                ],
+                ['arn:aws:iam::aws:policy/AmazonEC2FullAccess'],
                 utils.read_mapping_template("../lambda/ec2Resources/GETMappingTemplate")
-            ),
-            'POST': LambdaParams( # TODO: remove
-                'EC2ResourcesPOSTLambda',
-                '/../lambda/ec2Resources/post.py',
-                ['arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess'],
-                utils.read_mapping_template("../lambda/ec2Resources/POSTMappingTemplate")
-            )
-        },
-        'Instances': {
-            'GET': LambdaParams(
-                'InstancesGETLambda',
-                '/../lambda/instances/get.py',
-                ['arn:aws:iam::aws:policy/AmazonEC2ReadOnlyAccess']
-            ),
-            'POST': LambdaParams(
-                'InstancesPOSTLambda',
-                '/../lambda/instances/post.py',
-                ['arn:aws:iam::aws:policy/AmazonEC2FullAccess']
             )
         },
         'Projects': {
