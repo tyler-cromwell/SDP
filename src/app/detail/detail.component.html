@@ -63,6 +63,7 @@
                 <th>Key Name</th>
                 <th>Launch Time</th>
                 <th>Image Id</th>
+                <th>Public DNS</th>
               </tr>
             </thead>
   
@@ -80,6 +81,7 @@
                 <td>{{ ec2Instance.Instances[0].KeyName }}</td>
                 <td>{{ ec2Instance.Instances[0].LaunchTime }}</td>
                 <td>{{ ec2Instance.Instances[0].ImageId }}</td>
+                <td>{{ ec2Instance.Instances[0].NetworkInterfaces[0].Association.PublicDnsName }}</td>
               </tr>
             </tbody>
           </table>
@@ -96,7 +98,7 @@
         <li>
           <div class="collapsible-header"><i class="material-icons">filter_drama</i>Create EC2 Instance</div>
           <div class="collapsible-body">
-            <app-ec2 [project]="project" (ec2Created)="ec2Created($event)"></app-ec2>
+            <app-ec2 [project]="project" (create)="onEC2Create($event)"></app-ec2>
           </div>
         </li>
       </ul>      

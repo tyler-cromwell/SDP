@@ -30,14 +30,12 @@ export class CreateComponent implements OnInit {
     });    
   }
   
-  ngAfterViewInit() {
-    let elems = document.querySelectorAll('.collapsible');
-    M.Collapsible.init(elems, {});
+  ngAfterViewInit() {  
+    M.Collapsible.init(document.querySelectorAll('.collapsible'), {});
   }
 
   onSubmit() {
-    let template: Template = new Template();
-    template.json['Description'] = this.projectDescription;
+    let template: Template = new Template(this.projectDescription);    
     this.client.createProject(
       this.projectName,
       this.projectOwner,
@@ -49,6 +47,5 @@ export class CreateComponent implements OnInit {
   setIndex(index: number, owner: string) {
     this.projectOwner = owner;
     this.selectedIndex = index;
-    console.log("changed project owner to: " + this.projectOwner);
   }
 }
