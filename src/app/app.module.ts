@@ -9,6 +9,7 @@ import { Ec2Component } from './ec2/ec2.component';
 import { CreateUserComponent } from './create-user/create-user.component';
 import { AWSClientService } from 'src/services/awsclient.service';
 import { NotificationService } from 'src/services/notification.service';
+import { LoggingService } from 'src/services/logger.service';
 
 @NgModule({
   declarations: [
@@ -26,7 +27,8 @@ import { NotificationService } from 'src/services/notification.service';
   ],
   providers: [
     AWSClientService,
-    NotificationService
+    NotificationService,
+    LoggingService
   ],
   bootstrap: [AppComponent]
 })
