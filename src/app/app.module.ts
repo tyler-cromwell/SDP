@@ -7,6 +7,8 @@ import { AppRoutingModule, routingComponents } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { Ec2Component } from './ec2/ec2.component';
 import { CreateUserComponent } from './create-user/create-user.component';
+import { AWSClientService } from 'src/services/awsclient.service';
+import { NotificationService } from 'src/services/notification.service';
 
 @NgModule({
   declarations: [
@@ -22,7 +24,10 @@ import { CreateUserComponent } from './create-user/create-user.component';
     ReactiveFormsModule,
     FormsModule,
   ],
-  providers: [],
+  providers: [
+    AWSClientService,
+    NotificationService
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
