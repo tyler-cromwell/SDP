@@ -13,7 +13,7 @@ import { Template } from 'src/template';
 })
 export class DetailComponent implements OnInit {  
   private project: Project;
-  private readonly logSrc: string = '[PROJECT DETAILS]';
+  private readonly logSrc: string = 'PROJECT DETAILS';
 
   private ec2Instances: object[] = null;
   private isLoadingEC2Instances: Boolean = false;
@@ -91,8 +91,7 @@ export class DetailComponent implements OnInit {
       this.logger.log(this.logSrc, `this is a new project.. CREATE stack with this template`);
       response = await this.client.createStack(stackName, template).toPromise();
       this.logger.log(this.logSrc, `create stack response: ${JSON.stringify(response, null, 4)}`);
-    } else {
-      console.log('[PROJECT DETAILS] UPDATE stack with new template');
+    } else {      
       this.logger.log(this.logSrc, 'UPDATE stack with new template');
       response = await this.client.updateStack(stackName, template).toPromise();
       this.logger.log(this.logSrc, `update stack response: ${JSON.stringify(response, null, 4)}`);      
@@ -114,7 +113,7 @@ export class DetailComponent implements OnInit {
         this.notifications.RSAPrivateKey.emit(response["keys"][0]);
       }      
     } else {
-      // TODO: raise error and notify user
+      this.notifications.EC2Created.emit(response);
     }
   }
 
