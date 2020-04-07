@@ -1,8 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Output, EventEmitter} from '@angular/core';
 import { ActivatedRoute } from '@angular/router'
 
 import * as M from "materialize-css/dist/js/materialize";
-import { AWSClientService } from 'src/awsclient.service';
+import { AWSClientService } from 'src/services/awsclient.service';
+import { NotificationService } from 'src/services/notification.service';
 import { Project, EC2 } from 'src/models/Models';
 import { Template } from 'src/template';
 
@@ -11,13 +12,16 @@ import { Template } from 'src/template';
   templateUrl: './detail.component.html',
   styleUrls: ['./detail.component.css']
 })
-export class DetailComponent implements OnInit {
+export class DetailComponent implements OnInit {  
   private project: Project;  
-  private newEC2InstanceCount: number = 0;
-  private ec2Instances: object[] = null;
-  private isLoadingEC2: boolean = false;
 
-  constructor(private activatedRoute: ActivatedRoute, private client: AWSClientService) { }
+  private ec2Instances: object[] = null;
+  private isLoadingEC2Instances: Boolean = false;
+  private newEC2Instance: Boolean = null;
+
+  constructor(private activatedRoute: ActivatedRoute, 
+    private client: AWSClientService, 
+    private notifications: NotificationService) { }
 
   ngOnInit() {
     this.activatedRoute.params.subscribe(params => {      
@@ -41,7 +45,7 @@ export class DetailComponent implements OnInit {
     console.log(`[PROJECT DETAILS] captured create event from EC2 component for instance: 
       ${JSON.stringify(EC2Instace, null, 4)}`);       
 
-    let template = new Template();
+    let template = new Template();    
     template.json = this.project.template;
 
     console.log(`[PROJECT DETAILS] Template BEFORE adding EC2 instance: 
@@ -62,8 +66,7 @@ export class DetailComponent implements OnInit {
         machineImage,
         userData
       }
-    );
-    this.project.template = template.json;
+    );    
     
     console.log(`[PROJECT DETAILS] Template AFTER adding EC2 instance: 
       ${JSON.stringify(this.project.template, null, 4)}`);      
@@ -71,25 +74,46 @@ export class DetailComponent implements OnInit {
     if (create) {
       console.log('[PROJECT DETAILS] this is a new project.. CREATE stack with this template');
       this.client.createStack(stackName, template).subscribe(data => {
-        console.log(`[PROJECT DETAILS] create stack response: ${JSON.stringify(data, null, 4)}`);
+        console.log(`[PROJECT DETAILS] create stack response: ${JSON.stringify(data, null, 4)}`);        
+        this.synchronizeState(data, template);
       });
     } else {
       console.log('[PROJECT DETAILS] UPDATE stack with new template'); 
       this.client.updateStack(stackName, template).subscribe(data => {
         console.log(`[PROJECT DETAILS] update stack response: ${JSON.stringify(data, null, 4)}`);
+        this.synchronizeState(data, template);        
       });
-    }
-
-    console.log('[PROJECT DETAILS] update project with new template in ProjectsTable..');
-
-    // Update the project in ProjectsTable if everything is successful
-    this.client.updateProject(this.project).subscribe();
+    }        
   }
 
-  onEC2View() {    
+  onEC2View() {
+    this.isLoadingEC2Instances = true;
     this.client.getEC2Resources(this.project.id).subscribe(data => {
       console.log(`[PROJECT DETAILS] EC2 Resource data: \n${JSON.stringify(data, null, 4)}`)
       this.ec2Instances = data["Reservations"]      
+      this.isLoadingEC2Instances = false;      
+      setTimeout(() => { 
+        this.newEC2Instance = false; 
+      }, 2000);
     });
+  }
+
+  synchronizeState(data, template: Template) {    
+    // if create / update stack operation was succesful
+    if ('statusCode' in data && data['statusCode'] === "200") {
+      // Update the project in ProjectsTable if everything is successful
+      this.client.updateProject(this.project).subscribe();
+
+      this.project.template = template.json;
+
+      // emit notification to indicate creation of new EC2 instance
+      this.notifications.EC2Created.emit(data);
+
+      this.newEC2Instance = true;
+
+      if (data["keys"].length > 0) {
+        this.notifications.RSAPrivateKey.emit(data["keys"][0]);
+      }      
+    }
   }
 }
