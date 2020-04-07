@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { AWSClientService } from '../awsclient.service';
+import { AWSClientService } from '../services/awsclient.service';
 import * as M from "materialize-css/dist/js/materialize";
 
 @Component({
