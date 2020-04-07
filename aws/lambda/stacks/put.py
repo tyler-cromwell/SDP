@@ -10,13 +10,14 @@ def main(event, context):
 
     if len(missing_keys) > 0:
         return {            
-            "ErrorMessage": "missing required key(s): {}".format(missing_keys),
-            "StatusCode": "400"    
+            "errorMessage": "missing required key(s): {}".format(missing_keys),
+            "statusCode": "400"    
         }
     
     response = {
         'stackId': '',
-        'keys': []
+        'keys': [],
+        'statusCode': '200'
     }
 
     template = event['template']

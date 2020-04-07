@@ -10,13 +10,14 @@ def main(event, context):
 
     if len(missing_keys) > 0:
         return {            
-            "ErrorMessage": "missing required key(s): {}".format(missing_keys),
-            "StatusCode": "400"    
+            "errorMessage": "missing required key(s): {}".format(missing_keys),
+            "statusCode": "400"    
         }
     
     response = {
         'stackId': '',
-        'keys': []
+        'keys': [],
+        'statusCode': '200'
     }
 
     template = event['template']
@@ -33,7 +34,7 @@ def main(event, context):
                 response['keys'].append(ec2client.create_key_pair(KeyName=keyName))
             # else:
             #     print("result = " + json.dumps(resource, indent=4))
-            #     resource['keys'].append(result['KeyPairs'][0])                        
+            #     resource['keys'].append(result['KeyPairs'][0])
               
     cfclient = boto3.client('cloudformation')    
 
