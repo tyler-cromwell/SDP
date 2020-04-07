@@ -146,11 +146,6 @@ if __name__ == '__main__':
         reads=1,
         writes=1
     )
-    template.add_dynamodb_table(
-        name='EC2ResourcesTable',
-        reads=1,
-        writes=1
-    )
 
     # Generate the API Gateway REST API
     template.add_apigateway_api(
