@@ -2,8 +2,7 @@ import { Component, OnInit, Output, EventEmitter} from '@angular/core';
 import { ActivatedRoute } from '@angular/router'
 
 import * as M from "materialize-css/dist/js/materialize";
-import { AWSClientService } from 'src/services/awsclient.service';
-import { NotificationService } from 'src/services/notification.service';
+import { AWSClientService, NotificationService, LoggingService } from 'src/services/services';
 import { Project, EC2 } from 'src/models/Models';
 import { Template } from 'src/template';
 
@@ -13,23 +12,32 @@ import { Template } from 'src/template';
   styleUrls: ['./detail.component.css']
 })
 export class DetailComponent implements OnInit {  
-  private project: Project;  
+  private project: Project;
+  private readonly logSrc: string = '[PROJECT DETAILS]';
 
   private ec2Instances: object[] = null;
   private isLoadingEC2Instances: Boolean = false;
   private newEC2Instance: Boolean = null;
 
   constructor(private activatedRoute: ActivatedRoute, 
-    private client: AWSClientService, 
-    private notifications: NotificationService) { }
+              private client: AWSClientService, 
+              private notifications: NotificationService,
+              private logger: LoggingService) 
+  { 
+    this.logger.logs.subscribe(log => {
+      console.log(`[${log.src}] ${log.message}`);
+    });
+  }
 
   ngOnInit() {
     this.activatedRoute.params.subscribe(params => {      
       let projectName = params['id'];
-      this.client.getProject(projectName).subscribe(data => {    
-        console.log(`[PROJECT DETAILS] initalizing details component with project: 
-          ${JSON.stringify(data, null, 4)}`);    
-        this.project = data[0];        
+      this.client.getProject(projectName).subscribe(data => {
+        this.logger.log(
+          this.logSrc,
+          `initalizing project with the following template: \n${JSON.stringify(data, null, 4)}`
+        );
+        this.project = data[0];
       });
     });
   }
@@ -39,20 +47,24 @@ export class DetailComponent implements OnInit {
     M.Collapsible.init(document.querySelectorAll('.collapsible'), {});
   }
 
-  onEC2Create(EC2Instace: EC2) {
+  async onEC2Create(EC2Instace: EC2) {
     let { logicalId, instanceType, keyName, machineImage, userData } = EC2Instace;        
-    
-    console.log(`[PROJECT DETAILS] captured create event from EC2 component for instance: 
-      ${JSON.stringify(EC2Instace, null, 4)}`);       
+        
+    this.logger.log(
+      this.logSrc, 
+      `captured create event from EC2 component for instance: \n${JSON.stringify(EC2Instace, null, 4)}`
+    );
 
     let template = new Template();    
     template.json = this.project.template;
 
-    console.log(`[PROJECT DETAILS] Template BEFORE adding EC2 instance: 
-      ${JSON.stringify(this.project.template, null, 4)}`);
+    this.logger.log(
+      this.logSrc, 
+      `project template BEFORE adding EC2 instance: \n${JSON.stringify(this.project.template, null, 4)}`
+    );
 
     /*
-     * Stacks cannot be created without at least 1 resource,
+     * Stacks cannot be created without at least one resource.
      * So check if any already exist in the template.
      */    
     let create: Boolean = template.isEmpty();
@@ -67,23 +79,43 @@ export class DetailComponent implements OnInit {
         userData
       }
     );    
-    
-    console.log(`[PROJECT DETAILS] Template AFTER adding EC2 instance: 
-      ${JSON.stringify(this.project.template, null, 4)}`);      
+
+    this.logger.log(
+      this.logSrc, 
+      `project template AFTER adding EC2 instance: \n${JSON.stringify(this.project.template, null, 4)}`
+    );
+
+    let response = null;
 
     if (create) {
-      console.log('[PROJECT DETAILS] this is a new project.. CREATE stack with this template');
-      this.client.createStack(stackName, template).subscribe(data => {
-        console.log(`[PROJECT DETAILS] create stack response: ${JSON.stringify(data, null, 4)}`);        
-        this.synchronizeState(data, template);
-      });
+      this.logger.log(this.logSrc, `this is a new project.. CREATE stack with this template`);
+      response = await this.client.createStack(stackName, template).toPromise();
+      this.logger.log(this.logSrc, `create stack response: ${JSON.stringify(response, null, 4)}`);
     } else {
-      console.log('[PROJECT DETAILS] UPDATE stack with new template'); 
-      this.client.updateStack(stackName, template).subscribe(data => {
-        console.log(`[PROJECT DETAILS] update stack response: ${JSON.stringify(data, null, 4)}`);
-        this.synchronizeState(data, template);        
-      });
-    }        
+      console.log('[PROJECT DETAILS] UPDATE stack with new template');
+      this.logger.log(this.logSrc, 'UPDATE stack with new template');
+      response = await this.client.updateStack(stackName, template).toPromise();
+      this.logger.log(this.logSrc, `update stack response: ${JSON.stringify(response, null, 4)}`);      
+    }
+
+    // if create / update stack operation was succesful
+    if ('statusCode' in response && response['statusCode'] === "200") {
+      // Update the project in ProjectsTable if everything is successful
+      this.client.updateProject(this.project).subscribe();
+
+      this.project.template = template.json;
+
+      // emit notification to indicate creation of new EC2 instance
+      this.notifications.EC2Created.emit(response);
+
+      this.newEC2Instance = true;
+
+      if (response["keys"].length > 0) {
+        this.notifications.RSAPrivateKey.emit(response["keys"][0]);
+      }      
+    } else {
+      // TODO: raise error and notify user
+    }
   }
 
   onEC2View() {
@@ -96,24 +128,5 @@ export class DetailComponent implements OnInit {
         this.newEC2Instance = false; 
       }, 2000);
     });
-  }
-
-  synchronizeState(data, template: Template) {    
-    // if create / update stack operation was succesful
-    if ('statusCode' in data && data['statusCode'] === "200") {
-      // Update the project in ProjectsTable if everything is successful
-      this.client.updateProject(this.project).subscribe();
-
-      this.project.template = template.json;
-
-      // emit notification to indicate creation of new EC2 instance
-      this.notifications.EC2Created.emit(data);
-
-      this.newEC2Instance = true;
-
-      if (data["keys"].length > 0) {
-        this.notifications.RSAPrivateKey.emit(data["keys"][0]);
-      }      
-    }
   }
 }
