@@ -1,6 +1,7 @@
+import { EC2 } from 'src/models/Models';
+
 export class Template {
   json: object;
-  keys: string[];
 
   constructor(description: string = "", version: string = "2010-09-09") {
     this.json = {
@@ -9,14 +10,13 @@ export class Template {
       "Resources": {},
       "Outputs": {},
     };
-    this.keys = [];
   }
 
-  isEmpty() {
+  public isEmpty(): Boolean {
     return Object.keys(this.json['Resources']).length == 0
   }
 
-  addLambdaFunction(name: string, handler: string, role: string, code: string, runtime: string) {
+  public addLambdaFunction(name: string, handler: string, role: string, code: string, runtime: string) {
     this.json["Resources"][name] = {
       "Type": "AWS::Lambda::Function",
       "Properties" : { 
@@ -29,37 +29,36 @@ export class Template {
       "Runtime": runtime,      
     }
   }
-
-  /*
-   * "userData" parameter must not be an empty string (''), otherwise DynamoDB will not store it.
-   */
-  addEC2Instance(project_name: string, name: string, instanceType: string, keyName: string, machineImage: string, userData: string = "# Comment") {
-    if (this.keys.indexOf(keyName) == -1) {
-      this.keys.push(keyName);
-    }
-
-    this.json["Resources"][name] = {
+  
+  public addEC2Instance(projectId: string, instance: EC2) {    
+    this.json["Resources"][instance.logicalId] = {
       "Type": "AWS::EC2::Instance",
       "Properties": {
-        "ImageId": machineImage,
-        "InstanceType": instanceType,
-        "KeyName": keyName,
-        "UserData": {
-          "Fn::Base64": userData
-        },
+        "KeyName": instance.keyName,
+        "ImageId": instance.machineImage,
+        "InstanceType": instance.instanceType,
         "Tags" : [
           {
+            "Key": "Name",
+            "Value": instance.logicalId
+          },
+          {
               "Key" : "ProjectName",
-              "Value" : project_name
+              "Value" : projectId
           }
         ]
       }
-    };
+    }
 
-    this.json["Outputs"]["InstanceId"] = {
-      "Value": {
-        "Ref": name
+    // if (instance.keyName !== null) {
+    //   this.json["Resources"][instance.logicalId]["Properties"]["KeyName"] = instance.keyName;
+    // }
+
+    // "userData" parameter must not be an empty string or null, otherwise DynamoDB will throw error.
+    if (instance.userData !== null && instance.userData !== '') {
+      this.json["Resources"][instance.logicalId]["Properties"]["UserData"] = {
+        "Fn::Base64": instance.userData
       }
-    };
+    }
   }
 }

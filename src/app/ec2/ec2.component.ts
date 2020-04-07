@@ -1,8 +1,10 @@
 import { Component, OnInit, ViewChild, ElementRef, Output, EventEmitter, Input } from '@angular/core';
+import { FormGroup, FormControl, Validators, FormArray } from '@angular/forms';
+
 import * as M from "materialize-css/dist/js/materialize";
-import { NgForm } from '@angular/forms';
-import { AWSClientService } from 'src/awsclient.service';
-import { Template } from 'src/template';
+import { AWSClientService } from 'src/services/awsclient.service';
+import { NotificationService } from 'src/services/notification.service';
+import { Project } from 'src/models/Project';
 
 @Component({
   selector: 'app-ec2',
@@ -10,89 +12,98 @@ import { Template } from 'src/template';
   styleUrls: ['./ec2.component.css']
 })
 export class Ec2Component implements OnInit {
-  @Input() project: string;
-  @Output() ec2Created: EventEmitter<any> = new EventEmitter();
-  @ViewChild('instanceTypeSelect', {static:true}) instanceTypeSelect: ElementRef;
-  @ViewChild('machineImageSelect', {static:true}) machineImageSelect: ElementRef;  
-
-  private ec2Name: string = this.randomString();
-  private ec2KeyPair: string = "OurEC2Keypair01";
+  @Input() private project: Project;
+  @Output() private create: EventEmitter<any> = new EventEmitter();
+  @ViewChild('instanceTypeSelect', { static: true }) private instanceTypeSelect: ElementRef;
+  @ViewChild('machineImageSelect', { static: true }) private machineImageSelect: ElementRef;
+  @ViewChild('keyPairActionSelect', { static: true }) private keyPairActionSelect: ElementRef;  
+  @ViewChild('fileInput', { static: true }) fileInput: ElementRef;
+  @ViewChild('fileName', { static: true }) fileName: ElementRef;
+  
+  private createForm: FormGroup;
   private instanceTypes: string[] = ["t2.micro"];
   private machineImages: string[] = ["ami-0e38b48473ea57778"];
-  public isLoading: boolean;  
+  private createNewKeyPair: Boolean = true;
+  private initialFormValues = null;
+  private isLoading: Boolean = false;
 
-  randomString(length=10): string {
-    let result = '';
-    let characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
-    let charactersLength = characters.length;
-    for (let i = 0; i < length; i++) {
-       result += characters.charAt(Math.floor(Math.random() * charactersLength));
-    }
-    return result;
+  private receivedRSAPrivateKeyPair: Boolean = false;
+  private RSAPrivateKey: string = null;
+  private keyName: string = null;
+
+  constructor(private client: AWSClientService, private notifications: NotificationService) {
+    this.notifications.EC2Created.subscribe(data => {      
+      this.isLoading = false;      
+    });
+    this.notifications.RSAPrivateKey.subscribe(data => {      
+      this.receivedRSAPrivateKeyPair = true;
+      this.RSAPrivateKey = data["KeyMaterial"];
+      this.keyName = data["KeyName"];
+      console.log("[PROJECT DETAILS] Received RSA key: " + this.RSAPrivateKey);
+    });
   }
 
-  constructor(private client: AWSClientService) { 
-    this.isLoading = false;
+  ngOnInit() { 
+    this.createForm = new FormGroup({
+      'logicalId': new FormControl(this.getRandID(), Validators.required),
+      'instanceType': new FormControl(this.instanceTypes[0]),
+      'keyName': new FormControl(this.getRandID(), Validators.required),
+      'machineImage': new FormControl(this.machineImages[0]),
+      'userData': new FormControl(null)
+    });    
   }
-
-  ngOnInit() { }
 
   ngAfterViewInit() {
     M.FormSelect.init(this.instanceTypeSelect.nativeElement, {});    
     M.FormSelect.init(this.machineImageSelect.nativeElement, {});
-    setTimeout(() => {
-      M.updateTextFields();
-    }, 100);
+    M.FormSelect.init(this.keyPairActionSelect.nativeElement, {});
+    M.updateTextFields();    
+    this.initialFormValues = this.createForm.value;    
   }
 
-  onSubmit(form: NgForm) {
-    let {name, instanceType, keyName, machineImage} = form.value;
-    this.isLoading = true;
+  onFileChange(e) {
+    let file = e.target.files[0];
+    let fileReader = new FileReader();
+    fileReader.readAsText(file);
 
-    setTimeout(() => {
-      this.isLoading = false;
-    }, 2000);
-
-    this.ec2Created.emit({
-      projectId: this.project['id'],
-      name,
-      instanceType,
-      machineImage,
-      keyName,
-      userData: "None", // TODO: get from UI
-      state: "live" // TODO: get dynamic value
-    });    
-
-    let template = new Template();
-    template.json = this.project['template'];
-
-    /*
-     * Stacks cannot be created without at least 1 resource,
-     * So check if any already exist in the template.
-     */
-    let create: Boolean = template.isEmpty();
-    let stackName: string = this.project['name'].replace(/\s/g, '');
-    template.addEC2Instance(this.project['name'], name, instanceType, keyName, machineImage);
-    this.project['template'] = template.json;
-
-    // Update the project row in ProjectsTable.
-    this.client.updateProject(
-      this.project['id'],
-      this.project['name'],
-      this.project['owner'],
-      this.project['description'],
-      this.project['version'],
-      template
-    ).subscribe();
-
-    if (create) {      
-      this.client.createStack(stackName, template).subscribe(data => {
-        console.log("CREATE STACK RESP: " + JSON.stringify(data));
-      });
-    } else {      
-        this.client.updateStack(stackName, template).subscribe(data => {
-          console.log("UPDATE STACK RESP: " + JSON.stringify(data));
-        });
-    }
+    fileReader.onloadend = (e) => {
+      this.createForm.patchValue({
+        'userData': fileReader.result
+      });      
+    };
   }
+
+  onSubmit() {
+    this.isLoading = true; 
+    console.log(this.createForm.value);
+    this.create.emit(this.createForm.value);
+
+    this.createForm.reset(this.initialFormValues);
+
+    this.createForm.patchValue({
+      logicalId: this.getRandID(),
+      keyName: this.getRandID()
+    });
+
+    // Reset controls not part of FormGroup manually
+    this.createNewKeyPair = false;
+    this.fileInput.nativeElement.value = "";
+    this.fileName.nativeElement.value = "";        
+  }
+
+  onRSAPrivateKeyDownload() {
+    let blob = new Blob([this.RSAPrivateKey], { type: 'text/plain' });
+    var url = window.URL.createObjectURL(blob);
+    var anchor = document.createElement("a");
+    anchor.download = this.keyName+'.pem';
+    anchor.href = url;
+    anchor.click();
+
+    // Clear RSA private key data after download
+    this.receivedRSAPrivateKeyPair = false;
+    this.RSAPrivateKey = null;
+    this.keyName = null;
+  }
+
+  getRandID(): string { return Math.random().toString(36).substring(2, 15) };
 }

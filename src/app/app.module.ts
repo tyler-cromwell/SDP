@@ -1,12 +1,13 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 import { HttpClientModule } from '@angular/common/http';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 import { AppRoutingModule, routingComponents } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { Ec2Component } from './ec2/ec2.component';
 import { CreateUserComponent } from './create-user/create-user.component';
+import { AWSClientService, NotificationService, LoggingService } from 'src/services/services';
 
 @NgModule({
   declarations: [
@@ -19,9 +20,14 @@ import { CreateUserComponent } from './create-user/create-user.component';
     BrowserModule,
     AppRoutingModule,
     HttpClientModule,
+    ReactiveFormsModule,
     FormsModule,
   ],
-  providers: [],
+  providers: [
+    AWSClientService,
+    NotificationService,
+    LoggingService
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
