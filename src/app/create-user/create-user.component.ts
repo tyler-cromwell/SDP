@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { NgForm } from '@angular/forms';
-import { AWSClientService } from 'src/awsclient.service';
+import { AWSClientService } from 'src/services/awsclient.service';
 
 @Component({
   selector: 'app-create-user',
