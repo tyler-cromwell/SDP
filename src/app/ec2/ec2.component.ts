@@ -45,9 +45,9 @@ export class Ec2Component implements OnInit {
 
   ngOnInit() { 
     this.createForm = new FormGroup({
-      'logicalId': new FormControl(null, Validators.required),
+      'logicalId': new FormControl(this.getRandID(), Validators.required),
       'instanceType': new FormControl(this.instanceTypes[0]),
-      'keyName': new FormControl(Math.random().toString(36).substring(2, 15), Validators.required),
+      'keyName': new FormControl(this.getRandID(), Validators.required),
       'machineImage': new FormControl(this.machineImages[0]),
       'userData': new FormControl(null)
     });    
@@ -76,9 +76,14 @@ export class Ec2Component implements OnInit {
   onSubmit() {
     this.isLoading = true; 
     console.log(this.createForm.value);
-    this.create.emit(this.createForm.value);  
+    this.create.emit(this.createForm.value);
 
     this.createForm.reset(this.initialFormValues);
+
+    this.createForm.patchValue({
+      logicalId: this.getRandID(),
+      keyName: this.getRandID()
+    });
 
     // Reset controls not part of FormGroup manually
     this.createNewKeyPair = false;
@@ -99,4 +104,6 @@ export class Ec2Component implements OnInit {
     this.RSAPrivateKey = null;
     this.keyName = null;
   }
+
+  getRandID(): string { return Math.random().toString(36).substring(2, 15) };
 }
