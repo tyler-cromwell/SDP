@@ -91,8 +91,7 @@ export class DetailComponent implements OnInit {
       this.logger.log(this.logSrc, `this is a new project.. CREATE stack with this template`);
       response = await this.client.createStack(stackName, template).toPromise();
       this.logger.log(this.logSrc, `create stack response: ${JSON.stringify(response, null, 4)}`);
-    } else {
-      console.log('[PROJECT DETAILS] UPDATE stack with new template');
+    } else {      
       this.logger.log(this.logSrc, 'UPDATE stack with new template');
       response = await this.client.updateStack(stackName, template).toPromise();
       this.logger.log(this.logSrc, `update stack response: ${JSON.stringify(response, null, 4)}`);      
