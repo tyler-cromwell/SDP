@@ -16,7 +16,7 @@
           <a href="#test1">
             EC2
             <i class="material-icons left" style="padding-top: 12px; margin: 0px;">cloud_queue</i>
-            <span *ngIf="newEC2InstanceCount > 0" class="new badge blue" style="margin-top: 12px;">{{ newEC2InstanceCount }}</span>
+            <span *ngIf="newEC2Instance === true" class="new badge orange" style="margin-top: 12px;"></span>            
           </a>
         </li>
         <li class="tab col s3">
@@ -35,58 +35,51 @@
     </div>
 
     <div id="test1" class="col s12">
-      <div *ngIf="isLoadingEC2; then thenBlock else elseBlock"></div>
-      
-      <ng-template #thenBlock>
-        <div *ngIf="isLoadingEC2" class="preloader-wrapper small active">
-          <div class="spinner-layer spinner-green-only">
-            <div class="circle-clipper left">
-              <div class="circle"></div>
-            </div><div class="gap-patch">
-              <div class="circle"></div>
-            </div><div class="circle-clipper right">
-              <div class="circle"></div>
-            </div>
-          </div>
+      <div 
+        class="row"
+        *ngIf="isLoadingEC2Instances"
+        style="margin-top: 25px;">
+        <div class="progress">
+          <div class="indeterminate"></div>
         </div>
-      </ng-template>
+      </div>
 
-      <ng-template #elseBlock>
-        <div *ngIf="ec2Instances">
-          <table class="striped">
-            <thead>
-              <tr>
-                <th>Instance ID</th>
-                <th>Instance Type</th>
-                <th>Availability Zone</th>
-                <th>State</th>
-                <th>Key Name</th>
-                <th>Launch Time</th>
-                <th>Image Id</th>
-                <th>Public DNS</th>
-              </tr>
-            </thead>
-  
-            <tbody>
-              <tr *ngFor="let ec2Instance of ec2Instances">
-                <td>{{ ec2Instance.Instances[0].InstanceId }}</td>
-                <td>{{ ec2Instance.Instances[0].InstanceType }}</td>
-                <td>{{ ec2Instance.Instances[0].Placement.AvailabilityZone }}</td>
-                <td>
-                  <span *ngIf="ec2Instance.Instances[0].State.Name == 'running'" class="new badge blue" data-badge-caption="running"></span>
-                  <span *ngIf="ec2Instance.Instances[0].State.Name == 'terminated'" class="new badge red" data-badge-caption="terminated"></span>
-                  <span *ngIf="ec2Instance.Instances[0].State.Name == 'pending'" class="new badge orange" data-badge-caption="pending"></span>
-                  <span *ngIf="ec2Instance.Instances[0].State.Name == 'shutting-down'" class="new badge yellow" data-badge-caption="stopping"></span>                  
-                </td>
-                <td>{{ ec2Instance.Instances[0].KeyName }}</td>
-                <td>{{ ec2Instance.Instances[0].LaunchTime }}</td>
-                <td>{{ ec2Instance.Instances[0].ImageId }}</td>
-                <td>{{ ec2Instance.Instances[0].NetworkInterfaces[0].Association.PublicDnsName }}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </ng-template>
+      <div *ngIf="!isLoadingEC2Instances">
+        <table class="striped">
+          <thead>
+            <tr>
+              <th>Instance ID</th>
+              <th>Instance Type</th>
+              <th>Availability Zone</th>
+              <th>State</th>
+              <th>Key Name</th>
+              <th>Launch Time</th>
+              <th>Image Id</th>
+              <th>Public DNS</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr *ngFor="let ec2Instance of ec2Instances">
+              <td>                
+                {{ ec2Instance.Instances[0].InstanceId }}
+              </td>
+              <td>{{ ec2Instance.Instances[0].InstanceType }}</td>
+              <td>{{ ec2Instance.Instances[0].Placement.AvailabilityZone }}</td>
+              <td>
+                <span *ngIf="ec2Instance.Instances[0].State.Name == 'running'" class="new badge blue" data-badge-caption="running"></span>
+                <span *ngIf="ec2Instance.Instances[0].State.Name == 'terminated'" class="new badge red" data-badge-caption="terminated"></span>
+                <span *ngIf="ec2Instance.Instances[0].State.Name == 'pending'" class="new badge orange" data-badge-caption="pending"></span>
+                <span *ngIf="ec2Instance.Instances[0].State.Name == 'shutting-down'" class="new badge yellow" data-badge-caption="stopping"></span>                  
+              </td>
+              <td>{{ ec2Instance.Instances[0].KeyName }}</td>
+              <td>{{ ec2Instance.Instances[0].LaunchTime }}</td>
+              <td>{{ ec2Instance.Instances[0].ImageId }}</td>
+              <td>{{ ec2Instance.Instances[0].NetworkInterfaces[0].Association.PublicDnsName }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>      
     </div>
 
     <div id="test2" class="col s12">Test 2</div>
