@@ -79,11 +79,12 @@ export class Ec2Component implements OnInit {
   }
   
   resetForm() {
-    this.createForm.reset(this.initialFormValues);
-  
-    this.createForm.patchValue({
-      logicalId: this.getRandID(),
-      keyName: this.getRandID()
+    this.createForm.setValue({
+      'logicalId': this.getRandID(),
+      'instanceType': this.instanceTypes[0],
+      'keyName': this.getRandID(),
+      'machineImage': this.machineImages[0],
+      'userData': null
     });
   
     // Reset controls not part of FormGroup manually
