@@ -4,29 +4,32 @@
   </div>
   
   <div class="row">
+
+    <!-- TAB HEADERS -->
+
     <div class="col s12">
-      <ul class="tabs">        
+      <ul class="tabs">
         <li class="tab col s3">
-          <a class="active" href="#test4">
+          <a class="active" href="#settings">
             Settings
             <i class="material-icons left" style="padding-top: 12px; margin: 0px;">settings</i>
           </a>
         </li> 
         <li class="tab col s3" (click)="onEC2View()">
-          <a href="#test1">
+          <a href="#EC2">
             EC2
             <i class="material-icons left" style="padding-top: 12px; margin: 0px;">cloud_queue</i>
-            <span *ngIf="newEC2Instance === true" class="new badge orange" style="margin-top: 12px;"></span>            
+            <span *ngIf="newEC2Instance === true" class="new badge blue" style="margin-top: 12px;"></span>            
           </a>
         </li>
         <li class="tab col s3">
-          <a href="#test2">
+          <a href="#dynamo">
             Dynamo
             <i class="material-icons left" style="padding-top: 12px; margin: 0px;">memory</i>
           </a>
         </li>
         <li class="tab col s3">
-          <a href="#test3">
+          <a href="#lambda">
             Lambda
             <i class="material-icons left" style="padding-top: 12px; margin: 0px;">code</i>
           </a>
@@ -34,31 +37,28 @@
       </ul>
     </div>
 
-    <div id="test1" class="col s12">
-      <div 
-        class="row"
-        *ngIf="isLoadingEC2Instances"
-        style="margin-top: 25px;">
+    <!-- TAB IMPLEMENTATION -->
+
+    <!-- EC2 TAB CONTENT-->
+    <div id="EC2" class="col s12">      
+      <div *ngIf="isLoadingEC2Instances" class="row" style="margin-top: 25px;">
         <div class="progress">
           <div class="indeterminate"></div>
         </div>
       </div>
-
       <div *ngIf="!isLoadingEC2Instances">
         <table class="striped">
           <thead>
             <tr>
               <th>Instance ID</th>
               <th>Instance Type</th>
-              <th>Availability Zone</th>
+              <th>AZ</th>
               <th>State</th>
-              <th>Key Name</th>
-              <th>Launch Time</th>
-              <th>Image Id</th>
+              <th>Key Name</th>              
+              <th>Image ID</th>
               <th>Public DNS</th>
             </tr>
           </thead>
-
           <tbody>
             <tr *ngFor="let ec2Instance of ec2Instances">
               <td>                
@@ -66,35 +66,39 @@
               </td>
               <td>{{ ec2Instance.Instances[0].InstanceType }}</td>
               <td>{{ ec2Instance.Instances[0].Placement.AvailabilityZone }}</td>
-              <td>
-                <span *ngIf="ec2Instance.Instances[0].State.Name == 'running'" class="new badge blue" data-badge-caption="running"></span>
-                <span *ngIf="ec2Instance.Instances[0].State.Name == 'terminated'" class="new badge red" data-badge-caption="terminated"></span>
-                <span *ngIf="ec2Instance.Instances[0].State.Name == 'pending'" class="new badge orange" data-badge-caption="pending"></span>
-                <span *ngIf="ec2Instance.Instances[0].State.Name == 'shutting-down'" class="new badge yellow" data-badge-caption="stopping"></span>                  
+              <td [ngSwitch]="ec2Instance.Instances[0].State.Name">                   
+                <span *ngSwitchCase="'running'" class="new badge blue" data-badge-caption="running"></span>
+                <span *ngSwitchCase="'terminated'" class="new badge red" data-badge-caption="terminated"></span>
+                <span *ngSwitchCase="'pending'" class="new badge orange" data-badge-caption="pending"></span>
+                <span *ngSwitchCase="'stopping'" class="new badge yellow" data-badge-caption="stopping"></span>
               </td>
-              <td>{{ ec2Instance.Instances[0].KeyName }}</td>
-              <td>{{ ec2Instance.Instances[0].LaunchTime }}</td>
+              <td>{{ ec2Instance.Instances[0].KeyName }}</td>              
               <td>{{ ec2Instance.Instances[0].ImageId }}</td>
-              <td>{{ ec2Instance.Instances[0].NetworkInterfaces[0].Association.PublicDnsName }}</td>
+              <td>{{ec2Instance.Instances[0].NetworkInterfaces[0].Association.PublicDnsName}}</td>
             </tr>
           </tbody>
         </table>
       </div>      
     </div>
 
-    <div id="test2" class="col s12">Test 2</div>
+    <!-- DYNAMO TAB CONTENT-->
+    <div id="dynamo" class="col s12">Dynamo</div>
 
-    <div id="test3" class="col s12">Test 3</div>    
+    <!-- LAMBDA TAB CONTENT-->
+    <div id="lambda" class="col s12">lambda</div>    
 
-    <div id="test4" class="col s12">
+    <!-- SETTINGS TAB CONTENT-->
+    <div id="settings" class="col s12">
       <ul class="collapsible">
         <li>
-          <div class="collapsible-header"><i class="material-icons">filter_drama</i>Create EC2 Instance</div>
+          <div class="collapsible-header">
+            <i class="material-icons">filter_drama</i>Create EC2 Instance
+          </div>
           <div class="collapsible-body">
             <app-ec2 [project]="project" (create)="onEC2Create($event)"></app-ec2>
           </div>
         </li>
-      </ul>      
-    </div> 
+      </ul>
+    </div>
   </div>
 </div>
