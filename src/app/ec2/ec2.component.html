@@ -1,4 +1,4 @@
-<div class="row">
+<div class="row" [hidden]="isLoading">
   <form class="col s12" [formGroup]="createForm" (ngSubmit)="onSubmit()">
     <div class="row">
       <div class="input-field col s12">
@@ -39,8 +39,8 @@
     <div class="row">
       <div class="input-field col s12">
         <select #keyPairActionSelect (change)="createNewKeyPair = !createNewKeyPair">
-          <option [selected]="createNewKeyPair === false">Use an existing key pair</option>
           <option [selected]="createNewKeyPair === true">Create a new key pair</option>
+          <option [selected]="createNewKeyPair === false">Use an existing key pair</option>
         </select>
         <label>SSH Key Pair</label>        
       </div>
@@ -64,7 +64,14 @@
           *ngIf="createNewKeyPair === false"
           style="color: orange;"           
           class="helper-text">
-          <strong>Warning!</strong> Make sure you have the private key associated with this key pair! You will need it to SSH into your instance.
+          <strong>Warning!</strong> Make sure you have the private key associated with 
+          this key pair! You will need it to SSH into your instance.
+        </span>
+        <span
+          style="color: red;" 
+          *ngIf="!createForm.get('keyName').valid && createForm.get('keyName').touched"
+          class="helper-text">
+          <strong>Danger!</strong> Please enter a key name!
         </span>
       </div>
     </div>    
@@ -94,6 +101,17 @@
         [disabled] = "!createForm.valid"
         class="indigo accent-2 btn"
         type="submit">Submit</button>      
+      <button
+        style='margin-left: 5px;'
+        class='lime accent-4 btn'
+        [disabled]="receivedRSAPrivateKeyPair === false"
+        type='button'
+        (click)='onRSAPrivateKeyDownload()'>Download RSA Private Key</button> 
     </div>
   </form>
+</div>
+<div class="row" *ngIf="isLoading">
+  <div class="progress">
+    <div class="indeterminate"></div>
+  </div>
 </div>
