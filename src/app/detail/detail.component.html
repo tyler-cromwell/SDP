@@ -74,7 +74,17 @@
               </td>
               <td>{{ ec2Instance.Instances[0].KeyName }}</td>              
               <td>{{ ec2Instance.Instances[0].ImageId }}</td>
-              <td>{{ec2Instance.Instances[0].NetworkInterfaces[0].Association.PublicDnsName}}</td>
+              <td>
+                <div *ngIf='ec2Instance.Instances[0].State.Name !== "running" else elseBlock'>                  
+                  <span 
+                    *ngIf='ec2Instance.Instances[0].State.Name !== "running"' 
+                    class="new badge orange" 
+                    data-badge-caption="pending"></span>
+                </div>
+                <ng-template #elseBlock>
+                  {{ ec2Instance.Instances[0].NetworkInterfaces[0].Association.PublicDnsName }}
+                </ng-template>
+              </td>
             </tr>
           </tbody>
         </table>
