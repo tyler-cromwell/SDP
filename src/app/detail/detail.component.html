@@ -70,7 +70,7 @@
                 <span *ngSwitchCase="'running'" class="new badge blue" data-badge-caption="running"></span>
                 <span *ngSwitchCase="'terminated'" class="new badge red" data-badge-caption="terminated"></span>
                 <span *ngSwitchCase="'pending'" class="new badge orange" data-badge-caption="pending"></span>
-                <span *ngSwitchCase="'stopping'" class="new badge yellow" data-badge-caption="stopping"></span>
+                <span *ngSwitchCase="'shutting-down'" class="new badge yellow" data-badge-caption="shutting-down"></span>
               </td>
               <td>{{ ec2Instance.Instances[0].KeyName }}</td>              
               <td>{{ ec2Instance.Instances[0].ImageId }}</td>
@@ -79,7 +79,7 @@
                   <span 
                     *ngIf='ec2Instance.Instances[0].State.Name !== "running"' 
                     class="new badge orange" 
-                    data-badge-caption="pending"></span>
+                    data-badge-caption="none"></span>
                 </div>
                 <ng-template #elseBlock>
                   {{ ec2Instance.Instances[0].NetworkInterfaces[0].Association.PublicDnsName }}

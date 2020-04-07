@@ -1,5 +1,5 @@
-import { Component, OnInit, ViewChild, ElementRef, Output, EventEmitter, Input } from '@angular/core';
-import { FormGroup, FormControl, Validators, FormArray } from '@angular/forms';
+import { Component, OnInit, ViewChild, ElementRef, Output, EventEmitter, Input, ɵCompiler_compileModuleSync__POST_R3__ } from '@angular/core';
+import { FormGroup, FormControl, Validators } from '@angular/forms';
 
 import * as M from "materialize-css/dist/js/materialize";
 import { AWSClientService } from 'src/services/awsclient.service';
@@ -50,15 +50,14 @@ export class Ec2Component implements OnInit {
       'keyName': new FormControl(this.getRandID(), Validators.required),
       'machineImage': new FormControl(this.machineImages[0]),
       'userData': new FormControl(null)
-    });    
+    });
   }
-
+  
   ngAfterViewInit() {
     M.FormSelect.init(this.instanceTypeSelect.nativeElement, {});    
     M.FormSelect.init(this.machineImageSelect.nativeElement, {});
     M.FormSelect.init(this.keyPairActionSelect.nativeElement, {});
-    M.updateTextFields();    
-    this.initialFormValues = this.createForm.value;    
+    M.updateTextFields();
   }
 
   onFileChange(e) {
@@ -75,20 +74,22 @@ export class Ec2Component implements OnInit {
 
   onSubmit() {
     this.isLoading = true; 
-    console.log(this.createForm.value);
     this.create.emit(this.createForm.value);
-
+    this.resetForm();
+  }
+  
+  resetForm() {
     this.createForm.reset(this.initialFormValues);
-
+  
     this.createForm.patchValue({
       logicalId: this.getRandID(),
       keyName: this.getRandID()
     });
-
+  
     // Reset controls not part of FormGroup manually
     this.createNewKeyPair = false;
     this.fileInput.nativeElement.value = "";
-    this.fileName.nativeElement.value = "";        
+    this.fileName.nativeElement.value = "";            
   }
 
   onRSAPrivateKeyDownload() {

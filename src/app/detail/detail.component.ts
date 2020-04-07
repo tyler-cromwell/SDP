@@ -13,7 +13,7 @@ import { Template } from 'src/template';
 })
 export class DetailComponent implements OnInit {  
   private project: Project;
-  private readonly logSrc: string = '[PROJECT DETAILS]';
+  private readonly logSrc: string = 'PROJECT DETAILS';
 
   private ec2Instances: object[] = null;
   private isLoadingEC2Instances: Boolean = false;
@@ -113,7 +113,7 @@ export class DetailComponent implements OnInit {
         this.notifications.RSAPrivateKey.emit(response["keys"][0]);
       }      
     } else {
-      // TODO: raise error and notify user
+      this.notifications.EC2Created.emit(response);
     }
   }
 
