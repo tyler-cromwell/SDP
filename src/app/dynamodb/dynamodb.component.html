@@ -1,1 +1,131 @@
-<p>dynamodb works!</p>
+<div class="row" [hidden]="isLoading">
+  <form class="col s12" [formGroup]="createForm" (ngSubmit)="onSubmit()">
+    <!-- Table Name -->
+    <div class="row">
+      <div class="input-field col s12">
+        <label for="name">Table Name</label>
+        <input
+          id="name"
+          type="text"
+          formControlName="tableName">
+        <span
+          style="color: red;"
+          *ngIf="!createForm.get('tableName').valid && createForm.get('tableName').touched"
+          class="helper-text">
+          <strong>Danger!</strong> Please enter a valid Table name!
+        </span>
+      </div>
+    </div>
+    <!-- Read capacity units -->
+    <div class="row">
+      <div class="input-field col s12">
+        <label for="rcu">Read Capacity Units (RCU)</label>
+        <input
+          id="rcu"
+          type="number"
+          min="1"
+          max="5"
+          step="1"
+          value="1"
+          formControlName="readCapacityUnits">
+        <span
+          style="color: red;"
+          *ngIf="!createForm.get('readCapacityUnits').valid"
+          class="helper-text">
+          <strong>Danger!</strong> Please enter a valid RCU value!
+        </span>
+      </div>
+    </div>
+    <!-- Write capacity units -->
+    <div class="row">
+      <div class="input-field col s12">
+        <label for="wcu">Write Capacity Units (RCU)</label>
+        <input
+          id="wcu"
+          type="number"
+          min="1"
+          max="5"
+          step="1"
+          value="1"
+          formControlName="writeCapacityUnits">
+        <span
+          style="color: red;"
+          *ngIf="!createForm.get('writeCapacityUnits').valid"
+          class="helper-text">
+          <strong>Danger!</strong> Please enter a valid WCU value!
+        </span>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="input-field col s12">
+        <select #instanceTypeSelect formControlName="instanceType">
+          <option *ngFor="let instanceType of instanceTypes" [value]="instanceType">
+            {{ instanceType }}
+          </option>
+        </select>
+        <label>Instance Type</label>
+      </div>
+    </div>
+    <div class="row">
+      <div class="input-field col s12">
+        <select #machineImageSelect formControlName="machineImage">
+          <option *ngFor="let machineImage of machineImages" [value]="machineImage">
+            {{ machineImage }}
+          </option>
+        </select>
+        <label>Machine Image</label>
+      </div>
+    </div>
+    <div class="row">
+      <div class="input-field col s12">
+        <select #keyPairActionSelect (change)="createNewKeyPair = !createNewKeyPair">
+          <option [selected]="createNewKeyPair === true">Create a new key pair</option>
+          <option [selected]="createNewKeyPair === false">Use an existing key pair</option>
+        </select>
+        <label>SSH Key Pair</label>
+      </div>
+    </div>
+    <div class="row">
+      <div class="input-field col s12">
+        <label
+          for="name"
+          class="active">Key Name</label>
+        <input
+          id="name"
+          type="text"
+          formControlName="keyName">
+        <span
+          *ngIf="createNewKeyPair === true"
+          style="color: rgba(255, 166, 0, 0.822);"
+          class="helper-text">
+          Name of key pair to create
+        </span>
+        <span
+          *ngIf="createNewKeyPair === false"
+          style="color: orange;"
+          class="helper-text">
+          <strong>Warning!</strong> Make sure you have the private key associated with
+          this key pair! You will need it to SSH into your instance.
+        </span>
+        <span
+          style="color: red;"
+          *ngIf="!createForm.get('keyName').valid && createForm.get('keyName').touched"
+          class="helper-text">
+          <strong>Danger!</strong> Please enter a key name!
+        </span>
+      </div>
+    </div>
+    <div class="row">
+      <button
+        [disabled] = "!createForm.valid"
+        class="indigo accent-2 btn"
+        type="submit">Submit</button>
+    </div>
+  </form>
+</div>
+<div class="row" *ngIf="isLoading">
+  <div class="progress">
+    <div class="indeterminate"></div>
+  </div>
+</div>
