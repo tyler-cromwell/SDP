@@ -3,7 +3,7 @@ import { ActivatedRoute } from '@angular/router'
 
 import * as M from "materialize-css/dist/js/materialize";
 import { AWSClientService, NotificationService, LoggingService } from 'src/services/services';
-import { Project, EC2 } from 'src/models/Models';
+import { Project, EC2, DynamoDB } from 'src/models/Models';
 import { Template } from 'src/template';
 
 @Component({
@@ -11,7 +11,7 @@ import { Template } from 'src/template';
   templateUrl: './detail.component.html',
   styleUrls: ['./detail.component.css']
 })
-export class DetailComponent implements OnInit {  
+export class DetailComponent implements OnInit {
   private project: Project;
   private readonly logSrc: string = 'PROJECT DETAILS';
 
@@ -19,18 +19,20 @@ export class DetailComponent implements OnInit {
   private isLoadingEC2Instances: Boolean = false;
   private newEC2Instance: Boolean = null;
 
-  constructor(private activatedRoute: ActivatedRoute, 
-              private client: AWSClientService, 
+  private isLoadingDyanmoDBInstances: Boolean = false;
+
+  constructor(private activatedRoute: ActivatedRoute,
+              private client: AWSClientService,
               private notifications: NotificationService,
-              private logger: LoggingService) 
-  { 
+              private logger: LoggingService)
+  {
     this.logger.logs.subscribe(log => {
       console.log(`[${log.src}] ${log.message}`);
     });
   }
 
   ngOnInit() {
-    this.activatedRoute.params.subscribe(params => {      
+    this.activatedRoute.params.subscribe(params => {
       let projectName = params['id'];
       this.client.getProject(projectName).subscribe(data => {
         this.logger.log(
@@ -42,35 +44,39 @@ export class DetailComponent implements OnInit {
     });
   }
 
-  ngAfterViewInit() {    
-    M.Tabs.init(document.querySelectorAll('.tabs'), {});    
+  ngAfterViewInit() {
+    M.Tabs.init(document.querySelectorAll('.tabs'), {});
     M.Collapsible.init(document.querySelectorAll('.collapsible'), {});
   }
 
+  async onDynamoCreate(DynamoTableInstance: DynamoDB) {
+
+  }
+
   async onEC2Create(EC2Instace: EC2) {
-    let { logicalId, instanceType, keyName, machineImage, userData } = EC2Instace;        
-        
+    let { logicalId, instanceType, keyName, machineImage, userData } = EC2Instace;
+
     this.logger.log(
-      this.logSrc, 
+      this.logSrc,
       `captured create event from EC2 component for instance: \n${JSON.stringify(EC2Instace, null, 4)}`
     );
 
-    let template = new Template();    
+    let template = new Template();
     template.json = this.project.template;
 
     this.logger.log(
-      this.logSrc, 
+      this.logSrc,
       `project template BEFORE adding EC2 instance: \n${JSON.stringify(this.project.template, null, 4)}`
     );
 
     /*
      * Stacks cannot be created without at least one resource.
      * So check if any already exist in the template.
-     */    
+     */
     let create: Boolean = template.isEmpty();
     let stackName: string = this.project.name.replace(/\s/g, '');
     template.addEC2Instance(
-      this.project.id, 
+      this.project.id,
       {
         logicalId,
         instanceType,
@@ -78,10 +84,10 @@ export class DetailComponent implements OnInit {
         machineImage,
         userData
       }
-    );    
+    );
 
     this.logger.log(
-      this.logSrc, 
+      this.logSrc,
       `project template AFTER adding EC2 instance: \n${JSON.stringify(this.project.template, null, 4)}`
     );
 
@@ -91,10 +97,10 @@ export class DetailComponent implements OnInit {
       this.logger.log(this.logSrc, `this is a new project.. CREATE stack with this template`);
       response = await this.client.createStack(stackName, template).toPromise();
       this.logger.log(this.logSrc, `create stack response: ${JSON.stringify(response, null, 4)}`);
-    } else {      
+    } else {
       this.logger.log(this.logSrc, 'UPDATE stack with new template');
       response = await this.client.updateStack(stackName, template).toPromise();
-      this.logger.log(this.logSrc, `update stack response: ${JSON.stringify(response, null, 4)}`);      
+      this.logger.log(this.logSrc, `update stack response: ${JSON.stringify(response, null, 4)}`);
     }
 
     // if create / update stack operation was succesful
@@ -111,20 +117,32 @@ export class DetailComponent implements OnInit {
 
       if (response["keys"].length > 0) {
         this.notifications.RSAPrivateKey.emit(response["keys"][0]);
-      }      
+      }
     } else {
       this.notifications.EC2Created.emit(response);
     }
+  }
+
+  onDynamoDBView() {
+    // this.isLoadingDyanmoDBInstances = true;
+    // this.client.getDynamoDBResources(this.project.id).subscribe(data => {
+    //   console.log(`[PROJECT DETAILS] DynamoDB Resource data: \n${JSON.stringify(data, null, 4)}`)
+      // this.dynamoDBInstances = data["Reservations"]
+      // this.isLoadingDynamoDBInstances = false;
+      // setTimeout(() => {
+        // this.newDynamoDBInstance = false;
+    //   }, 2000);
+    // })
   }
 
   onEC2View() {
     this.isLoadingEC2Instances = true;
     this.client.getEC2Resources(this.project.id).subscribe(data => {
       console.log(`[PROJECT DETAILS] EC2 Resource data: \n${JSON.stringify(data, null, 4)}`)
-      this.ec2Instances = data["Reservations"]      
-      this.isLoadingEC2Instances = false;      
-      setTimeout(() => { 
-        this.newEC2Instance = false; 
+      this.ec2Instances = data["Reservations"]
+      this.isLoadingEC2Instances = false;
+      setTimeout(() => {
+        this.newEC2Instance = false;
       }, 2000);
     });
   }
