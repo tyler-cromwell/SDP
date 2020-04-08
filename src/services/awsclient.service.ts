@@ -1,15 +1,14 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import * as Confidential from './confidential.json';
-import { Template } from './template';
 import { Observable } from 'rxjs';
-import { User } from './models/User';
 
-@Injectable({
-  providedIn: 'root'
-})
+import * as Confidential from 'src/confidential.json';
+import { Project, User } from 'src/models/Models';
+import { Template } from '../template';
+
+@Injectable()
 export class AWSClientService {
-  private url = Confidential['url'];
+  private url: string = Confidential['url'];
   private options: any = {
     headers: new HttpHeaders({
       'x-api-key': Confidential['x-api-key']
@@ -104,17 +103,10 @@ export class AWSClientService {
     )
   }
 
-  updateProject(id: string, name: string, owner: string, description: string, version: string, template: Template) {
+  updateProject(project: Project) {
     return this.http.put<string>(
       this.url + "/Projects",
-      {
-        id: id,
-        name: name,
-        owner: owner,
-        description: description,
-        version: version,
-        template: template.json
-      },
+      project,
       this.options
     );
   }
@@ -122,25 +114,23 @@ export class AWSClientService {
 ////////////////////////////////////////////////////////////////////////////////
 // /Stacks
 
-  createStack(name: string, template: Template) {
+  createStack(stackName: string, template: Template) {
     return this.http.post<string>(
       this.url + "/Stacks",
       {
-        name: name,
-        template: template.json,
-        keys: JSON.stringify(template.keys)
+        stackName,
+        template: template.json
       },
       this.options
     )
   }
 
-  updateStack(name: string, template: Template) {
+  updateStack(stackName: string, template: Template) {
     return this.http.put<string>(
       this.url + "/Stacks",
       {
-        name: name,
-        template: template.json,
-        keys: JSON.stringify(template.keys)
+        stackName,
+        template: template.json
       },
       this.options
     )

@@ -4,12 +4,11 @@ import datetime
 import boto3
 
 
-def main(event, context):
-    required = ['projectName']
-
-    if False in [k in event.keys() for k in required]:
-        return {
-            'error': 'Missing required key'
+def main(event, context):    
+    if 'projectName' not in event:
+        return {            
+            "ErrorMessage": 'missing required key: "projectName"',
+            "StatusCode": '400'    
         }
 
     projectName = event['projectName']

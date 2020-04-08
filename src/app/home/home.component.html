@@ -2,22 +2,20 @@
   <img class="responsive-img logo-width" src="../assets/Blue Logo.jpg"
     placeholder="Make sure you have the logo in the assets folder!">
 
-  <div class="row">
-    <form action="#!" class="col s12">
-      <div class="row">
-        <div class="col s1"></div>
-        <div class="col s10">
-          <input type="text" placeholder="Enter project name...">
-        </div>
+  <form (ngSubmit)="onSearch(f)" #f="ngForm">
+    <div class="row">
+      <div class="col s1"></div>
+      <div class="col s10">
+        <input type="text" ngModel placeholder="Enter project name..." name="projectName">
       </div>
-    </form>
-  </div>
+    </div>
+    <div class="row" style="display: table;">
+      <a style="margin: 0px 1rem;" class="indigo accent-2 btn-small modal-trigger" (click)="toggleModal()"
+        href="#advanced-search-modal">Advanced Search</a>
+      <button style="margin: 0px 1rem;" class="indigo accent-2 btn-small" type="submit" name="action">Search</button>
+    </div>
+</form>
 
-  <div class="row" style="display: table;">
-    <a style="margin: 0px 1rem;" class="indigo accent-2 btn-small modal-trigger" (click)="toggleModal()"
-      href="#advanced-search-modal">Advanced Search</a>
-    <a style="margin: 0px 1rem;" class="indigo accent-2 btn-small">Search</a>
-  </div>
 
   <div class="row">
     <div id="advanced-search-modal" class="modal">
