@@ -1,44 +1,114 @@
 <div id="detail">
-  <ul id="version-dropdown" class="dropdown-content">
-    <li><span>1.0.0</span></li>
-  </ul>
-
   <div class="row">
-    <h3>Summary</h3>
+    <h3>{{ projectName }}</h3>
   </div>
-
+  
   <div class="row">
-    <ul class="collection with-header">
-      <li class="collection-header">
-        <h4>Resources</h4>
-      </li>
-      <li class="collection-item">
-        <div>
-          Resource 1
-          <a class="secondary-content"><i class="material-icons red-text">delete</i></a>
-          <a class="secondary-content"><i class="material-icons orange-text">stop</i></a>
-          <a class="secondary-content"><i class="material-icons grey-text">edit</i></a>
-          <span class="new badge green" data-badge-caption="">Enabled</span>
-        </div>
-      </li>
-      <li class="collection-item">
-        <button data-target="createEC2Instance" class="btn modal-trigger">Add EC2</button>        
-      </li>
-    </ul>
 
-      <!-- Modal Structure -->
-    <div id="createEC2Instance" class="modal" #modalEC2Input>
-      <div class="modal-content">
-        <h4>Create EC2 instance</h4>
-        <app-ec2></app-ec2>
-      </div>
-      <div class="modal-footer">
-        <a class="modal-close waves-effect waves-green btn-flat">Close</a>
-      </div>
+    <!-- TAB HEADERS -->
+
+    <div class="col s12">
+      <ul class="tabs">
+        <li class="tab col s3">
+          <a class="active" href="#settings">
+            Settings
+            <i class="material-icons left" style="padding-top: 12px; margin: 0px;">settings</i>
+          </a>
+        </li> 
+        <li class="tab col s3" (click)="onEC2View()">
+          <a href="#EC2">
+            EC2
+            <i class="material-icons left" style="padding-top: 12px; margin: 0px;">cloud_queue</i>
+            <span *ngIf="newEC2Instance === true" class="new badge blue" style="margin-top: 12px;"></span>            
+          </a>
+        </li>
+        <li class="tab col s3">
+          <a href="#dynamo">
+            Dynamo
+            <i class="material-icons left" style="padding-top: 12px; margin: 0px;">memory</i>
+          </a>
+        </li>
+        <li class="tab col s3">
+          <a href="#lambda">
+            Lambda
+            <i class="material-icons left" style="padding-top: 12px; margin: 0px;">code</i>
+          </a>
+        </li>        
+      </ul>
     </div>
 
-    <div class="row">
-      <h3>Databases</h3>             
+    <!-- TAB IMPLEMENTATION -->
+
+    <!-- EC2 TAB CONTENT-->
+    <div id="EC2" class="col s12">      
+      <div *ngIf="isLoadingEC2Instances" class="row" style="margin-top: 25px;">
+        <div class="progress">
+          <div class="indeterminate"></div>
+        </div>
+      </div>
+      <div *ngIf="!isLoadingEC2Instances">
+        <table class="striped">
+          <thead>
+            <tr>
+              <th>Instance ID</th>
+              <th>Instance Type</th>
+              <th>AZ</th>
+              <th>State</th>
+              <th>Key Name</th>              
+              <th>Image ID</th>
+              <th>Public DNS</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let ec2Instance of ec2Instances">
+              <td>                
+                {{ ec2Instance.Instances[0].InstanceId }}
+              </td>
+              <td>{{ ec2Instance.Instances[0].InstanceType }}</td>
+              <td>{{ ec2Instance.Instances[0].Placement.AvailabilityZone }}</td>
+              <td [ngSwitch]="ec2Instance.Instances[0].State.Name">                   
+                <span *ngSwitchCase="'running'" class="new badge blue" data-badge-caption="running"></span>
+                <span *ngSwitchCase="'terminated'" class="new badge red" data-badge-caption="terminated"></span>
+                <span *ngSwitchCase="'pending'" class="new badge orange" data-badge-caption="pending"></span>
+                <span *ngSwitchCase="'shutting-down'" class="new badge yellow" data-badge-caption="shutting-down"></span>
+              </td>
+              <td>{{ ec2Instance.Instances[0].KeyName }}</td>              
+              <td>{{ ec2Instance.Instances[0].ImageId }}</td>
+              <td>
+                <div *ngIf='ec2Instance.Instances[0].State.Name !== "running" else elseBlock'>                  
+                  <span 
+                    *ngIf='ec2Instance.Instances[0].State.Name !== "running"' 
+                    class="new badge orange" 
+                    data-badge-caption="none"></span>
+                </div>
+                <ng-template #elseBlock>
+                  {{ ec2Instance.Instances[0].NetworkInterfaces[0].Association.PublicDnsName }}
+                </ng-template>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>      
+    </div>
+
+    <!-- DYNAMO TAB CONTENT-->
+    <div id="dynamo" class="col s12">Dynamo</div>
+
+    <!-- LAMBDA TAB CONTENT-->
+    <div id="lambda" class="col s12">lambda</div>    
+
+    <!-- SETTINGS TAB CONTENT-->
+    <div id="settings" class="col s12">
+      <ul class="collapsible">
+        <li>
+          <div class="collapsible-header">
+            <i class="material-icons">filter_drama</i>Create EC2 Instance
+          </div>
+          <div class="collapsible-body">
+            <app-ec2 [project]="project" (create)="onEC2Create($event)"></app-ec2>
+          </div>
+        </li>
+      </ul>
     </div>
   </div>
 </div>

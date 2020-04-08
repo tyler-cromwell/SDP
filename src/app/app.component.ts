@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { AWSClientService } from '../awsclient.service';
+import { AWSClientService } from '../services/awsclient.service';
 import * as M from "materialize-css/dist/js/materialize";
 import { Router } from '@angular/router';
 import { AuthenticationService } from './_services/Authentication.service';
@@ -12,7 +12,6 @@ import { User } from './_helpers/user';
   providers: [AWSClientService]
 })
 export class AppComponent {
-  title: string = 'SDP';
   instances = [];
   currentUser: User;
 
@@ -28,20 +27,6 @@ export class AppComponent {
 
     // CurrentUser Login Data
     this.authenticationService.currentUser.subscribe(x => this.currentUser = x);
-  
-    this.client.getInstances().subscribe(data => {
-        let reservations = JSON.parse(data)["Reservations"]
-
-        if (reservations.length) {
-          this.instances = reservations.map(res => {
-              return res["Instances"][0]
-            }
-          )
-        } else {
-          this.instances = []
-        }
-      }
-    )
   }
 
   // Logout current user
@@ -52,31 +37,11 @@ export class AppComponent {
 
   ngOnInit() { }
 
-  handleGetInstances(event: Event) {
-    this.client.getInstances().subscribe(data => {
-        let reservations = JSON.parse(data)["Reservations"]
-
-        if (reservations.length) {
-          this.instances = reservations.map(res => {
-              return res["Instances"][0]
-            }
-          )
-        } else {
-          this.instances = []
-        }
-      }
-    )
-  }
-
-  handleCreateInstance(event: Event) {
-    /*
-    this.client.createInstance(
-      "t2.micro",
-      "ami-04b9e92b5572fa0d1"
-    ).subscribe(data => {
-        console.log(JSON.parse(data))
-      }
-    )
-    */
+  ngAfterViewInit() {
+    var elems = document.querySelectorAll('.dropdown-trigger');
+    var options = {
+      "coverTrigger": false
+    };
+    M.Dropdown.init(elems, options); 
   }
 }

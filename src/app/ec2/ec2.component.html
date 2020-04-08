@@ -1,47 +1,117 @@
-<div class="row">
-  <form class="col s12" (ngSubmit)="onSubmit(f)" #f="ngForm">
+<div class="row" [hidden]="isLoading">
+  <form class="col s12" [formGroup]="createForm" (ngSubmit)="onSubmit()">
     <div class="row">
       <div class="input-field col s12">
-        <input id="name" type="text" name="name" ngModel required>
-        <label for="name">EC2 Instance Name</label>
+        <label for="name">Logical Id</label>
+        <input 
+          id="name"
+          type="text"
+          formControlName="logicalId">
+        <span class="helper-text">This will be the instance's name</span>
+        <span
+          style="color: red;" 
+          *ngIf="!createForm.get('logicalId').valid && createForm.get('logicalId').touched"
+          class="helper-text">
+          <strong>Danger!</strong> Please enter a valid instance name!
+        </span>
       </div>
     </div>
-
     <div class="row">
       <div class="input-field col s12">
-        <select #instanceTypeSelect name="instanceType" ngModel required>          
-          <option value="t2.micro">t2.micro</option>          
+        <select #instanceTypeSelect formControlName="instanceType">                    
+          <option *ngFor="let instanceType of instanceTypes" [value]="instanceType">
+            {{ instanceType }}
+          </option>          
         </select>
         <label>Instance Type</label>
       </div>
     </div>
-
     <div class="row">
       <div class="input-field col s12">
-        <select #machineImageSelect name="machineImage" ngModel required>
-          <option value="ami-0e38b48473ea57778">ami-0e38b48473ea57778</option>
-          <option value="ami-04b9e92b5572fa0d1">ami-04b9e92b5572fa0d1</option>
+        <select #machineImageSelect formControlName="machineImage">          
+          <option *ngFor="let machineImage of machineImages" [value]="machineImage">            
+            {{ machineImage }}
+          </option>          
         </select>
         <label>Machine Image</label>
       </div>
-    </div>
-
+    </div>     
     <div class="row">
       <div class="input-field col s12">
-        <label for="keyName">Key Name</label>
-        <input id="keyName" type="text" name="keyName" ngModel>
-        <span class="helper-text">Name of existing EC2 SSH key pair. If not provided, a key pair is created automatically.</span>
+        <select #keyPairActionSelect (change)="createNewKeyPair = !createNewKeyPair">
+          <option [selected]="createNewKeyPair === true">Create a new key pair</option>
+          <option [selected]="createNewKeyPair === false">Use an existing key pair</option>
+        </select>
+        <label>SSH Key Pair</label>        
       </div>
     </div>
-
     <div class="row">
-      <button 
-        class="btn waves-effect waves-light" 
-        type="submit"
-        [disabled]="!f.valid">
-        Submit
-        <i class="material-icons right">send</i>
-      </button>
+      <div class="input-field col s12">
+        <label 
+          for="name"
+          class="active">Key Name</label>
+        <input 
+          id="name"
+          type="text"
+          formControlName="keyName"> 
+        <span
+          *ngIf="createNewKeyPair === true"
+          style="color: rgba(255, 166, 0, 0.822);"           
+          class="helper-text">
+          Name of key pair to create
+        </span>
+        <span
+          *ngIf="createNewKeyPair === false"
+          style="color: orange;"           
+          class="helper-text">
+          <strong>Warning!</strong> Make sure you have the private key associated with 
+          this key pair! You will need it to SSH into your instance.
+        </span>
+        <span
+          style="color: red;" 
+          *ngIf="!createForm.get('keyName').valid && createForm.get('keyName').touched"
+          class="helper-text">
+          <strong>Danger!</strong> Please enter a key name!
+        </span>
+      </div>
+    </div>    
+    <div class="row">
+      <div class="file-field input-field">
+        <div class="btn orange">
+          <span>Browse</span>
+          <input
+            #fileInput
+            (change)="onFileChange($event)"
+            type="file">
+        </div>
+        <div class="file-path-wrapper">
+          <input
+            #fileName            
+            class="file-path validate" 
+            type="text">
+          <span 
+            class="helper-text">
+            (Optional) Select a user data script to run after EC2 instance starts
+          </span>
+        </div>
+      </div>      
+    </div>
+    <div class="row">
+      <button
+        [disabled] = "!createForm.valid"
+        class="indigo accent-2 btn"
+        type="submit">Submit</button>      
+      <button
+        style='margin-left: 5px;'
+        class='lime accent-4 btn'
+        [disabled]="receivedRSAPrivateKeyPair === false"
+        type='button'
+        (click)='onRSAPrivateKeyDownload()'>Download RSA Private Key</button> 
     </div>
   </form>
+</div>
+<div class="row" *ngIf="isLoading">
+  <div class="progress">
+    <div class="indeterminate"></div>
+  </div>
 </div>

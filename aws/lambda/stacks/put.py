@@ -33,12 +33,11 @@ def main(event, context):
             if len(result['KeyPairs']) == 0:
                 response['keys'].append(ec2client.create_key_pair(KeyName=keyName))
             # else:
-            #     print("result = " + json.dumps(resource, indent=4))
-            #     resource['keys'].append(result['KeyPairs'][0])
+            #     resource['keys'].append(resource['KeyPairs'][0])                        
               
     cfclient = boto3.client('cloudformation')    
 
-    response['stackId'] = cfclient.create_stack(
+    response['stackId'] = cfclient.update_stack(
         StackName=event['stackName'],
         TemplateBody=json.dumps(event['template'])
     )["StackId"]

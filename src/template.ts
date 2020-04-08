@@ -1,9 +1,7 @@
-import { Injectable } from '@angular/core';
-
+import { EC2 } from 'src/models/Models';
 
 export class Template {
   json: object;
-  keys: string[];
 
   constructor(description: string = "", version: string = "2010-09-09") {
     this.json = {
@@ -12,45 +10,55 @@ export class Template {
       "Resources": {},
       "Outputs": {},
     };
-    this.keys = [];
   }
 
-  addEC2Instance(name: string, instanceType: string, keyName: string, machineImage: string, userData: string = "") {
-    if (this.keys.indexOf(keyName) == -1) {
-      this.keys.push(keyName);
-    }
+  public isEmpty(): Boolean {
+    return Object.keys(this.json['Resources']).length == 0
+  }
 
+  public addLambdaFunction(name: string, handler: string, role: string, code: string, runtime: string) {
     this.json["Resources"][name] = {
+      "Type": "AWS::Lambda::Function",
+      "Properties" : { 
+        "Code": {
+          "ZipFile": code
+        }
+      },
+      "Handler": handler,
+      "Role": role,
+      "Runtime": runtime,      
+    }
+  }
+  
+  public addEC2Instance(projectId: string, instance: EC2) {    
+    this.json["Resources"][instance.logicalId] = {
       "Type": "AWS::EC2::Instance",
       "Properties": {
-        "ImageId": machineImage,
-        "InstanceType": instanceType,
-        "KeyName": keyName,
-        "UserData": {
-          "Fn::Base64": userData
-        }
+        "KeyName": instance.keyName,
+        "ImageId": instance.machineImage,
+        "InstanceType": instance.instanceType,
+        "Tags" : [
+          {
+            "Key": "Name",
+            "Value": instance.logicalId
+          },
+          {
+              "Key" : "ProjectName",
+              "Value" : projectId
+          }
+        ]
       }
-    };
+    }
 
-    this.json["Outputs"]["InstanceId"] = {
-      "Value": {
-        "Ref": name
+    // if (instance.keyName !== null) {
+    //   this.json["Resources"][instance.logicalId]["Properties"]["KeyName"] = instance.keyName;
+    // }
+
+    // "userData" parameter must not be an empty string or null, otherwise DynamoDB will throw error.
+    if (instance.userData !== null && instance.userData !== '') {
+      this.json["Resources"][instance.logicalId]["Properties"]["UserData"] = {
+        "Fn::Base64": instance.userData
       }
-    };
-    this.json["Outputs"]["AvailabilityZone"] = {
-      "Value": {
-        "Fn::GetAtt": [name, "AvailabilityZone"]
-      }
-    };
-    this.json["Outputs"]["PublicDns"] = {
-      "Value": {
-        "Fn::GetAtt": [name, "PublicDnsName"]
-      }
-    };
-    this.json["Outputs"]["PublicIp"] = {
-      "Value": {
-        "Fn::GetAtt": [name, "PublicIp"]
-      }
-    };
+    }
   }
 }

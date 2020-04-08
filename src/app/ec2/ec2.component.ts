@@ -1,9 +1,10 @@
-import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
-import * as M from "materialize-css/dist/js/materialize";
-import { NgForm } from '@angular/forms';
-import { AWSClientService } from 'src/awsclient.service';
-import { Template } from 'src/template'
+import { Component, OnInit, ViewChild, ElementRef, Output, EventEmitter, Input, ɵCompiler_compileModuleSync__POST_R3__ } from '@angular/core';
+import { FormGroup, FormControl, Validators } from '@angular/forms';
 
+import * as M from "materialize-css/dist/js/materialize";
+import { AWSClientService } from 'src/services/awsclient.service';
+import { NotificationService } from 'src/services/notification.service';
+import { Project } from 'src/models/Project';
 
 @Component({
   selector: 'app-ec2',
@@ -11,27 +12,100 @@ import { Template } from 'src/template'
   styleUrls: ['./ec2.component.css']
 })
 export class Ec2Component implements OnInit {
-  @ViewChild('instanceTypeSelect', {static:true}) instanceTypeSelect: ElementRef;
-  @ViewChild('machineImageSelect', {static:true}) machineImageSelect: ElementRef;
+  @Input() private project: Project;
+  @Output() private create: EventEmitter<any> = new EventEmitter();
+  @ViewChild('instanceTypeSelect', { static: true }) private instanceTypeSelect: ElementRef;
+  @ViewChild('machineImageSelect', { static: true }) private machineImageSelect: ElementRef;
+  @ViewChild('keyPairActionSelect', { static: true }) private keyPairActionSelect: ElementRef;  
+  @ViewChild('fileInput', { static: true }) fileInput: ElementRef;
+  @ViewChild('fileName', { static: true }) fileName: ElementRef;
+  
+  private createForm: FormGroup;
+  private instanceTypes: string[] = ["t2.micro"];
+  private machineImages: string[] = ["ami-0e38b48473ea57778"];
+  private createNewKeyPair: Boolean = true;
+  private initialFormValues = null;
+  private isLoading: Boolean = false;
 
-  constructor(private client: AWSClientService) { }
+  private receivedRSAPrivateKeyPair: Boolean = false;
+  private RSAPrivateKey: string = null;
+  private keyName: string = null;
 
-  ngOnInit() {
+  constructor(private client: AWSClientService, private notifications: NotificationService) {
+    this.notifications.EC2Created.subscribe(data => {      
+      this.isLoading = false;      
+    });
+    this.notifications.RSAPrivateKey.subscribe(data => {      
+      this.receivedRSAPrivateKeyPair = true;
+      this.RSAPrivateKey = data["KeyMaterial"];
+      this.keyName = data["KeyName"];
+      console.log("[PROJECT DETAILS] Received RSA key: " + this.RSAPrivateKey);
+    });
   }
 
+  ngOnInit() { 
+    this.createForm = new FormGroup({
+      'logicalId': new FormControl(this.getRandID(), Validators.required),
+      'instanceType': new FormControl(this.instanceTypes[0]),
+      'keyName': new FormControl(this.getRandID(), Validators.required),
+      'machineImage': new FormControl(this.machineImages[0]),
+      'userData': new FormControl(null)
+    });
+  }
+  
   ngAfterViewInit() {
     M.FormSelect.init(this.instanceTypeSelect.nativeElement, {});    
-    M.FormSelect.init(this.machineImageSelect.nativeElement, {});    
+    M.FormSelect.init(this.machineImageSelect.nativeElement, {});
+    M.FormSelect.init(this.keyPairActionSelect.nativeElement, {});
+    M.updateTextFields();
   }
 
-  onSubmit(form: NgForm) {
-    let {name, instanceType, keyName, machineImage} = form.value;    
-    let template: Template = new Template();
-    template.addEC2Instance(name, instanceType, keyName, machineImage);
-    this.client.createStack(name+"stack", template).subscribe(
-      data => {
-        console.log(JSON.parse(data))
-      }
-    );
+  onFileChange(e) {
+    let file = e.target.files[0];
+    let fileReader = new FileReader();
+    fileReader.readAsText(file);
+
+    fileReader.onloadend = (e) => {
+      this.createForm.patchValue({
+        'userData': fileReader.result
+      });      
+    };
   }
+
+  onSubmit() {
+    this.isLoading = true; 
+    this.create.emit(this.createForm.value);
+    this.resetForm();
+  }
+  
+  resetForm() {
+    this.createForm.setValue({
+      'logicalId': this.getRandID(),
+      'instanceType': this.instanceTypes[0],
+      'keyName': this.getRandID(),
+      'machineImage': this.machineImages[0],
+      'userData': null
+    });
+  
+    // Reset controls not part of FormGroup manually
+    this.createNewKeyPair = false;
+    this.fileInput.nativeElement.value = "";
+    this.fileName.nativeElement.value = "";            
+  }
+
+  onRSAPrivateKeyDownload() {
+    let blob = new Blob([this.RSAPrivateKey], { type: 'text/plain' });
+    var url = window.URL.createObjectURL(blob);
+    var anchor = document.createElement("a");
+    anchor.download = this.keyName+'.pem';
+    anchor.href = url;
+    anchor.click();
+
+    // Clear RSA private key data after download
+    this.receivedRSAPrivateKeyPair = false;
+    this.RSAPrivateKey = null;
+    this.keyName = null;
+  }
+
+  getRandID(): string { return Math.random().toString(36).substring(2, 15) };
 }

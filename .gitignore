@@ -1,6 +1,7 @@
 # See http://help.github.com/ignore-files/ for more about ignoring files.
 *.swp
 src/confidential.json
+__pycache__/
 
 # resources and images
 src/assets/Blue Logo.jpg
@@ -50,3 +51,6 @@ testem.log
 # System Files
 .DS_Store
 Thumbs.db
+
+#credentials for aws
+aws/infra/credentials.txt

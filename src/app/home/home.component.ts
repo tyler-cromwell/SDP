@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
+import { NgForm } from '@angular/forms';
 
-import { AWSClientService } from '../../awsclient.service';
+import { AWSClientService } from '../../services/awsclient.service';
 import * as M from "materialize-css/dist/js/materialize";
 
 
@@ -11,19 +13,30 @@ import * as M from "materialize-css/dist/js/materialize";
   providers: [AWSClientService]
 })
 export class HomeComponent implements OnInit {
-  private projects: any = [];
+  private projects: any = []
+  private currentSearch: object
 
-  constructor(private client: AWSClientService) { }
-  
-  ngOnInit() {    
-  
-    this.client.getProjects().subscribe(data => {                         
-      this.projects = data          
+  constructor(private client: AWSClientService, private router: Router) { }
+
+  ngOnInit() {
+    this.client.getProjects().subscribe(data => {
+      this.projects = data
     });
+  }
+
+  onSearch(form: NgForm) {
+    this.client.getProject(form.value.projectName).subscribe(data => {
+      this.currentSearch = data[0]
+      if (this.currentSearch) {
+        this.router.navigate(['browse/' + form.value.projectName]);
+      } else {
+        alert('No project with such name found');
+      }
+    })
   }
 
   toggleModal() {
     var elems = document.querySelectorAll('.modal');
-    var instances = M.Modal.init(elems);
+    M.Modal.init(elems);
   }
 }
