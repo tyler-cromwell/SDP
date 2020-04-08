@@ -7,6 +7,7 @@
         <input
           id="name"
           type="text"
+          placeholder="Name..."
           formControlName="tableName">
         <span
           style="color: red;"
@@ -58,64 +59,23 @@
     </div>
 
     <div class="row">
-      <div class="input-field col s12">
-        <select #instanceTypeSelect formControlName="instanceType">
-          <option *ngFor="let instanceType of instanceTypes" [value]="instanceType">
-            {{ instanceType }}
-          </option>
-        </select>
-        <label>Instance Type</label>
-      </div>
+      <table class="centered" formArrayName="attributesDefinition">
+        <thead>
+          <tr>
+            <th>Attribute Name</th>
+            <th>Attribute Type</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of createForm.controls.attributesDefinition.controls; let i=index" [formGroupName]="i">
+            <td><input type="text" formControlName="attributeName" placeholder="Attribute name..."></td>
+            <td><input type="text" formControlName="attributeType" placeholder="Attribute type..."></td>
+          </tr>
+        </tbody>
+      </table>
+      <button class="btn" (click)="addAttributesDefinition()">Add attribute</button>
     </div>
-    <div class="row">
-      <div class="input-field col s12">
-        <select #machineImageSelect formControlName="machineImage">
-          <option *ngFor="let machineImage of machineImages" [value]="machineImage">
-            {{ machineImage }}
-          </option>
-        </select>
-        <label>Machine Image</label>
-      </div>
-    </div>
-    <div class="row">
-      <div class="input-field col s12">
-        <select #keyPairActionSelect (change)="createNewKeyPair = !createNewKeyPair">
-          <option [selected]="createNewKeyPair === true">Create a new key pair</option>
-          <option [selected]="createNewKeyPair === false">Use an existing key pair</option>
-        </select>
-        <label>SSH Key Pair</label>
-      </div>
-    </div>
-    <div class="row">
-      <div class="input-field col s12">
-        <label
-          for="name"
-          class="active">Key Name</label>
-        <input
-          id="name"
-          type="text"
-          formControlName="keyName">
-        <span
-          *ngIf="createNewKeyPair === true"
-          style="color: rgba(255, 166, 0, 0.822);"
-          class="helper-text">
-          Name of key pair to create
-        </span>
-        <span
-          *ngIf="createNewKeyPair === false"
-          style="color: orange;"
-          class="helper-text">
-          <strong>Warning!</strong> Make sure you have the private key associated with
-          this key pair! You will need it to SSH into your instance.
-        </span>
-        <span
-          style="color: red;"
-          *ngIf="!createForm.get('keyName').valid && createForm.get('keyName').touched"
-          class="helper-text">
-          <strong>Danger!</strong> Please enter a key name!
-        </span>
-      </div>
-    </div>
+
     <div class="row">
       <button
         [disabled] = "!createForm.valid"

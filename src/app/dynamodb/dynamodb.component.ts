@@ -1,5 +1,5 @@
 import { Component, OnInit, ViewChild, ElementRef, Output, EventEmitter, Input, ɵCompiler_compileModuleSync__POST_R3__ } from '@angular/core';
-import { FormGroup, FormControl, Validators } from '@angular/forms';
+import { FormGroup, FormBuilder, FormControl, Validators, FormArray } from '@angular/forms';
 
 import * as M from "materialize-css/dist/js/materialize";
 import { AWSClientService } from 'src/services/awsclient.service';
@@ -21,89 +21,62 @@ export class DynamodbComponent implements OnInit {
   @ViewChild('fileName', { static: true }) fileName: ElementRef;
 
   private createForm: FormGroup;
-  private instanceTypes: string[] = ["t2.micro"];
-  private machineImages: string[] = ["ami-0e38b48473ea57778"];
-  private createNewKeyPair: Boolean = true;
   private initialFormValues = null;
   private isLoading: Boolean = false;
 
-  private receivedRSAPrivateKeyPair: Boolean = false;
-  private RSAPrivateKey: string = null;
-  private keyName: string = null;
+  // private keyName: string = null;
 
-  constructor(private client: AWSClientService, private notifications: NotificationService) {
-    this.notifications.EC2Created.subscribe(data => {
+  constructor(private client: AWSClientService, private notifications: NotificationService, private fb: FormBuilder) {
+    this.notifications.DynamoDBCreated.subscribe(data => {
       this.isLoading = false;
-    });
-    this.notifications.RSAPrivateKey.subscribe(data => {
-      this.receivedRSAPrivateKeyPair = true;
-      this.RSAPrivateKey = data["KeyMaterial"];
-      this.keyName = data["KeyName"];
-      console.log("[PROJECT DETAILS] Received RSA key: " + this.RSAPrivateKey);
     });
   }
 
   ngOnInit() {
-    this.createForm = new FormGroup({
-      'logicalId': new FormControl(this.getRandID(), Validators.required),
-      'instanceType': new FormControl(this.instanceTypes[0]),
-      'keyName': new FormControl(this.getRandID(), Validators.required),
-      'machineImage': new FormControl(this.machineImages[0]),
-      'userData': new FormControl(null)
+    this.createForm = this.fb.group({
+      'tableName': new FormControl("", Validators.required),
+      'readCapacityUnits': new FormControl("1", Validators.required),
+      'writeCapacityUnits': new FormControl("1", Validators.required),
+      'attributesDefinition': this.fb.array([this.initItems()])
     });
   }
 
   ngAfterViewInit() {
-    M.FormSelect.init(this.instanceTypeSelect.nativeElement, {});
-    M.FormSelect.init(this.machineImageSelect.nativeElement, {});
-    M.FormSelect.init(this.keyPairActionSelect.nativeElement, {});
-    M.updateTextFields();
-  }
-
-  onFileChange(e) {
-    let file = e.target.files[0];
-    let fileReader = new FileReader();
-    fileReader.readAsText(file);
-
-    fileReader.onloadend = (e) => {
-      this.createForm.patchValue({
-        'userData': fileReader.result
-      });
-    };
   }
 
   onSubmit() {
-    this.isLoading = true;
-    this.create.emit(this.createForm.value);
-    this.resetForm();
+    // this.isLoading = true;
+    // this.create.emit(this.createForm.value);
+    // this.resetForm();
   }
 
   resetForm() {
-    this.createForm.reset(this.initialFormValues);
-
-    this.createForm.patchValue({
-      logicalId: this.getRandID(),
-      keyName: this.getRandID()
-    });
-
-    // Reset controls not part of FormGroup manually
-    this.createNewKeyPair = false;
-    this.fileInput.nativeElement.value = "";
-    this.fileName.nativeElement.value = "";
+    // this.createForm.reset(this.initialFormValues);
+    //
+    // this.createForm.patchValue({
+    //   logicalId: this.getRandID(),
+    //   keyName: this.getRandID()
+    // });
+    //
+    // // Reset controls not part of FormGroup manually
+    // this.createNewKeyPair = false;
+    // this.fileInput.nativeElement.value = "";
+    // this.fileName.nativeElement.value = "";
   }
 
-  onRSAPrivateKeyDownload() {
-    let blob = new Blob([this.RSAPrivateKey], { type: 'text/plain' });
-    var url = window.URL.createObjectURL(blob);
-    var anchor = document.createElement("a");
-    anchor.download = this.keyName+'.pem';
-    anchor.href = url;
-    anchor.click();
+  get attributesDefinition() : FormArray {
+    return <FormArray> this.createForm.get('attributesDefinition')
+  }
 
-    // Clear RSA private key data after download
-    this.receivedRSAPrivateKeyPair = false;
-    this.RSAPrivateKey = null;
-    this.keyName = null;
+  addAttributesDefinition() {
+    this.attributesDefinition.push(this.initItems());
+  }
+
+  initItems(): FormGroup {
+    return this.fb.group({
+      attributeName: [null],
+      attributeType: [null]
+    });
   }
 
   getRandID(): string { return Math.random().toString(36).substring(2, 15) };

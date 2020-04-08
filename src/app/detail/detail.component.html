@@ -108,12 +108,16 @@
             <app-ec2 [project]="project" (create)="onEC2Create($event)"></app-ec2>
           </div>
         </li>
+      </ul>
+      
+      <ul class="collapsible">
         <li>
           <div class="collapsible-header">
             <i class="material-icons">filter_drama</i>Create DynamoDB Table Instance
           </div>
           <div class="collapsible-body">
-            <app-dynamo [project]="project" (create)="onDynamoCreate($event)"></app-dynamo>
+            <!-- <app-dynamodb [project]="project" (create)="onDynamoCreate($event)"></app-dynamodb> -->
+            <app-dynamodb></app-dynamodb>
           </div>
         </li>
       </ul>
