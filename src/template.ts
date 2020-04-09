@@ -66,13 +66,20 @@ export class Template {
     this.json["Resources"][instance.tableName] = {
       "Type": "AWS::DynamoDB::Table",
       "Properties": {
-        "AttributeDefinitions": formatAttributeDefinitions(instance.attributeDefinitions),
-        "KeySchema": formatKeySchema(instance.keySchema),
+        "AttributeDefinitions": instance.attributeDefinitions,
+        "KeySchema": instance.keySchema,
         "ProvisionedThroughput": {
-          "ReadCapacityUnits": instance.readCapacityUnits,
-          "WriteCapacityUnits": instance.writeCapacityUnits
+          "ReadCapacityUnits": instance.readCapacityUnits.toString(),
+          "WriteCapacityUnits": instance.writeCapacityUnits.toString()
         },
-        "TableName": instance.tableName
+        "TableName": instance.tableName,
+        
+        "Tags" : [
+          {
+            "Key" : "ProjectName",
+            "Value" : projectId
+          }
+        ]
       }
     }
   }

@@ -68,11 +68,11 @@
         </thead>
         <tbody>
           <tr *ngFor="let item of createForm.controls.attributesDefinition.controls; let i=index" [formGroupName]="i">
-            <td><input type="text" formControlName="attributeName" placeholder="Attribute name..."></td>
+            <td><input type="text" formControlName="AttributeName" placeholder="Attribute name..."></td>
             <td>
-              <select class="browser-default" #attributeTypeSelect formControlName="attributeType">
-                <option *ngFor="let attributeType of dataTypes" [value]="attributeType">
-                  {{ attributeType }}
+              <select class="browser-default" #attributeTypeSelect formControlName="AttributeType">
+                <option *ngFor="let AttributeType of dataTypes" [value]="AttributeType">
+                  {{ AttributeType }}
                 </option>
               </select>
               <!-- <label>Attribute Type</label> -->
@@ -93,11 +93,11 @@
         </thead>
         <tbody>
           <tr *ngFor="let item of createForm.controls.keysDefinition.controls; let i=index" [formGroupName]="i">
-            <td><input type="text" formControlName="keyName" placeholder="Attribute name..."></td>
+            <td><input type="text" formControlName="AttributeName" placeholder="Attribute name..."></td>
             <td>
-              <select class="browser-default" #keyTypeSelect formControlName="keyType">
-                <option *ngFor="let keyType of keyTypes" [value]="keyType">
-                  {{ keyType }}
+              <select class="browser-default" #keyTypeSelect formControlName="KeyType">
+                <option *ngFor="let KeyType of keyTypes" [value]="KeyType">
+                  {{ KeyType }}
                 </option>
               </select>
               <!-- <label>Key Type</label> -->

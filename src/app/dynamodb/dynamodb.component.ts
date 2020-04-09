@@ -17,7 +17,7 @@ export class DynamodbComponent implements OnInit {
   @ViewChild('attributeTypeSelect', { static: false }) private attributeTypeSelect: ElementRef;
   @ViewChild('keyTypeSelect', { static: false }) private keyTypeSelect: ElementRef;
 
-  private dataTypes: string[] = ["Number", "String", "Boolean", "Binary", "Null"];
+  private dataTypes: string[] = ["N", "S", "B"];
   private keyTypes: string[] = ["HASH", "RANGE"];
 
   private createForm: FormGroup;
@@ -79,13 +79,13 @@ export class DynamodbComponent implements OnInit {
   initItems(type): FormGroup {
     if (type == 'attributes') {
       return this.fb.group({
-        attributeName: [null],
-        attributeType: this.dataTypes[0]
+        AttributeName: [null],
+        AttributeType: this.dataTypes[0]
       });
     } else if (type == 'keys') {
       return this.fb.group({
-        keyName: [null],
-        keyType: this.keyTypes[0]
+        AttributeName: [null],
+        KeyType: this.keyTypes[0]
       })
     }
   }

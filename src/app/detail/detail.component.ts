@@ -20,6 +20,7 @@ export class DetailComponent implements OnInit {
   private newEC2Instance: Boolean = null;
 
   private isLoadingDyanmoDBInstances: Boolean = false;
+  private newDynamoDBInstance: Boolean = null;
 
   constructor(private activatedRoute: ActivatedRoute,
               private client: AWSClientService,
@@ -50,7 +51,69 @@ export class DetailComponent implements OnInit {
   }
 
   async onDynamoCreate(DynamoTableInstance: DynamoDB) {
+    let { tableName, readCapacityUnits, writeCapacityUnits, attributesDefinition, keysDefinition } = DynamoTableInstance;
 
+    this.logger.log(
+      this.logSrc,
+      `captured create event from DynamoTableInstance for instance: \n${JSON.stringify(DynamoTableInstance, null, 4)}`
+    );
+
+    let template = new Template();
+    template.json = this.project.template;
+
+    this.logger.log(
+      this.logSrc,
+      `project template BEFORE adding DynamoTableInstance instance: \n${JSON.stringify(this.project.template, null, 4)}`
+    );
+
+    /*
+     * Stacks cannot be created without at least one resource.
+     * So check if any already exist in the template.
+     */
+    let create: Boolean = template.isEmpty();
+    let stackName: string = this.project.name.replace(/\s/g, '');
+    template.addDynamoDBTable(
+      this.project.id,
+      {
+        tableName,
+        readCapacityUnits,
+        writeCapacityUnits,
+        attributesDefinition,
+        keysDefinition
+      }
+    );
+
+    this.logger.log(
+      this.logSrc,
+      `project template AFTER adding DynamoTableInstance instance: \n${JSON.stringify(this.project.template, null, 4)}`
+    );
+
+    let response = null;
+
+    if (create) {
+      this.logger.log(this.logSrc, `this is a new project.. CREATE stack with this template`);
+      response = await this.client.createStack(stackName, template).toPromise();
+      this.logger.log(this.logSrc, `create stack response: ${JSON.stringify(response, null, 4)}`);
+    } else {
+      this.logger.log(this.logSrc, 'UPDATE stack with new template');
+      response = await this.client.updateStack(stackName, template).toPromise();
+      this.logger.log(this.logSrc, `update stack response: ${JSON.stringify(response, null, 4)}`);
+    }
+
+    // if create / update stack operation was succesful
+    if ('statusCode' in response && response['statusCode'] === "200") {
+      // Update the project in ProjectsTable if everything is successful
+      this.client.updateProject(this.project).subscribe();
+
+      this.project.template = template.json;
+
+      // emit notification to indicate creation of new EC2 instance
+      this.notifications.DynamoDBCreated.emit(response);
+
+      this.newDynamoDBInstance = true;
+    } else {
+      this.notifications.DynamoDBCreated.emit(response);
+    }
   }
 
   async onEC2Create(EC2Instace: EC2) {
