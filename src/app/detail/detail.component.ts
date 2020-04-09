@@ -51,7 +51,7 @@ export class DetailComponent implements OnInit {
   }
 
   async onDynamoCreate(DynamoTableInstance: DynamoDB) {
-    let { tableName, readCapacityUnits, writeCapacityUnits, attributesDefinition, keysDefinition } = DynamoTableInstance;
+    let { tableName, readCapacityUnits, writeCapacityUnits, keySchema, attributeDefinitions } = DynamoTableInstance;
 
     this.logger.log(
       this.logSrc,
@@ -81,8 +81,8 @@ export class DetailComponent implements OnInit {
         tableName,
         readCapacityUnits,
         writeCapacityUnits,
-        attributesDefinition,
-        keysDefinition
+        keySchema,
+        attributeDefinitions
       }
     );
 
