@@ -51,7 +51,7 @@ export class DetailComponent implements OnInit {
   }
 
   async onDynamoCreate(DynamoTableInstance: DynamoDB) {
-    let { tableName, readCapacityUnits, writeCapacityUnits, attributesDefinition, keysDefinition } = DynamoTableInstance;
+    let { tableName, readCapacityUnits, writeCapacityUnits, attributeDefinitions, keySchema } = DynamoTableInstance;
 
     this.logger.log(
       this.logSrc,
@@ -73,16 +73,16 @@ export class DetailComponent implements OnInit {
     let create: Boolean = template.isEmpty();
     let stackName: string = this.project.name.replace(/\s/g, '');
 
-    // console.log(tableName, readCapacityUnits, writeCapacityUnits, attributesDefinition, keysDefinition)
-    
+    // console.log(tableName, readCapacityUnits, writeCapacityUnits, keySchema, attributeDefinitions)
+
     template.addDynamoDBTable(
       this.project.id,
       {
         tableName,
         readCapacityUnits,
         writeCapacityUnits,
-        attributesDefinition,
-        keysDefinition
+        keySchema,
+        attributeDefinitions
       }
     );
 

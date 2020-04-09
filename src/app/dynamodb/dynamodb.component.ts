@@ -37,8 +37,8 @@ export class DynamodbComponent implements OnInit {
       'tableName': new FormControl("", Validators.required),
       'readCapacityUnits': new FormControl(1, Validators.required),
       'writeCapacityUnits': new FormControl(1, Validators.required),
-      'attributesDefinition': this.fb.array([this.initItems('attributes')]),
-      'keysDefinition': this.fb.array([this.initItems('keys')])
+      'attributeDefinitions': this.fb.array([this.initItems('attributes')]),
+      'keySchema': this.fb.array([this.initItems('keys')])
     });
   }
 
@@ -59,21 +59,21 @@ export class DynamodbComponent implements OnInit {
     this.createForm.reset(this.initialFormValues);
   }
 
-  get attributesDefinition() : FormArray {
-    return <FormArray> this.createForm.get('attributesDefinition')
+  get attributeDefinitions() : FormArray {
+    return <FormArray> this.createForm.get('attributeDefinitions')
   }
 
-  get keysDefinition() : FormArray {
-    return <FormArray> this.createForm.get('keysDefinition')
+  get keySchema() : FormArray {
+    return <FormArray> this.createForm.get('keySchema')
   }
 
-  addAttributesDefinition() {
-    this.attributesDefinition.push(this.initItems('attributes'));
+  addattributeDefinitions() {
+    this.attributeDefinitions.push(this.initItems('attributes'));
 
   }
 
   addKey() {
-    this.keysDefinition.push(this.initItems('keys'));
+    this.keySchema.push(this.initItems('keys'));
   }
 
   initItems(type): FormGroup {
