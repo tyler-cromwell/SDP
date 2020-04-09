@@ -137,8 +137,7 @@ export class AWSClientService {
       this.url + "/Stacks",
       {
         name: name,
-        template: template.json,
-        keys: JSON.stringify(template.keys)
+        template: template.json        
       },
       this.options
     )
@@ -149,8 +148,7 @@ export class AWSClientService {
       this.url + "/Stacks",
       {
         name: name,
-        template: template.json,
-        keys: JSON.stringify(template.keys)
+        template: template.json
       },
       this.options
     )
