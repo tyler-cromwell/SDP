@@ -1,4 +1,4 @@
-import { EC2 } from 'src/models/Models';
+import { EC2, DynamoDB } from 'src/models/Models';
 
 export class Template {
   json: object;
@@ -19,18 +19,18 @@ export class Template {
   public addLambdaFunction(name: string, handler: string, role: string, code: string, runtime: string) {
     this.json["Resources"][name] = {
       "Type": "AWS::Lambda::Function",
-      "Properties" : { 
+      "Properties" : {
         "Code": {
           "ZipFile": code
         }
       },
       "Handler": handler,
       "Role": role,
-      "Runtime": runtime,      
+      "Runtime": runtime,
     }
   }
-  
-  public addEC2Instance(projectId: string, instance: EC2) {    
+
+  public addEC2Instance(projectId: string, instance: EC2) {
     this.json["Resources"][instance.logicalId] = {
       "Type": "AWS::EC2::Instance",
       "Properties": {
@@ -43,8 +43,8 @@ export class Template {
             "Value": instance.logicalId
           },
           {
-              "Key" : "ProjectName",
-              "Value" : projectId
+            "Key" : "ProjectName",
+            "Value" : projectId
           }
         ]
       }
@@ -58,6 +58,21 @@ export class Template {
     if (instance.userData !== null && instance.userData !== '') {
       this.json["Resources"][instance.logicalId]["Properties"]["UserData"] = {
         "Fn::Base64": instance.userData
+      }
+    }
+  }
+
+  public addDynamoDBTable(projectId: string, instance: DynamoDB) {
+    this.json["Resources"][instance.tableName] = {
+      "Type": "AWS::DynamoDB::Table",
+      "Properties": {
+        "AttributeDefinitions": formatAttributeDefinitions(instance.attributeDefinitions),
+        "KeySchema": formatKeySchema(instance.keySchema),
+        "ProvisionedThroughput": {
+          "ReadCapacityUnits": instance.readCapacityUnits,
+          "WriteCapacityUnits": instance.writeCapacityUnits
+        },
+        "TableName": instance.tableName
       }
     }
   }

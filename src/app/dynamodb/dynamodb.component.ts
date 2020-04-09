@@ -14,11 +14,11 @@ import { Project } from 'src/models/Project';
 export class DynamodbComponent implements OnInit {
   @Input() private project: Project;
   @Output() private create: EventEmitter<any> = new EventEmitter();
-  @ViewChild('instanceTypeSelect', { static: true }) private instanceTypeSelect: ElementRef;
-  @ViewChild('machineImageSelect', { static: true }) private machineImageSelect: ElementRef;
-  @ViewChild('keyPairActionSelect', { static: true }) private keyPairActionSelect: ElementRef;
-  @ViewChild('fileInput', { static: true }) fileInput: ElementRef;
-  @ViewChild('fileName', { static: true }) fileName: ElementRef;
+  @ViewChild('attributeTypeSelect', { static: false }) private attributeTypeSelect: ElementRef;
+  @ViewChild('keyTypeSelect', { static: false }) private keyTypeSelect: ElementRef;
+
+  private dataTypes: string[] = ["Number", "String", "Boolean", "Binary", "Null"];
+  private keyTypes: string[] = ["HASH", "RANGE"];
 
   private createForm: FormGroup;
   private initialFormValues = null;
@@ -35,49 +35,58 @@ export class DynamodbComponent implements OnInit {
   ngOnInit() {
     this.createForm = this.fb.group({
       'tableName': new FormControl("", Validators.required),
-      'readCapacityUnits': new FormControl("1", Validators.required),
-      'writeCapacityUnits': new FormControl("1", Validators.required),
-      'attributesDefinition': this.fb.array([this.initItems()])
+      'readCapacityUnits': new FormControl(1, Validators.required),
+      'writeCapacityUnits': new FormControl(1, Validators.required),
+      'attributesDefinition': this.fb.array([this.initItems('attributes')]),
+      'keysDefinition': this.fb.array([this.initItems('keys')])
     });
   }
 
   ngAfterViewInit() {
+    M.FormSelect.init(this.attributeTypeSelect.nativeElement, {});
+    M.FormSelect.init(this.keyTypeSelect.nativeElement, {});
+    M.updateTextFields();
   }
 
   onSubmit() {
-    // this.isLoading = true;
-    // this.create.emit(this.createForm.value);
-    // this.resetForm();
+    this.isLoading = true;
+    console.log("Value of this form is: ", this.createForm.value);
+    this.create.emit(this.createForm.value);
+    this.resetForm();
   }
 
   resetForm() {
-    // this.createForm.reset(this.initialFormValues);
-    //
-    // this.createForm.patchValue({
-    //   logicalId: this.getRandID(),
-    //   keyName: this.getRandID()
-    // });
-    //
-    // // Reset controls not part of FormGroup manually
-    // this.createNewKeyPair = false;
-    // this.fileInput.nativeElement.value = "";
-    // this.fileName.nativeElement.value = "";
+    this.createForm.reset(this.initialFormValues);
   }
 
   get attributesDefinition() : FormArray {
     return <FormArray> this.createForm.get('attributesDefinition')
   }
 
+  get keysDefinition() : FormArray {
+    return <FormArray> this.createForm.get('keysDefinition')
+  }
+
   addAttributesDefinition() {
-    this.attributesDefinition.push(this.initItems());
+    this.attributesDefinition.push(this.initItems('attributes'));
+
   }
 
-  initItems(): FormGroup {
-    return this.fb.group({
-      attributeName: [null],
-      attributeType: [null]
-    });
+  addKey() {
+    this.keysDefinition.push(this.initItems('keys'));
   }
 
-  getRandID(): string { return Math.random().toString(36).substring(2, 15) };
+  initItems(type): FormGroup {
+    if (type == 'attributes') {
+      return this.fb.group({
+        attributeName: [null],
+        attributeType: this.dataTypes[0]
+      });
+    } else if (type == 'keys') {
+      return this.fb.group({
+        keyName: [null],
+        keyType: this.keyTypes[0]
+      })
+    }
+  }
 }

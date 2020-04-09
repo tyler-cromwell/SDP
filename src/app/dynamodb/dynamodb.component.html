@@ -69,11 +69,43 @@
         <tbody>
           <tr *ngFor="let item of createForm.controls.attributesDefinition.controls; let i=index" [formGroupName]="i">
             <td><input type="text" formControlName="attributeName" placeholder="Attribute name..."></td>
-            <td><input type="text" formControlName="attributeType" placeholder="Attribute type..."></td>
+            <td>
+              <select class="browser-default" #attributeTypeSelect formControlName="attributeType">
+                <option *ngFor="let attributeType of dataTypes" [value]="attributeType">
+                  {{ attributeType }}
+                </option>
+              </select>
+              <!-- <label>Attribute Type</label> -->
+            </td>
           </tr>
         </tbody>
       </table>
-      <button class="btn" (click)="addAttributesDefinition()">Add attribute</button>
+      <button type="button" class="btn" (click)="addAttributesDefinition()">Add attribute</button>
+    </div>
+
+    <div class="row">
+      <table class="centered" formArrayName="keysDefinition">
+        <thead>
+          <tr>
+            <th>Key Name</th>
+            <th>Key Type</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of createForm.controls.keysDefinition.controls; let i=index" [formGroupName]="i">
+            <td><input type="text" formControlName="keyName" placeholder="Attribute name..."></td>
+            <td>
+              <select class="browser-default" #keyTypeSelect formControlName="keyType">
+                <option *ngFor="let keyType of keyTypes" [value]="keyType">
+                  {{ keyType }}
+                </option>
+              </select>
+              <!-- <label>Key Type</label> -->
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <button type="button" class="btn" (click)="addKey()">Add key</button>
     </div>
 
     <div class="row">
