@@ -21,10 +21,8 @@ export class DynamodbComponent implements OnInit {
   private keyTypes: string[] = ["HASH", "RANGE"];
 
   private createForm: FormGroup;
-  private initialFormValues = null;
+  private initialValues: object = null;  
   private isLoading: Boolean = false;
-
-  // private keyName: string = null;
 
   constructor(private client: AWSClientService, private notifications: NotificationService, private fb: FormBuilder) {
     this.notifications.DynamoDBCreated.subscribe(data => {
@@ -33,13 +31,14 @@ export class DynamodbComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.createForm = this.fb.group({
-      'tableName': new FormControl("", Validators.required),
+    this.createForm = new FormGroup({
+      'tableName': new FormControl(null, Validators.required),
       'readCapacityUnits': new FormControl(1, Validators.required),
       'writeCapacityUnits': new FormControl(1, Validators.required),
-      'attributesDefinition': this.fb.array([this.initItems('attributes')]),
-      'keysDefinition': this.fb.array([this.initItems('keys')])
+      'keySchema': this.fb.array([this.initItems('keys')]),
+      'attributeDefinitions': this.fb.array([this.initItems('attributes')])
     });
+    this.initialValues = this.createForm.value;
   }
 
   ngAfterViewInit() {
@@ -51,29 +50,28 @@ export class DynamodbComponent implements OnInit {
   onSubmit() {
     this.isLoading = true;
     console.log("Value of this form is: ", this.createForm.value);
-    this.create.emit(this.createForm.value);
+    this.create.emit(this.createForm.value);    
     this.resetForm();
   }
 
   resetForm() {
-    this.createForm.reset(this.initialFormValues);
+    this.createForm.reset();
   }
 
-  get attributesDefinition() : FormArray {
-    return <FormArray> this.createForm.get('attributesDefinition')
+  get attributeDefinitions() : FormArray {
+    return <FormArray> this.createForm.get('attributeDefinitions')
   }
 
-  get keysDefinition() : FormArray {
-    return <FormArray> this.createForm.get('keysDefinition')
+  get keySchema() : FormArray {
+    return <FormArray> this.createForm.get('keySchema')
   }
 
   addAttributesDefinition() {
-    this.attributesDefinition.push(this.initItems('attributes'));
-
+    this.attributeDefinitions.push(this.initItems('attributes'));
   }
 
   addKey() {
-    this.keysDefinition.push(this.initItems('keys'));
+    this.keySchema.push(this.initItems('keys'));
   }
 
   initItems(type): FormGroup {
@@ -88,5 +86,5 @@ export class DynamodbComponent implements OnInit {
         KeyType: this.keyTypes[0]
       })
     }
-  }
+  }  
 }
