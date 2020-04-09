@@ -73,7 +73,7 @@ export class Template {
           "WriteCapacityUnits": instance.writeCapacityUnits.toString()
         },
         "TableName": instance.tableName,
-        
+
         "Tags" : [
           {
             "Key" : "ProjectName",

@@ -72,6 +72,9 @@ export class DetailComponent implements OnInit {
      */
     let create: Boolean = template.isEmpty();
     let stackName: string = this.project.name.replace(/\s/g, '');
+
+    // console.log(tableName, readCapacityUnits, writeCapacityUnits, attributesDefinition, keysDefinition)
+    
     template.addDynamoDBTable(
       this.project.id,
       {
