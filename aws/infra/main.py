@@ -96,7 +96,8 @@ if __name__ == '__main__':
                 '/../lambda/stacks/post.py',
                 [
                     'arn:aws:iam::aws:policy/AWSCloudFormationFullAccess',
-                    'arn:aws:iam::aws:policy/AmazonEC2FullAccess'
+                    'arn:aws:iam::aws:policy/AmazonEC2FullAccess',
+                    'arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess',
                 ]
             ),
             'PUT': LambdaParams(
@@ -104,7 +105,8 @@ if __name__ == '__main__':
                 '/../lambda/stacks/put.py',
                 [
                     'arn:aws:iam::aws:policy/AWSCloudFormationFullAccess',
-                    'arn:aws:iam::aws:policy/AmazonEC2FullAccess'
+                    'arn:aws:iam::aws:policy/AmazonEC2FullAccess',
+                    'arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess',
                 ]
             )
         },

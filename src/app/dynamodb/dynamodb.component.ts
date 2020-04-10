@@ -21,10 +21,8 @@ export class DynamodbComponent implements OnInit {
   private keyTypes: string[] = ["HASH", "RANGE"];
 
   private createForm: FormGroup;
-  private initialFormValues = null;
+  private initialValues: object = null;
   private isLoading: Boolean = false;
-
-  // private keyName: string = null;
 
   constructor(private client: AWSClientService, private notifications: NotificationService, private fb: FormBuilder) {
     this.notifications.DynamoDBCreated.subscribe(data => {
@@ -33,13 +31,14 @@ export class DynamodbComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.createForm = this.fb.group({
-      'tableName': new FormControl("", Validators.required),
+    this.createForm = new FormGroup({
+      'tableName': new FormControl(null, Validators.required),
       'readCapacityUnits': new FormControl(1, Validators.required),
       'writeCapacityUnits': new FormControl(1, Validators.required),
       'attributeDefinitions': this.fb.array([this.initItems('attributes')]),
       'keySchema': this.fb.array([this.initItems('keys')])
     });
+    this.initialValues = this.createForm.value;
   }
 
   ngAfterViewInit() {
@@ -56,7 +55,7 @@ export class DynamodbComponent implements OnInit {
   }
 
   resetForm() {
-    this.createForm.reset(this.initialFormValues);
+    this.createForm.reset();
   }
 
   get attributeDefinitions() : FormArray {
@@ -67,9 +66,8 @@ export class DynamodbComponent implements OnInit {
     return <FormArray> this.createForm.get('keySchema')
   }
 
-  addattributeDefinitions() {
+  addAttributesDefinition() {
     this.attributeDefinitions.push(this.initItems('attributes'));
-
   }
 
   addKey() {
