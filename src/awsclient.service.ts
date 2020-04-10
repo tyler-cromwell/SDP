@@ -138,7 +138,7 @@ export class AWSClientService {
       {
         name: name,
         template: template.json,
-        keys: JSON.stringify(template.keys)
+        // keys: JSON.stringify(template.keys)
       },
       this.options
     )
@@ -150,7 +150,7 @@ export class AWSClientService {
       {
         name: name,
         template: template.json,
-        keys: JSON.stringify(template.keys)
+        // keys: JSON.stringify(template.keys)
       },
       this.options
     )
