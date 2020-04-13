@@ -16,32 +16,35 @@ export class CreateComponent implements OnInit {
   projectDescription: string;
   owners: User[];
   selectedIndex: number = null;
+  dynamoTables: string[] = [];
 
   constructor(private client: AWSClientService) { }
-  
+
   // TODO: unsubscribe observable (ngdestroy)
-  ngOnInit() {    
+  ngOnInit() {
     this.client.getUsers().subscribe((data: User[]) => {
       this.owners = data;
       if (data.length > 0) {
         this.selectedIndex = 0;
         this.projectOwner = this.owners[0].email;
-      }      
-    });    
+      }
+    });
   }
-  
-  ngAfterViewInit() {  
+
+  ngAfterViewInit() {
     M.Collapsible.init(document.querySelectorAll('.collapsible'), {});
   }
 
   onSubmit() {
-    let template: Template = new Template(this.projectDescription);    
-    this.client.createProject(
+    console.log('Submitted request')
+    let template: Template = new Template(this.projectDescription);
+    console.log('Response: ', this.client.createProject(
       this.projectName,
       this.projectOwner,
       this.projectDescription,
-      template
-    ).subscribe();
+      template,
+      this.dynamoTables
+    ).toPromise());
   }
 
   setIndex(index: number, owner: string) {

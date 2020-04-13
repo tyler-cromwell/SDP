@@ -75,7 +75,7 @@ export class AWSClientService {
 ////////////////////////////////////////////////////////////////////////////////
 // /Projects
 
-  createProject(name: string, owner: string, description: string, template: Template) {
+  createProject(name: string, owner: string, description: string, template: Template, dynamoTables: string[]) {
     return this.http.post<string>(
       this.url + "/Projects",
       {
@@ -83,7 +83,8 @@ export class AWSClientService {
         owner: owner,
         description: description,
         version: "1.0.0",
-        template: template.json
+        template: template.json,
+        dynamoTables: dynamoTables
       },
       this.options
     );
