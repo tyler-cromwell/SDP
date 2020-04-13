@@ -45,14 +45,23 @@ if __name__ == '__main__':
     API_STAGE_NAME = 'development'
     API_USAGE_PLAN_NAME = API_NAME+'UsagePlan'
     API_KEY_NAME = API_NAME+'Key'
-    API_RESOURCES = ['Projects', 'Stacks', 'Users', 'EC2Resources']
+    API_RESOURCES = ['Projects', 'Stacks', 'Users', 'EC2Resources', 'DynamoDBResources']
     API_RESOURCE_METHODS = {
         'Projects': ['DELETE', 'GET', 'POST', 'PUT'],
         'Stacks': ['POST', 'PUT'],
         'Users': ['GET', 'POST'],
-        'EC2Resources': ['GET']
+        'EC2Resources': ['GET'],
+        'DynamoDBResources': ['GET']
     }
     API_LAMBDAS = {
+        'DynamoDBResources': {
+            'GET': LambdaParams(
+                'DynamoDBResourcesGETLambda',
+                '/../lambda/dynamodbResources/get.py',
+                ['arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess'],
+                utils.read_mapping_template("../lambda/dynamodbResources/GETMappingTemplate")
+            )
+        },
         'EC2Resources': {
             'GET': LambdaParams(
                 'EC2ResourcesGETLambda',
@@ -113,8 +122,8 @@ if __name__ == '__main__':
         'Users': {
             'GET': LambdaParams(
                 'UsersGETLambda',
-                '/../lambda/users/get.py',     
-                ['arn:aws:iam::aws:policy/AmazonDynamoDBReadOnlyAccess']        
+                '/../lambda/users/get.py',
+                ['arn:aws:iam::aws:policy/AmazonDynamoDBReadOnlyAccess']
             ),
             'POST': LambdaParams(
                 'UsersPOSTLambda',
@@ -127,7 +136,7 @@ if __name__ == '__main__':
 
     ACCESS, SECRET = utils.read_credentials(PATH)
     session = boto3.Session(ACCESS, SECRET, region_name=REGION_NAME)
-    
+
     """
     session = boto3.session.Session(
         aws_access_key_id=ACCESS,

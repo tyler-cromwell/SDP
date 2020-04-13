@@ -19,8 +19,9 @@ export class DetailComponent implements OnInit {
   private isLoadingEC2Instances: Boolean = false;
   private newEC2Instance: Boolean = null;
 
-  private isLoadingDyanmoDBInstances: Boolean = false;
+  private isLoadingDynamoDBInstances: Boolean = false;
   private newDynamoDBInstance: Boolean = null;
+  private dynamoDBInstances: object[] = null;
 
   constructor(private activatedRoute: ActivatedRoute,
               private client: AWSClientService,
@@ -190,15 +191,16 @@ export class DetailComponent implements OnInit {
   }
 
   onDynamoDBView() {
-    // this.isLoadingDyanmoDBInstances = true;
-    // this.client.getDynamoDBResources(this.project.id).subscribe(data => {
-    //   console.log(`[PROJECT DETAILS] DynamoDB Resource data: \n${JSON.stringify(data, null, 4)}`)
-      // this.dynamoDBInstances = data["Reservations"]
-      // this.isLoadingDynamoDBInstances = false;
-      // setTimeout(() => {
-        // this.newDynamoDBInstance = false;
-    //   }, 2000);
-    // })
+    this.isLoadingDynamoDBInstances = true;
+    this.client.getDynamoDBResources(this.project.id).subscribe(data => {
+      console.log(`[PROJECT DETAILS] DynamoDB Resource data: \n${JSON.stringify(data, null, 4)}`)
+      this.dynamoDBInstances = data["Reservations"]
+      console.log(this.dynamoDBInstances)
+      this.isLoadingDynamoDBInstances = false;
+      setTimeout(() => {
+        this.newDynamoDBInstance = false;
+      }, 2000);
+    })
   }
 
   onEC2View() {

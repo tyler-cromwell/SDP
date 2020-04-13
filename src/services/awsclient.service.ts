@@ -18,9 +18,20 @@ export class AWSClientService {
   constructor(private http: HttpClient) {}
 
 ////////////////////////////////////////////////////////////////////////////////
+// DynamoDB Tables
+
+  getDynamoDBResources(projectName: string) {
+    this.options.params = { projectName };
+    return this.http.get(
+      this.url + "/DynamoDBResources",
+      this.options
+    )
+  }
+
+////////////////////////////////////////////////////////////////////////////////
 // /EC2Resources
 
-  getEC2Resources(projectName: string) {    
+  getEC2Resources(projectName: string) {
     this.options.params = { projectName };
     return this.http.get(
       this.url + "/EC2Resources",
