@@ -52,11 +52,15 @@ def update_stack(session, stack_name, template):
     return response
 
 
-def wait_for_completion(session, stack_name):
+def wait_for_completion(session, stack_name, api_name, key_name, region_name, stage_name):
+    apiclient = session.client('apigateway')
     cfclient = session.client('cloudformation')
-    result = []
+    result = {'status': False}
+    items = []
+    attempts = 0
 
-    while len(result) is 0:
+    # Try for a maximum of 2 minutes
+    while len(items) is 0 and attempts < 60:
         time.sleep(2)   # API forces us to poll for status update
 
         response = cfclient.list_stacks(
@@ -65,13 +69,22 @@ def wait_for_completion(session, stack_name):
             ]
         )
 
-        result = response['StackSummaries']
+        items = response['StackSummaries']
+        attempts += 1
 
-    for item in result:
+
+    for item in items:
         if item['StackName'] == stack_name:
             if item['StackStatus'] == 'CREATE_COMPLETE':
-                return True
-            else:
-                return False
+                api_resource = cfclient.describe_stack_resource(StackName=stack_name, LogicalResourceId=api_name)
+                key_resource = cfclient.describe_stack_resource(StackName=stack_name, LogicalResourceId=key_name)
+
+                api_id = api_resource['StackResourceDetail']['PhysicalResourceId']
+                key_id = key_resource['StackResourceDetail']['PhysicalResourceId']
+                key_info = apiclient.get_api_key(apiKey=key_id, includeValue=True)
+
+                result['url'] = 'https://{}.execute-api.{}.amazonaws.com/{}/'.format(api_id, region_name, stage_name)
+                result['key'] = key_info['value']
+                result['status'] = True
 
     return result

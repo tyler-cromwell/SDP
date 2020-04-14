@@ -227,6 +227,19 @@ if __name__ == '__main__':
         )
 
         print('Template for stack "{}" uploaded.'.format(STACK_NAME))
-        status = client.wait_for_completion(session, STACK_NAME)
+        print('Creating... ', end='', flush=True)
+        result = client.wait_for_completion(
+            session=session,
+            stack_name=STACK_NAME,
+            api_name=API_NAME,
+            key_name=API_KEY_NAME,
+            region_name=REGION_NAME,
+            stage_name=API_STAGE_NAME
+        )
 
-        print('Stack "{}" created?:'.format(STACK_NAME), utils.prettify_json(status))
+        if result['status']:
+            print('SUCCESS')
+        else:
+            print('FAILED')
+
+        print(result)
