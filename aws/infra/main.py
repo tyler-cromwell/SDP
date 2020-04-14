@@ -242,4 +242,6 @@ if __name__ == '__main__':
         else:
             print('FAILED')
 
-        print(result)
+        del result['status']
+        with open('confidential.json', 'w') as f:
+            f.write(utils.prettify_json(result))

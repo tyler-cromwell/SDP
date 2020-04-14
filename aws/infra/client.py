@@ -72,7 +72,6 @@ def wait_for_completion(session, stack_name, api_name, key_name, region_name, st
         items = response['StackSummaries']
         attempts += 1
 
-
     for item in items:
         if item['StackName'] == stack_name:
             if item['StackStatus'] == 'CREATE_COMPLETE':
@@ -84,7 +83,7 @@ def wait_for_completion(session, stack_name, api_name, key_name, region_name, st
                 key_info = apiclient.get_api_key(apiKey=key_id, includeValue=True)
 
                 result['url'] = 'https://{}.execute-api.{}.amazonaws.com/{}/'.format(api_id, region_name, stage_name)
-                result['key'] = key_info['value']
+                result['x-api-key'] = key_info['value']
                 result['status'] = True
 
     return result
