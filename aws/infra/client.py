@@ -1,4 +1,5 @@
 import json
+import time
 
 
 def create_stack(session, stack_name, template):
@@ -49,3 +50,28 @@ def update_stack(session, stack_name, template):
     )
 
     return response
+
+
+def wait_for_completion(session, stack_name):
+    cfclient = session.client('cloudformation')
+    result = []
+
+    while len(result) is 0:
+        time.sleep(2)   # API forces us to poll for status update
+
+        response = cfclient.list_stacks(
+            StackStatusFilter=[
+                'CREATE_COMPLETE', 'CREATE_FAILED'
+            ]
+        )
+
+        result = response['StackSummaries']
+
+    for item in result:
+        if item['StackName'] == stack_name:
+            if item['StackStatus'] == 'CREATE_COMPLETE':
+                return True
+            else:
+                return False
+
+    return result

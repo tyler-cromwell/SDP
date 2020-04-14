@@ -225,5 +225,8 @@ if __name__ == '__main__':
             stack_name=STACK_NAME,
             template=template
         )
-        print('Stack "{}" uploaded.'.format(STACK_NAME))
-        print(utils.prettify_json(response))
+
+        print('Template for stack "{}" uploaded.'.format(STACK_NAME))
+        status = client.wait_for_completion(session, STACK_NAME)
+
+        print('Stack "{}" created?:'.format(STACK_NAME), utils.prettify_json(status))
