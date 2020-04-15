@@ -66,7 +66,7 @@ export class DynamodbComponent implements OnInit {
     return <FormArray> this.createForm.get('keySchema')
   }
 
-  addAttributesDefinition() {
+  addAttributeDefinitions() {
     this.attributeDefinitions.push(this.initItems('attributes'));
   }
 

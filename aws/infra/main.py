@@ -58,8 +58,7 @@ if __name__ == '__main__':
             'GET': LambdaParams(
                 'DynamoDBResourcesGETLambda',
                 '/../lambda/dynamodbResources/get.py',
-                ['arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess'],
-                utils.read_mapping_template("../lambda/dynamodbResources/GETMappingTemplate")
+                ['arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess']
             )
         },
         'EC2Resources': {

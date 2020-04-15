@@ -92,7 +92,55 @@
     </div>
 
     <!-- DYNAMO TAB CONTENT-->
-    <div id="dynamo" class="col s12">Dynamo</div>
+    <div id="dynamo" class="col s12">
+      <div *ngIf="isLoadingDynamoDBInstances" class="row" style="margin-top: 25px;">
+        <div class="progress">
+          <div class="indeterminate"></div>
+        </div>
+      </div>
+      <div *ngIf="!isLoadingDynamoDBInstances">
+        <table class="striped">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Status</th>
+              <th>Table ARN</th>
+              <th>WCU</th>
+              <th>RCU</th>
+              <th>Item Count</th>
+              <th>Attribute Definitions</th>
+              <th>Key Schema</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let dynamoTable of dynamoDBInstances">
+              <td>
+                {{ dynamoTable.TableName }}
+              </td>
+              <td [ngSwitch]="dynamoTable.TableStatus">
+                <span *ngSwitchCase="'ACTIVE'" class="new badge green" data-badge-caption="ACTIVE"></span>
+                <span *ngSwitchCase="'UPDATING'" class="new badge teal" data-badge-caption="UPDATING"></span>
+                <span *ngSwitchCase="'CREATING'" class="new badge light-green" data-badge-caption="CREATING"></span>
+                <span *ngSwitchCase="'DELETING'" class="new badge red" data-badge-caption="DELETING"></span>
+                <span *ngSwitchCase="'INACCESSIBLE_ENCRYPTION_CREDENTIALS'" class="new badge red" data-badge-caption="INACCESSIBLE_ENCRYPTION_CREDENTIALS"></span>
+                <span *ngSwitchCase="'ARCHIVING'" class="new badge grey" data-badge-caption="ARCHIVING"></span>
+                <span *ngSwitchCase="'ARCHIVED'" class="new badge grey" data-badge-caption="ARCHIVED"></span>
+              </td>
+              <td>{{ dynamoTable.TableArn }}</td>
+              <td>{{ dynamoTable.WriteCapacityUnits }}</td>
+              <td>{{ dynamoTable.ReadCapacityUnits }}</td>
+              <td>{{ dynamoTable.ItemCount }}</td>
+              <td>
+                <p *ngFor="let attr of dynamoTable.AttributeDefinitions">{{ attr.AttributeName }} | {{ attr.AttributeType }}</p>
+              </td>
+              <td>
+                <p *ngFor="let key of dynamoTable.KeySchema">{{ key.AttributeName }} | {{ key.KeyType }}</p>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
 
     <!-- LAMBDA TAB CONTENT-->
     <div id="lambda" class="col s12">lambda</div>

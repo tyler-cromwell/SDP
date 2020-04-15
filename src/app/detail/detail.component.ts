@@ -21,7 +21,7 @@ export class DetailComponent implements OnInit {
 
   private isLoadingDynamoDBInstances: Boolean = false;
   private newDynamoDBInstance: Boolean = null;
-  private dynamoDBInstances: object[] = null;
+  private dynamoDBInstances: any;
 
   constructor(private activatedRoute: ActivatedRoute,
               private client: AWSClientService,
@@ -106,8 +106,14 @@ export class DetailComponent implements OnInit {
 
     // if create / update stack operation was succesful
     if ('statusCode' in response && response['statusCode'] === "200") {
+      console.log('BEFORE ADDING DYNAMO TABLE NAME', this.project.dynamoTables);
+      let dynamoTablesArg: string[] = this.project.dynamoTables;
+      dynamoTablesArg.push(tableName)
+      this.project.dynamoTables = dynamoTablesArg;
+      console.log('AFTER ADDING DYNAMO TABLE NAME', this.project.dynamoTables);
       // Update the project in ProjectsTable if everything is successful
       this.client.updateProject(this.project).subscribe();
+
 
       this.project.template = template.json;
 
@@ -192,15 +198,16 @@ export class DetailComponent implements OnInit {
 
   onDynamoDBView() {
     this.isLoadingDynamoDBInstances = true;
-    this.client.getDynamoDBResources(this.project.id).subscribe(data => {
-      console.log(`[PROJECT DETAILS] DynamoDB Resource data: \n${JSON.stringify(data, null, 4)}`)
-      this.dynamoDBInstances = data["Reservations"]
-      console.log(this.dynamoDBInstances)
+    let tableNames = this.project.dynamoTables
+    console.log(tableNames)
+    console.log(this.client.getDynamoDBResources(this.project.id, tableNames).subscribe(data => {
+      console.log(`[PROJECT DETAILS] DynamoDB data: \n${JSON.stringify(data, null, 4)}`)
+      this.dynamoDBInstances = data;
       this.isLoadingDynamoDBInstances = false;
       setTimeout(() => {
         this.newDynamoDBInstance = false;
       }, 2000);
-    })
+    }))
   }
 
   onEC2View() {

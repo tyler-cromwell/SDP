@@ -18,10 +18,10 @@ export class AWSClientService {
   constructor(private http: HttpClient) {}
 
 ////////////////////////////////////////////////////////////////////////////////
-// DynamoDB Tables
+// DynamoDB dynamoTablesArg
 
-  getDynamoDBResources(projectName: string) {
-    this.options.params = { projectName };
+  getDynamoDBResources(projectName: string, tableNames: string[]) {
+    this.options.params = { projectName, tableNames };
     return this.http.get(
       this.url + "/DynamoDBResources",
       this.options
