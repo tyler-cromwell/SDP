@@ -40,11 +40,11 @@ if __name__ == '__main__':
     STACK_NAME = args.stack_name
     EC2_KEY_PAIR = args.ec2_key_pair
     EC2_NAME = args.ec2_name
-    API_NAME = 'API'
-    API_DEPLOYMENT_NAME = API_NAME+'InitialDeployment'
+    API_NAME = STACK_NAME+'API'
+    API_DEPLOYMENT_NAME = STACK_NAME+'ApiInitialDeployment'
     API_STAGE_NAME = 'development'
-    API_USAGE_PLAN_NAME = API_NAME+'UsagePlan'
-    API_KEY_NAME = API_NAME+'Key'
+    API_USAGE_PLAN_NAME = STACK_NAME+'ApiUsagePlan'
+    API_KEY_NAME = STACK_NAME+'ApiKey'
     API_RESOURCES = ['Projects', 'Stacks', 'Users', 'EC2Resources']
     API_RESOURCE_METHODS = {
         'Projects': ['DELETE', 'GET', 'POST', 'PUT'],
@@ -137,12 +137,12 @@ if __name__ == '__main__':
 
     # Generate Database tables
     template.add_dynamodb_table(
-        name='ProjectsTable',
+        name=STACK_NAME+'Projects',
         reads=1,
         writes=1
     )
     template.add_dynamodb_table(
-        name='UsersTable',
+        name=STACK_NAME+'Users',
         reads=1,
         writes=1
     )
