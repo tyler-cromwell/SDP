@@ -112,7 +112,7 @@ class Template:
         }
 
         # Associates the previously created API key with the Usage Plan.
-        self.json['Resources'][name+'UsagePlanKey'] = {
+        self.json['Resources'][name+'Key'] = {
             'DependsOn': key_name,
             'Type': 'AWS::ApiGateway::UsagePlanKey',
             'Properties': {
