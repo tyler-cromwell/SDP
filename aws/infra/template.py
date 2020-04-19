@@ -43,7 +43,12 @@ class Template:
         return {'Ref': name}
 
 
-    def save(self, filename):
+    def save_as_json(self, filename):
+        with open(filename, 'w') as outf:
+            print(utils.prettify_json(self.json), file=outf)
+
+
+    def save_as_yaml(self, filename):
         utils.dict_to_yaml(self.json, filename)
 
 

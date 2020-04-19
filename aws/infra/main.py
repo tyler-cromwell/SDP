@@ -206,6 +206,8 @@ if __name__ == '__main__':
         deployment_name=API_DEPLOYMENT_NAME
     )
 
+    # Save a copy of the template
+    template.save_as_json(STACK_NAME.lower()+'.json')
 
     # Submit the template to Cloud Formation for stack construction
     if client.stack_exists(session, STACK_NAME):
