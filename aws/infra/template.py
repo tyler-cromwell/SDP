@@ -314,28 +314,28 @@ class Template:
 
     def add_ec2_instance(self, name, instance_type, key_name, machine_image, user_data=''):
         if key_name not in self.keys:
-            self.keys.append(key_name)
+            self.keys.append(self.stack_name + key_name)
 
-        self.json['Resources'][name] = {	
+        self.json['Resources'][self.stack_name + name] = {
             'Type': 'AWS::EC2::Instance',
             'Properties': {
                 'ImageId': machine_image,
                 'InstanceType': instance_type,
-                'KeyName': key_name,
+                'KeyName': self.stack_name + key_name,
                 'UserData': {
                     'Fn::Base64': user_data
                 }
             }
         }
 
-        iid = self._Ref(name)
+        iid = self._Ref(self.stack_name + name)
         az = self._FnGetAtt(name, 'AvailabilityZone')
         ip = self._FnGetAtt(name, 'PublicIp')
         dns = self._FnGetAtt(name, 'PublicDnsName')
 
         """
-        This ugly block of code below encodes into the Cloud Formation template,
-        instructions for Cloud Formation to produce the instance's:
+        This ugly block of code below encodes into the CloudFormation template,
+        instructions for CloudFormation to produce the instance's:
             - Instance id (id)
             - Availability zone (az)
             - Public IP address (ip)
@@ -343,7 +343,7 @@ class Template:
         and then pack those values into a JSON object as an output of stack creation.
         Each JSON object is keyed by the logical ID of the EC2 Instance.
         """
-        self.json['Outputs'][name] = {
+        self.json['Outputs'][self.stack_name + name] = {
             'Value': self._FnJoin(
                 delimiter='',
                 array=[
