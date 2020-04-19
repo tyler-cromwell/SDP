@@ -173,8 +173,8 @@ if __name__ == '__main__':
                 lambda_name=function.name,
                 method_type=method,
                 api_name=API_NAME,
-                resource=resource,
-                full_path=resource,     # Note: resource nesting must be accounted for
+                resource_name=resource,
+                full_path=resource,
                 require_key=True,
                 mapping_template=function.mapping_template
             )
