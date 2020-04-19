@@ -8,13 +8,15 @@ import { AppComponent } from './app.component';
 import { Ec2Component } from './ec2/ec2.component';
 import { CreateUserComponent } from './create-user/create-user.component';
 import { AWSClientService, NotificationService, LoggingService } from 'src/services/services';
+import { DynamodbComponent } from './dynamodb/dynamodb.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     routingComponents,
     Ec2Component,
-    CreateUserComponent
+    CreateUserComponent,
+    DynamodbComponent
   ],
   imports: [
     BrowserModule,

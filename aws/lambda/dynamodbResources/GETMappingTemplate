@@ -1,0 +1,4 @@
+{
+  "projectName": "$input.params('projectName')",
+  "tableNames": "$input.params('tableNames')"
+}

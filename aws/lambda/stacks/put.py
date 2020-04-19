@@ -26,14 +26,15 @@ def main(event, context):
 
     # Check if EC2 resources types have specified EC2 key pair name exists and, if not, create a key pair and add to response 
     for resource in template['Resources'].values():
-        resourceType = resource['Type']
-        keyName = resource["Properties"]["KeyName"]     
+        resourceType = resource['Type']        
         if resourceType == 'AWS::EC2::Instance':
+            keyName = resource["Properties"]["KeyName"]
             result = ec2client.describe_key_pairs(Filters=[{'Name': 'key-name', 'Values': [keyName]}])             
             if len(result['KeyPairs']) == 0:
                 response['keys'].append(ec2client.create_key_pair(KeyName=keyName))
             # else:
-            #     resource['keys'].append(resource['KeyPairs'][0])                        
+            #     print("result = " + json.dumps(resource, indent=4))
+            #     resource['keys'].append(result['KeyPairs'][0])                       
               
     cfclient = boto3.client('cloudformation')    
 
