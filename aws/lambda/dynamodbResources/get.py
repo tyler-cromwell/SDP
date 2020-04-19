@@ -15,7 +15,7 @@ def formatTableData(oldTable):
     newTable['TableArn'] = oldTable['TableArn']
     return newTable
 
-def lambda_handler(event, context):
+def main(event, context):
     if 'projectName' not in event['queryStringParameters']:
         return {
             "ErrorMessage": 'missing required key: "projectName"',
