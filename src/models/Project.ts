@@ -4,5 +4,6 @@ export interface Project {
   owner: string
   description: string,
   version: string,
-  template: object
+  template: object,
+  dynamoTables: string[]
 }

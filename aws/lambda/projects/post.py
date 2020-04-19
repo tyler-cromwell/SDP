@@ -13,12 +13,14 @@ class Project:
     owner: str
     description: str
     version: str
+    dynamoTables: str
 
     def __init__(self, event):
         self.name = event['name']
         self.owner = event['owner']
         self.description = event['description']
         self.version = event['version']
+        self.dynamoTables = event['dynamoTables']
 
 
 def get_missing_keys(required_keys, actual_keys):
@@ -54,7 +56,7 @@ def build_response(error_msg: str, status_code: str):
 
 def main(event, context):
     table = dynamodb.Table('ProjectsTable')
-    required = ['name', 'owner', 'description', 'version', 'template']
+    required = ['name', 'owner', 'description', 'version', 'template', 'dynamoTables']
 
     missing_keys = get_missing_keys(required, event.keys())
 
@@ -81,7 +83,8 @@ def main(event, context):
             'owner': event['owner'],
             'description': event['description'],
             'version': event['version'],
-            'template': event['template']
+            'template': event['template'],
+            'dynamoTables': event['dynamoTables']
         }
     )
 

@@ -2,7 +2,7 @@
   <div class="row">
     <h3>{{ projectName }}</h3>
   </div>
-  
+
   <div class="row">
 
     <!-- TAB HEADERS -->
@@ -14,15 +14,15 @@
             Settings
             <i class="material-icons left" style="padding-top: 12px; margin: 0px;">settings</i>
           </a>
-        </li> 
+        </li>
         <li class="tab col s3" (click)="onEC2View()">
           <a href="#EC2">
             EC2
             <i class="material-icons left" style="padding-top: 12px; margin: 0px;">cloud_queue</i>
-            <span *ngIf="newEC2Instance === true" class="new badge blue" style="margin-top: 12px;"></span>            
+            <span *ngIf="newEC2Instance === true" class="new badge blue" style="margin-top: 12px;"></span>
           </a>
         </li>
-        <li class="tab col s3">
+        <li class="tab col s3" (click)="onDynamoDBView()">
           <a href="#dynamo">
             Dynamo
             <i class="material-icons left" style="padding-top: 12px; margin: 0px;">memory</i>
@@ -33,14 +33,14 @@
             Lambda
             <i class="material-icons left" style="padding-top: 12px; margin: 0px;">code</i>
           </a>
-        </li>        
+        </li>
       </ul>
     </div>
 
     <!-- TAB IMPLEMENTATION -->
 
     <!-- EC2 TAB CONTENT-->
-    <div id="EC2" class="col s12">      
+    <div id="EC2" class="col s12">
       <div *ngIf="isLoadingEC2Instances" class="row" style="margin-top: 25px;">
         <div class="progress">
           <div class="indeterminate"></div>
@@ -54,31 +54,31 @@
               <th>Instance Type</th>
               <th>AZ</th>
               <th>State</th>
-              <th>Key Name</th>              
+              <th>Key Name</th>
               <th>Image ID</th>
               <th>Public DNS</th>
             </tr>
           </thead>
           <tbody>
             <tr *ngFor="let ec2Instance of ec2Instances">
-              <td>                
+              <td>
                 {{ ec2Instance.Instances[0].InstanceId }}
               </td>
               <td>{{ ec2Instance.Instances[0].InstanceType }}</td>
               <td>{{ ec2Instance.Instances[0].Placement.AvailabilityZone }}</td>
-              <td [ngSwitch]="ec2Instance.Instances[0].State.Name">                   
+              <td [ngSwitch]="ec2Instance.Instances[0].State.Name">
                 <span *ngSwitchCase="'running'" class="new badge blue" data-badge-caption="running"></span>
                 <span *ngSwitchCase="'terminated'" class="new badge red" data-badge-caption="terminated"></span>
                 <span *ngSwitchCase="'pending'" class="new badge orange" data-badge-caption="pending"></span>
                 <span *ngSwitchCase="'shutting-down'" class="new badge yellow" data-badge-caption="shutting-down"></span>
               </td>
-              <td>{{ ec2Instance.Instances[0].KeyName }}</td>              
+              <td>{{ ec2Instance.Instances[0].KeyName }}</td>
               <td>{{ ec2Instance.Instances[0].ImageId }}</td>
               <td>
-                <div *ngIf='ec2Instance.Instances[0].State.Name !== "running" else elseBlock'>                  
-                  <span 
-                    *ngIf='ec2Instance.Instances[0].State.Name !== "running"' 
-                    class="new badge orange" 
+                <div *ngIf='ec2Instance.Instances[0].State.Name !== "running" else elseBlock'>
+                  <span
+                    *ngIf='ec2Instance.Instances[0].State.Name !== "running"'
+                    class="new badge orange"
                     data-badge-caption="none"></span>
                 </div>
                 <ng-template #elseBlock>
@@ -88,14 +88,62 @@
             </tr>
           </tbody>
         </table>
-      </div>      
+      </div>
     </div>
 
     <!-- DYNAMO TAB CONTENT-->
-    <div id="dynamo" class="col s12">Dynamo</div>
+    <div id="dynamo" class="col s12">
+      <div *ngIf="isLoadingDynamoDBInstances" class="row" style="margin-top: 25px;">
+        <div class="progress">
+          <div class="indeterminate"></div>
+        </div>
+      </div>
+      <div *ngIf="!isLoadingDynamoDBInstances">
+        <table class="striped">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Status</th>
+              <th>Table ARN</th>
+              <th>WCU</th>
+              <th>RCU</th>
+              <th>Item Count</th>
+              <th>Attribute Definitions</th>
+              <th>Key Schema</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let dynamoTable of dynamoDBInstances">
+              <td>
+                {{ dynamoTable.TableName }}
+              </td>
+              <td [ngSwitch]="dynamoTable.TableStatus">
+                <span *ngSwitchCase="'ACTIVE'" class="new badge green" data-badge-caption="ACTIVE"></span>
+                <span *ngSwitchCase="'UPDATING'" class="new badge teal" data-badge-caption="UPDATING"></span>
+                <span *ngSwitchCase="'CREATING'" class="new badge light-green" data-badge-caption="CREATING"></span>
+                <span *ngSwitchCase="'DELETING'" class="new badge red" data-badge-caption="DELETING"></span>
+                <span *ngSwitchCase="'INACCESSIBLE_ENCRYPTION_CREDENTIALS'" class="new badge red" data-badge-caption="INACCESSIBLE_ENCRYPTION_CREDENTIALS"></span>
+                <span *ngSwitchCase="'ARCHIVING'" class="new badge grey" data-badge-caption="ARCHIVING"></span>
+                <span *ngSwitchCase="'ARCHIVED'" class="new badge grey" data-badge-caption="ARCHIVED"></span>
+              </td>
+              <td>{{ dynamoTable.TableArn }}</td>
+              <td>{{ dynamoTable.WriteCapacityUnits }}</td>
+              <td>{{ dynamoTable.ReadCapacityUnits }}</td>
+              <td>{{ dynamoTable.ItemCount }}</td>
+              <td>
+                <p *ngFor="let attr of dynamoTable.AttributeDefinitions">{{ attr.AttributeName }} | {{ attr.AttributeType }}</p>
+              </td>
+              <td>
+                <p *ngFor="let key of dynamoTable.KeySchema">{{ key.AttributeName }} | {{ key.KeyType }}</p>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
 
     <!-- LAMBDA TAB CONTENT-->
-    <div id="lambda" class="col s12">lambda</div>    
+    <div id="lambda" class="col s12">lambda</div>
 
     <!-- SETTINGS TAB CONTENT-->
     <div id="settings" class="col s12">
@@ -106,6 +154,17 @@
           </div>
           <div class="collapsible-body">
             <app-ec2 [project]="project" (create)="onEC2Create($event)"></app-ec2>
+          </div>
+        </li>
+      </ul>
+
+      <ul class="collapsible">
+        <li>
+          <div class="collapsible-header">
+            <i class="material-icons">filter_drama</i>Create DynamoDB Table Instance
+          </div>
+          <div class="collapsible-body">
+            <app-dynamodb [project]="project" (create)="onDynamoCreate($event)"></app-dynamodb>
           </div>
         </li>
       </ul>

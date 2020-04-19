@@ -1,14 +1,15 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
+import * as Confidential from './confidential.json';
+import { Template } from './template';
 import { Observable } from 'rxjs';
+import { User } from './models/User';
 
-import * as Confidential from 'src/confidential.json';
-import { Project, User } from 'src/models/Models';
-import { Template } from '../template';
-
-@Injectable()
+@Injectable({
+  providedIn: 'root'
+})
 export class AWSClientService {
-  private url: string = Confidential['url'];
+  private url = Confidential['url'];
   private options: any = {
     headers: new HttpHeaders({
       'x-api-key': Confidential['x-api-key']
@@ -16,17 +17,6 @@ export class AWSClientService {
   }
 
   constructor(private http: HttpClient) {}
-
-////////////////////////////////////////////////////////////////////////////////
-// DynamoDB dynamoTablesArg
-
-  getDynamoDBResources(projectName: string, tableNames: string[]) {
-    this.options.params = { projectName, tableNames };
-    return this.http.get(
-      this.url + "/DynamoDBResources",
-      this.options
-    )
-  }
 
 ////////////////////////////////////////////////////////////////////////////////
 // /EC2Resources
@@ -38,6 +28,16 @@ export class AWSClientService {
       this.options
     )
   }
+
+////////////////////////////////////////////////////////////////////////////////
+// DynamoDB Resources
+  // getDynamoDBResources(projectName: string) {
+  //   this.options.params = { projectName };
+  //   return this.http.get(
+  //     this.url + "/DynamoDBResources",
+  //     this.options
+  //   )
+  // }
 
 ////////////////////////////////////////////////////////////////////////////////
 // Instances
@@ -75,7 +75,7 @@ export class AWSClientService {
 ////////////////////////////////////////////////////////////////////////////////
 // /Projects
 
-  createProject(name: string, owner: string, description: string, template: Template, dynamoTables: string[]) {
+  createProject(name: string, owner: string, description: string, template: Template) {
     return this.http.post<string>(
       this.url + "/Projects",
       {
@@ -83,8 +83,7 @@ export class AWSClientService {
         owner: owner,
         description: description,
         version: "1.0.0",
-        template: template.json,
-        dynamoTables: dynamoTables
+        template: template.json
       },
       this.options
     );
@@ -115,10 +114,17 @@ export class AWSClientService {
     )
   }
 
-  updateProject(project: Project) {
+  updateProject(id: string, name: string, owner: string, description: string, version: string, template: Template) {
     return this.http.put<string>(
       this.url + "/Projects",
-      project,
+      {
+        id: id,
+        name: name,
+        owner: owner,
+        description: description,
+        version: version,
+        template: template.json
+      },
       this.options
     );
   }
@@ -126,22 +132,22 @@ export class AWSClientService {
 ////////////////////////////////////////////////////////////////////////////////
 // /Stacks
 
-  createStack(stackName: string, template: Template) {
+  createStack(name: string, template: Template) {
     return this.http.post<string>(
       this.url + "/Stacks",
       {
-        stackName,
+        name: name,
         template: template.json
       },
       this.options
     )
   }
 
-  updateStack(stackName: string, template: Template) {
+  updateStack(name: string, template: Template) {
     return this.http.put<string>(
       this.url + "/Stacks",
       {
-        stackName,
+        name: name,
         template: template.json
       },
       this.options
