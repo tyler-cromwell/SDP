@@ -75,8 +75,8 @@ def wait_for_completion(session, stack_name, api_name, key_name, region_name, st
     for item in items:
         if item['StackName'] == stack_name:
             if item['StackStatus'] == 'CREATE_COMPLETE':
-                api_resource = cfclient.describe_stack_resource(StackName=stack_name, LogicalResourceId=api_name)
-                key_resource = cfclient.describe_stack_resource(StackName=stack_name, LogicalResourceId=key_name)
+                api_resource = cfclient.describe_stack_resource(StackName=stack_name, LogicalResourceId=stack_name+api_name)
+                key_resource = cfclient.describe_stack_resource(StackName=stack_name, LogicalResourceId=stack_name+key_name)
 
                 api_id = api_resource['StackResourceDetail']['PhysicalResourceId']
                 key_id = key_resource['StackResourceDetail']['PhysicalResourceId']
