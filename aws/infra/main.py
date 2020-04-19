@@ -135,14 +135,6 @@ if __name__ == '__main__':
 
     ACCESS, SECRET = utils.read_credentials(PATH)
     session = boto3.Session(ACCESS, SECRET, region_name=REGION_NAME)
-
-    """
-    session = boto3.session.Session(
-        aws_access_key_id=ACCESS,
-        aws_secret_access_key=SECRET,
-    )
-    """
-
     template = Template(name=STACK_NAME)
 
     # Generate Database tables
