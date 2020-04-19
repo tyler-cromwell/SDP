@@ -190,7 +190,7 @@ if __name__ == '__main__':
 
     all_methods = list(
         itertools.chain.from_iterable([
-            [k+s for s in API_RESOURCE_METHODS[k]+['OPTIONS']]
+            [k+s for s in API_RESOURCE_METHODS[k]]
             for k in API_RESOURCE_METHODS.keys()
         ])
     )
