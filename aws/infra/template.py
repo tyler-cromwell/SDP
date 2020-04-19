@@ -286,7 +286,7 @@ class Template:
 
 
     def add_dynamodb_table(self, name, reads, writes):
-        full_name = self.stack_name + name
+        full_name = self.stack_name + name + 'Table'
 
         self.json['Resources'][full_name] = {
             'Type': 'AWS::DynamoDB::Table',
