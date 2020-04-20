@@ -243,9 +243,10 @@ if __name__ == '__main__':
 
         if result['status']:
             print('SUCCESS')
+
+            del result['status']
+            result['stackName'] = STACK_NAME
+            with open('confidential.json', 'w') as f:
+                f.write(utils.prettify_json(result))
         else:
             print('FAILED')
-
-        del result['status']
-        with open('confidential.json', 'w') as f:
-            f.write(utils.prettify_json(result))

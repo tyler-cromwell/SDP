@@ -474,7 +474,7 @@ class Template:
                 'Code': {
                     'ZipFile': code
                 },
-                'FunctionName': name,
+                'FunctionName': full_name,
                 'Handler': 'index.main',
                 'Role': self._FnGetAtt(full_role_name, 'Arn'),
                 'Runtime': 'python3.7'

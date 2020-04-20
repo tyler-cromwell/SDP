@@ -56,34 +56,40 @@ def wait_for_completion(session, stack_name, api_name, key_name, region_name, st
     apiclient = session.client('apigateway')
     cfclient = session.client('cloudformation')
     result = {'status': False}
-    items = []
+    stacks = []
     attempts = 0
+    stop = False
 
     # Try for a maximum of 2 minutes
-    while len(items) is 0 and attempts < 60:
+    while stop is False and attempts < 60:
         time.sleep(2)   # API forces us to poll for status update
 
         response = cfclient.list_stacks(
             StackStatusFilter=[
-                'CREATE_COMPLETE', 'CREATE_FAILED'
+                'CREATE_COMPLETE', 'CREATE_FAILED', 'CREATE_IN_PROGRESS'
             ]
         )
+        stacks = response['StackSummaries']
 
-        items = response['StackSummaries']
-        attempts += 1
+        for stack in stacks:
+            if stack['StackName'] == stack_name:
+                if stack['StackStatus'] == 'CREATE_COMPLETE':
+                    api_resource = cfclient.describe_stack_resource(StackName=stack_name, LogicalResourceId=stack_name+api_name)
+                    key_resource = cfclient.describe_stack_resource(StackName=stack_name, LogicalResourceId=stack_name+key_name)
 
-    for item in items:
-        if item['StackName'] == stack_name:
-            if item['StackStatus'] == 'CREATE_COMPLETE':
-                api_resource = cfclient.describe_stack_resource(StackName=stack_name, LogicalResourceId=stack_name+api_name)
-                key_resource = cfclient.describe_stack_resource(StackName=stack_name, LogicalResourceId=stack_name+key_name)
+                    api_id = api_resource['StackResourceDetail']['PhysicalResourceId']
+                    key_id = key_resource['StackResourceDetail']['PhysicalResourceId']
+                    key_info = apiclient.get_api_key(apiKey=key_id, includeValue=True)
 
-                api_id = api_resource['StackResourceDetail']['PhysicalResourceId']
-                key_id = key_resource['StackResourceDetail']['PhysicalResourceId']
-                key_info = apiclient.get_api_key(apiKey=key_id, includeValue=True)
-
-                result['url'] = 'https://{}.execute-api.{}.amazonaws.com/{}/'.format(api_id, region_name, stage_name)
-                result['x-api-key'] = key_info['value']
-                result['status'] = True
+                    result['url'] = 'https://{}.execute-api.{}.amazonaws.com/{}/'.format(api_id, region_name, stage_name)
+                    result['x-api-key'] = key_info['value']
+                    result['status'] = True
+                    stop = True
+                    break
+                elif stack['StackStatus'] == 'CREATE_IN_PROGRESS':
+                    attempts += 1
+                    break
+                else:
+                    break
 
     return result
