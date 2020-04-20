@@ -4,12 +4,13 @@ import utils
 
 
 class LambdaParams:
-    def __init__(self, function_name, file_name, managed_policies=[], mapping_template=''):
+    def __init__(self, function_name, file_name, managed_policies=[], mapping_template='', proxy=False):
         self.name = function_name
         self.file = file_name
         self.role = function_name+'Role'
         self.policies = managed_policies
         self.mapping_template = mapping_template
+        self.is_proxy = proxy
 
 
 class Template:
@@ -241,18 +242,66 @@ class Template:
         # Update each method/integration response for existing methods
         for method in methods:
             full_method = self.stack_name + method
-            iresponses = self.json['Resources'][full_method]['Properties']['Integration']['IntegrationResponses']
-            mresponses = self.json['Resources'][full_method]['Properties']['MethodResponses']
+            keys = self.json['Resources'][full_method]['Properties'].keys()
 
-            for iresponse in iresponses:
-                iresponse['ResponseParameters'] = {
-                    'method.response.header.Access-Control-Allow-Origin': "'*'"
-                }
+            if 'Integration' in keys and 'MethodResponses' in keys:
+                iresponses = self.json['Resources'][full_method]['Properties']['Integration']['IntegrationResponses']
+                mresponses = self.json['Resources'][full_method]['Properties']['MethodResponses']
 
-            for mresponse in mresponses:
-                mresponse['ResponseParameters'] = {
-                    'method.response.header.Access-Control-Allow-Origin': str(True)
-                }
+                for iresponse in iresponses:
+                    iresponse['ResponseParameters'] = {
+                        'method.response.header.Access-Control-Allow-Origin': "'*'"
+                    }
+
+                for mresponse in mresponses:
+                    mresponse['ResponseParameters'] = {
+                        'method.response.header.Access-Control-Allow-Origin': str(True)
+                    }
+
+
+    def add_apigateway_proxy_method(self, method_type, api_name, lambda_name, resource_name='', full_path='', require_key=False):
+        # Namespace (prefix) resource names/ids/methods
+        full_api_name = self.stack_name + api_name
+        full_lambda_name = self.stack_name + lambda_name
+        full_resource_name = self.stack_name + resource_name
+        full_method_name = full_resource_name + method_type
+
+        resource_ref = (
+            self._Ref(full_resource_name)
+            if resource_name
+            else self._FnGetAtt(full_api_name, 'RootResourceId')
+        )
+
+        # Allow the API method permission to execute the Lambda function
+        self.json['Resources'][full_lambda_name + 'Permission'] = {
+            'Type': 'AWS::Lambda::Permission',
+            'Properties': {
+                'Action': 'lambda:InvokeFunction',
+                'FunctionName': self._FnGetAtt(full_lambda_name, 'Arn'),
+                'Principal': 'apigateway.amazonaws.com',
+                'SourceArn': self._FnSub('arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${'+full_api_name+'}/*/'+method_type+'/'+full_path)
+            }
+        }
+
+        self.json['Resources'][full_method_name] = {
+            'DependsOn': [
+                full_api_name,
+                full_lambda_name
+            ],
+            'Type': 'AWS::ApiGateway::Method',
+            'Properties': {
+                'ApiKeyRequired': require_key,
+                'AuthorizationType': 'NONE',
+                'HttpMethod': method_type,
+                'Integration': {
+                    'IntegrationHttpMethod': 'POST',
+                    'Type': 'AWS_PROXY',
+                    'Uri': self._FnSub('arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${'+full_lambda_name+'.Arn}/invocations')
+                },
+                'ResourceId': resource_ref,
+                'RestApiId': self._Ref(full_api_name)
+            }
+        }
 
 
     def add_apigateway_method(self, method_type, api_name, lambda_name, resource_name='', full_path='', require_key=False, mapping_template=''):

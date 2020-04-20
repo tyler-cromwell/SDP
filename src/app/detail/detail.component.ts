@@ -64,12 +64,6 @@ export class DetailComponent implements OnInit {
     let template = new Template(this.project.name);
     template.json = this.project.template;
 
-    this.logger.log(
-      this.logSrc,
-      `Project template BEFORE adding DynamoTableInstance instance:`,
-      this.project.template
-    );
-
     /*
      * Stacks cannot be created without at least one resource.
      * So check if any already exist in the template.
@@ -99,11 +93,11 @@ export class DetailComponent implements OnInit {
     let response = null;
 
     if (create) {
-      this.logger.log(this.logSrc, `CREATE NEW stack with this template`);
+      this.logger.log(this.logSrc, `CREATE NEW stack with this template`, template.json);
       response = await this.client.createStack(stackName, template).toPromise();
       this.logger.log(this.logSrc, `Create stack response:`, response);
     } else {
-      this.logger.log(this.logSrc, 'UPDATE stack with new template');
+      this.logger.log(this.logSrc, 'UPDATE stack with new template', template.json);
       response = await this.client.updateStack(stackName, template).toPromise();
       this.logger.log(this.logSrc, `Update stack response:`, response);
     }
@@ -206,22 +200,21 @@ export class DetailComponent implements OnInit {
   onDynamoDBView() {
     this.isLoadingDynamoDBInstances = true;
     let tableNames = this.project.dynamoTables
-    console.log(tableNames)
-    console.log(this.client.getDynamoDBResources(this.project.id, tableNames).subscribe(data => {
-      console.log(`[PROJECT DETAILS] DynamoDB data:`, data)
+    this.client.getDynamoDBResources(this.project.id, tableNames).subscribe(data => {
       this.dynamoDBInstances = data;
+      console.log(`[PROJECT DETAILS] DynamoDB Tables:`, this.dynamoDBInstances)
       this.isLoadingDynamoDBInstances = false;
       setTimeout(() => {
         this.newDynamoDBInstance = false;
       }, 2000);
-    }))
+    });
   }
 
   onEC2View() {
     this.isLoadingEC2Instances = true;
     this.client.getEC2Resources(this.project.id).subscribe(data => {
-      console.log(`[PROJECT DETAILS] EC2 Resource data:`, data)
       this.ec2Instances = data["Reservations"]
+      console.log(`[PROJECT DETAILS] EC2 Instances:`, this.ec2Instances)
       this.isLoadingEC2Instances = false;
       setTimeout(() => {
         this.newEC2Instance = false;

@@ -56,7 +56,8 @@ if __name__ == '__main__':
             'GET': LambdaParams(
                 'DynamoDBResourcesGETLambda',
                 '/../lambda/dynamodbResources/get.py',
-                ['arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess']
+                ['arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess'],
+                proxy=True
             )
         },
         'EC2Resources': {
@@ -169,15 +170,25 @@ if __name__ == '__main__':
                 managed_policies=function.policies
             )
 
-            template.add_apigateway_method(
-                lambda_name=function.name,
-                method_type=method,
-                api_name=API_NAME,
-                resource_name=resource,
-                full_path=resource,
-                require_key=True,
-                mapping_template=function.mapping_template
-            )
+            if function.is_proxy:
+                template.add_apigateway_proxy_method(
+                    lambda_name=function.name,
+                    method_type=method,
+                    api_name=API_NAME,
+                    resource_name=resource,
+                    full_path=resource,
+                    require_key=True
+                )
+            else:
+                template.add_apigateway_method(
+                    lambda_name=function.name,
+                    method_type=method,
+                    api_name=API_NAME,
+                    resource_name=resource,
+                    full_path=resource,
+                    require_key=True,
+                    mapping_template=function.mapping_template
+                )
 
         template.enable_apigateway_resource_cors(
             resource_name=resource,
