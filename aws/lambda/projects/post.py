@@ -32,7 +32,7 @@ def get_missing_keys(required_keys, actual_keys):
 
 
 def isOwnerValid(project: Project) -> bool:
-    table = dynamodb.Table('UsersTable')
+    table = dynamodb.Table('CSE4940UsersTable')
     result = table.scan(
         FilterExpression=Attr('email').eq(project.owner)
     )
@@ -40,7 +40,7 @@ def isOwnerValid(project: Project) -> bool:
 
 
 def isProjectValid(project: Project) -> bool:
-    table = dynamodb.Table('ProjectsTable')
+    table = dynamodb.Table('CSE4940ProjectsTable')
     result = table.scan(
         FilterExpression=Key('name').eq(
             project.name) & Key('owner').eq(project.owner)
@@ -55,7 +55,7 @@ def build_response(error_msg: str, status_code: str):
     }
 
 def main(event, context):
-    table = dynamodb.Table('ProjectsTable')
+    table = dynamodb.Table('CSE4940ProjectsTable')
     required = ['name', 'owner', 'description', 'version', 'template', 'dynamoTables']
 
     missing_keys = get_missing_keys(required, event.keys())

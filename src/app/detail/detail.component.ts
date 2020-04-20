@@ -29,7 +29,7 @@ export class DetailComponent implements OnInit {
               private logger: LoggingService)
   {
     this.logger.logs.subscribe(log => {
-      console.log(`[${log.src}] ${log.message}`);
+      console.log(`[${log.src}] ${log.message}`, log.obj);
     });
   }
 
@@ -39,7 +39,8 @@ export class DetailComponent implements OnInit {
       this.client.getProject(projectName).subscribe(data => {
         this.logger.log(
           this.logSrc,
-          `initalizing project with the following template: \n${JSON.stringify(data, null, 4)}`
+          `Initalizing project with template:`,
+          data
         );
         this.project = data[0];
       });
@@ -56,15 +57,17 @@ export class DetailComponent implements OnInit {
 
     this.logger.log(
       this.logSrc,
-      `captured create event from DynamoTableInstance for instance: \n${JSON.stringify(DynamoTableInstance, null, 4)}`
+      `Captured create event from DynamoTableInstance for instance:`,
+      DynamoTableInstance
     );
 
-    let template = new Template();
+    let template = new Template(this.project.name);
     template.json = this.project.template;
 
     this.logger.log(
       this.logSrc,
-      `project template BEFORE adding DynamoTableInstance instance: \n${JSON.stringify(this.project.template, null, 4)}`
+      `Project template BEFORE adding DynamoTableInstance instance:`,
+      this.project.template
     );
 
     /*
@@ -89,26 +92,27 @@ export class DetailComponent implements OnInit {
 
     this.logger.log(
       this.logSrc,
-      `project template AFTER adding DynamoTableInstance instance: \n${JSON.stringify(this.project.template, null, 4)}`
+      `Project template AFTER adding DynamoTableInstance instance:`,
+      this.project.template
     );
 
     let response = null;
 
     if (create) {
-      this.logger.log(this.logSrc, `this is a new project.. CREATE stack with this template`);
+      this.logger.log(this.logSrc, `CREATE NEW stack with this template`);
       response = await this.client.createStack(stackName, template).toPromise();
-      this.logger.log(this.logSrc, `create stack response: ${JSON.stringify(response, null, 4)}`);
+      this.logger.log(this.logSrc, `Create stack response:`, response);
     } else {
       this.logger.log(this.logSrc, 'UPDATE stack with new template');
       response = await this.client.updateStack(stackName, template).toPromise();
-      this.logger.log(this.logSrc, `update stack response: ${JSON.stringify(response, null, 4)}`);
+      this.logger.log(this.logSrc, `Update stack response:`, response);
     }
 
     // if create / update stack operation was succesful
     if ('statusCode' in response && response['statusCode'] === "200") {
       console.log('BEFORE ADDING DYNAMO TABLE NAME', this.project.dynamoTables);
       let dynamoTablesArg: string[] = this.project.dynamoTables;
-      dynamoTablesArg.push(tableName)
+      dynamoTablesArg.push(stackName + tableName)
       this.project.dynamoTables = dynamoTablesArg;
       console.log('AFTER ADDING DYNAMO TABLE NAME', this.project.dynamoTables);
       // Update the project in ProjectsTable if everything is successful
@@ -126,20 +130,22 @@ export class DetailComponent implements OnInit {
     }
   }
 
-  async onEC2Create(EC2Instace: EC2) {
-    let { logicalId, instanceType, keyName, machineImage, userData } = EC2Instace;
+  async onEC2Create(EC2Instance: EC2) {
+    let { logicalId, instanceType, keyName, machineImage, userData } = EC2Instance;
 
     this.logger.log(
       this.logSrc,
-      `captured create event from EC2 component for instance: \n${JSON.stringify(EC2Instace, null, 4)}`
+      `Captured create event from EC2 component for instance:`,
+      EC2Instance
     );
 
-    let template = new Template();
+    let template = new Template(this.project.name);
     template.json = this.project.template;
 
     this.logger.log(
       this.logSrc,
-      `project template BEFORE adding EC2 instance: \n${JSON.stringify(this.project.template, null, 4)}`
+      `Project template BEFORE adding EC2 instance:`,
+      this.project.template
     );
 
     /*
@@ -161,19 +167,20 @@ export class DetailComponent implements OnInit {
 
     this.logger.log(
       this.logSrc,
-      `project template AFTER adding EC2 instance: \n${JSON.stringify(this.project.template, null, 4)}`
+      `project template AFTER adding EC2 instance:`,
+      this.project.template
     );
 
     let response = null;
 
     if (create) {
-      this.logger.log(this.logSrc, `this is a new project.. CREATE stack with this template`);
+      this.logger.log(this.logSrc, `CREATE NEW stack with this template`);
       response = await this.client.createStack(stackName, template).toPromise();
-      this.logger.log(this.logSrc, `create stack response: ${JSON.stringify(response, null, 4)}`);
+      this.logger.log(this.logSrc, `Create stack response:`, response);
     } else {
       this.logger.log(this.logSrc, 'UPDATE stack with new template');
       response = await this.client.updateStack(stackName, template).toPromise();
-      this.logger.log(this.logSrc, `update stack response: ${JSON.stringify(response, null, 4)}`);
+      this.logger.log(this.logSrc, `Update stack response:`, response);
     }
 
     // if create / update stack operation was succesful
@@ -201,7 +208,7 @@ export class DetailComponent implements OnInit {
     let tableNames = this.project.dynamoTables
     console.log(tableNames)
     console.log(this.client.getDynamoDBResources(this.project.id, tableNames).subscribe(data => {
-      console.log(`[PROJECT DETAILS] DynamoDB data: \n${JSON.stringify(data, null, 4)}`)
+      console.log(`[PROJECT DETAILS] DynamoDB data:`, data)
       this.dynamoDBInstances = data;
       this.isLoadingDynamoDBInstances = false;
       setTimeout(() => {
@@ -213,7 +220,7 @@ export class DetailComponent implements OnInit {
   onEC2View() {
     this.isLoadingEC2Instances = true;
     this.client.getEC2Resources(this.project.id).subscribe(data => {
-      console.log(`[PROJECT DETAILS] EC2 Resource data: \n${JSON.stringify(data, null, 4)}`)
+      console.log(`[PROJECT DETAILS] EC2 Resource data:`, data)
       this.ec2Instances = data["Reservations"]
       this.isLoadingEC2Instances = false;
       setTimeout(() => {

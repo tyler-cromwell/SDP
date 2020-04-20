@@ -1,9 +1,11 @@
 import { EC2, DynamoDB } from 'src/models/Models';
 
 export class Template {
+  stackName: string;
   json: object;
 
-  constructor(description: string = "", version: string = "2010-09-09") {
+  constructor(name: string, description: string = "", version: string = "2010-09-09") {
+    this.stackName = name;
     this.json = {
       "AWSTemplateFormatVersion": version,
       "Description": description,
@@ -31,16 +33,19 @@ export class Template {
   }
 
   public addEC2Instance(projectId: string, instance: EC2) {
-    this.json["Resources"][instance.logicalId] = {
+    let fullId: string = this.stackName + instance.logicalId;
+    let fullKeyName: string = this.stackName + instance.keyName;
+
+    this.json["Resources"][fullId] = {
       "Type": "AWS::EC2::Instance",
       "Properties": {
-        "KeyName": instance.keyName,
+        "KeyName": fullKeyName,
         "ImageId": instance.machineImage,
         "InstanceType": instance.instanceType,
         "Tags" : [
           {
             "Key": "Name",
-            "Value": instance.logicalId
+            "Value": fullId
           },
           {
             "Key" : "ProjectName",
@@ -50,20 +55,22 @@ export class Template {
       }
     }
 
-    // if (instance.keyName !== null) {
-    //   this.json["Resources"][instance.logicalId]["Properties"]["KeyName"] = instance.keyName;
+    // if (fullKeyName !== null) {
+    //   this.json["Resources"][fullId]["Properties"]["KeyName"] = fullKeyName;
     // }
 
     // "userData" parameter must not be an empty string or null, otherwise DynamoDB will throw error.
     if (instance.userData !== null && instance.userData !== '') {
-      this.json["Resources"][instance.logicalId]["Properties"]["UserData"] = {
+      this.json["Resources"][fullId]["Properties"]["UserData"] = {
         "Fn::Base64": instance.userData
       }
     }
   }
 
   public addDynamoDBTable(projectId: string, instance: DynamoDB) {
-    this.json["Resources"][instance.tableName] = {
+    let fullName: string = this.stackName + instance.tableName;
+
+    this.json["Resources"][fullName] = {
       "Type": "AWS::DynamoDB::Table",
       "Properties": {
         "AttributeDefinitions": instance.attributeDefinitions,
@@ -72,7 +79,7 @@ export class Template {
           "ReadCapacityUnits": instance.readCapacityUnits.toString(),
           "WriteCapacityUnits": instance.writeCapacityUnits.toString()
         },
-        "TableName": instance.tableName,
+        "TableName": fullName,
         "Tags" : [
           {
             "Key" : "ProjectName",

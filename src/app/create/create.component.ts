@@ -36,15 +36,17 @@ export class CreateComponent implements OnInit {
   }
 
   onSubmit() {
-    console.log('Submitted request')
-    let template: Template = new Template(this.projectDescription);
-    console.log('Response: ', this.client.createProject(
+    let template: Template = new Template(this.projectName, this.projectDescription);
+
+    this.client.createProject(
       this.projectName,
       this.projectOwner,
       this.projectDescription,
       template,
       this.dynamoTables
-    ).toPromise());
+    ).subscribe(response => {
+      console.log(response);
+    });
   }
 
   setIndex(index: number, owner: string) {

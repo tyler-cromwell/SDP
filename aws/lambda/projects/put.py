@@ -4,7 +4,7 @@ from boto3.dynamodb.conditions import Key
 
 def main(event, context):
     dynamodb = boto3.resource('dynamodb')
-    table = dynamodb.Table('ProjectsTable')
+    table = dynamodb.Table('CSE4940ProjectsTable')
     required = ['id', 'name', 'owner', 'description', 'version', 'template', 'dynamoTables']
 
     if False in [k in event.keys() for k in required]:

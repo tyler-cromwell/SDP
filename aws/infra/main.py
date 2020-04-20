@@ -27,8 +27,6 @@ if __name__ == '__main__':
                            required=True, help="path to AWS credentials file")
     my_parser.add_argument('-r', '--region', action='store', type=str,
                            required=False, default=REGION_NAME, help="AWS region")
-    my_parser.add_argument('-sn', '--stack-name', action='store', type=str,
-                           required=False, default=utils.get_random_name(), help="name of CloudFormation stack")
     my_parser.add_argument('-ec2k', '--ec2-key-pair', action='store', type=str,
                            required=False, default=DEFAULT_KEY_PAIR, help="name of EC2 key pair")
     my_parser.add_argument('-ec2n', '--ec2-name', action='store', type=str,
@@ -37,7 +35,7 @@ if __name__ == '__main__':
     args = my_parser.parse_args()
 
     PATH = args.path
-    STACK_NAME = args.stack_name
+    STACK_NAME = 'CSE4940'
     EC2_KEY_PAIR = args.ec2_key_pair
     EC2_NAME = args.ec2_name
     API_NAME = 'API'
