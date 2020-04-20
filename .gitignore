@@ -54,3 +54,6 @@ Thumbs.db
 
 #credentials for aws
 aws/infra/credentials.txt
+
+#generated confidential file
+aws/infra/confidential.json
