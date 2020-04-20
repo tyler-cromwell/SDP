@@ -200,14 +200,23 @@ export class DetailComponent implements OnInit {
   onDynamoDBView() {
     this.isLoadingDynamoDBInstances = true;
     let tableNames = this.project.dynamoTables
-    this.client.getDynamoDBResources(this.project.id, tableNames).subscribe(data => {
-      this.dynamoDBInstances = data;
-      console.log(`[PROJECT DETAILS] DynamoDB Tables:`, this.dynamoDBInstances)
-      this.isLoadingDynamoDBInstances = false;
-      setTimeout(() => {
-        this.newDynamoDBInstance = false;
-      }, 2000);
-    });
+    this.client.getDynamoDBResources(this.project.id, tableNames).subscribe(
+      (response) => {
+        console.log('Response received')
+        console.log(response)
+
+        this.dynamoDBInstances = response;
+        console.log(`[PROJECT DETAILS] DynamoDB Tables:`, this.dynamoDBInstances)
+        this.isLoadingDynamoDBInstances = false;
+        setTimeout(() => {
+          this.newDynamoDBInstance = false;
+        }, 2000);
+      },
+      (error) => {
+        console.log('No tables associated with project')
+        this.isLoadingDynamoDBInstances = false;
+      }
+    );
   }
 
   onEC2View() {

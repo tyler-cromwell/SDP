@@ -16,15 +16,20 @@ def formatTableData(oldTable):
     return newTable
 
 def main(event, context):
+    print(event)
     if 'projectName' not in event['queryStringParameters']:
+        print('Not a real project')
         return {
-            "ErrorMessage": 'missing required key: "projectName"',
-            "StatusCode": '400'
+            'headers': { 'access-control-allow-origin': '*' },
+            'statusCode': 400,
+            'body': '[]'
         }
-    if 'tableNames' not in event['multiValueQueryStringParameters']:
+    elif 'multiValueQueryStringParameters' not in event or 'tableNames' not in event['multiValueQueryStringParameters']:
+        print('tableNames error')
         return {
-            "ErrorMessage": 'missing required key: "tableNames"',
-            "StatusCode": '400'
+            'headers': { 'access-control-allow-origin': '*' },
+            'statusCode': 400,
+            'body': '[]'
         }
     # print(event)
     projectName = event['queryStringParameters']['projectName']

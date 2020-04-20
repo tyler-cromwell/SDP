@@ -8,6 +8,7 @@ import { AWSClientService } from 'src/services/awsclient.service';
   styleUrls: ['./create-user.component.css']
 })
 export class CreateUserComponent implements OnInit {
+  private isCreatingUser: Boolean = false;
 
   constructor(private client: AWSClientService) { }
 
@@ -15,6 +16,9 @@ export class CreateUserComponent implements OnInit {
   }
 
   onSubmit(form: NgForm) {
-    this.client.postUser(form.value).subscribe();
+    this.isCreatingUser = true;
+    this.client.postUser(form.value).subscribe(() => {
+      this.isCreatingUser = false;
+    });
   }
 }

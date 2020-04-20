@@ -11,6 +11,8 @@ import { User } from '../../models/User';
   styleUrls: ['./create.component.css']
 })
 export class CreateComponent implements OnInit {
+  private isCreatingProject: Boolean = false;
+
   projectName: string;
   projectOwner: string;
   projectDescription: string;
@@ -36,6 +38,7 @@ export class CreateComponent implements OnInit {
   }
 
   onSubmit() {
+    this.isCreatingProject = true;
     let template: Template = new Template(this.projectName, this.projectDescription);
 
     this.client.createProject(
@@ -44,9 +47,24 @@ export class CreateComponent implements OnInit {
       this.projectDescription,
       template,
       this.dynamoTables
-    ).subscribe(response => {
-      console.log(response);
-    });
+    ).subscribe(
+      (response) => {
+        console.log(response);
+        this.isCreatingProject = false;
+        this.resetFields();
+      },
+      (error) => {
+        console.log('Error: ', error);
+        this.isCreatingProject = false;
+        this.resetFields();
+      }
+    );
+  }
+
+  resetFields() {
+    this.projectName = "";
+    this.projectOwner = "";
+    this.projectDescription = "";
   }
 
   setIndex(index: number, owner: string) {

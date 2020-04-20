@@ -31,14 +31,7 @@ export class DynamodbComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.createForm = new FormGroup({
-      'tableName': new FormControl(null, Validators.required),
-      'readCapacityUnits': new FormControl(1, Validators.required),
-      'writeCapacityUnits': new FormControl(1, Validators.required),
-      'attributeDefinitions': this.fb.array([this.initItems('attributes')]),
-      'keySchema': this.fb.array([this.initItems('keys')])
-    });
-    this.initialValues = this.createForm.value;
+    this.initForm();
   }
 
   ngAfterViewInit() {
@@ -55,7 +48,7 @@ export class DynamodbComponent implements OnInit {
   }
 
   resetForm() {
-    this.createForm.reset();
+    this.initForm();
   }
 
   get attributeDefinitions() : FormArray {
@@ -72,6 +65,17 @@ export class DynamodbComponent implements OnInit {
 
   addKey() {
     this.keySchema.push(this.initItems('keys'));
+  }
+
+  initForm() {
+    this.createForm = new FormGroup({
+      'tableName': new FormControl(null, Validators.required),
+      'readCapacityUnits': new FormControl(1, Validators.required),
+      'writeCapacityUnits': new FormControl(1, Validators.required),
+      'attributeDefinitions': this.fb.array([this.initItems('attributes')]),
+      'keySchema': this.fb.array([this.initItems('keys')])
+    });
+    this.initialValues = this.createForm.value;
   }
 
   initItems(type): FormGroup {
