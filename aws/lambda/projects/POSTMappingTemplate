@@ -1,7 +1,8 @@
 {
-  "name" : $input.json("$.name"), 
+  "name" : $input.json("$.name"),
   "owner" : $input.json("$.owner"),
   "description" : $input.json("$.description"),
   "version" : $input.json("$.version"),
-  "template" : $input.json("$.template")
+  "template" : $input.json("$.template"),
+  "dynamoTables" : $input.json("$.dynamoTables")
 }

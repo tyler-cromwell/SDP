@@ -6,7 +6,7 @@ export class LoggingService {
 
   constructor() { }
 
-  public log(src: string, message: string): void {
-    this.logs.emit({ src, message });
+  public log(src: string, message: string, obj: object = {}): void {
+    this.logs.emit({ src, message, obj});
   }
 }

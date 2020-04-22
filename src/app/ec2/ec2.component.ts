@@ -39,7 +39,6 @@ export class Ec2Component implements OnInit {
       this.receivedRSAPrivateKeyPair = true;
       this.RSAPrivateKey = data["KeyMaterial"];
       this.keyName = data["KeyName"];
-      console.log("[PROJECT DETAILS] Received RSA key: " + this.RSAPrivateKey);
     });
   }
 

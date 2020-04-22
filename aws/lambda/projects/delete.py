@@ -16,7 +16,7 @@ def main(event, context):
 
     # Look up the project row
     project = dbclient.get_item(
-        TableName='ProjectsTable',
+        TableName='CSE4940ProjectsTable',
         Key={
             'id': {
                 'S': pid
@@ -31,7 +31,7 @@ def main(event, context):
 
     # Delete project row from "ProjectsTable" table
     response = dbclient.delete_item(
-        TableName='ProjectsTable',
+        TableName='CSE4940ProjectsTable',
         Key={
             'id': {
                 'S': pid

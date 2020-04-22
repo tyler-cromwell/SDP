@@ -1,0 +1,123 @@
+<div class="row" [hidden]="isLoading">
+  <form class="col s12" [formGroup]="createForm" (ngSubmit)="onSubmit()">
+    <!-- Table Name -->
+    <div class="row">
+      <div class="input-field col s12">
+        <label for="name">Table Name</label>
+        <input
+          id="name"
+          type="text"
+          placeholder="Name..."
+          formControlName="tableName">
+        <span
+          style="color: red;"
+          *ngIf="!createForm.get('tableName').valid && createForm.get('tableName').touched"
+          class="helper-text">
+          <strong>Danger!</strong> Please enter a valid Table name!
+        </span>
+      </div>
+    </div>
+    <!-- Read capacity units -->
+    <div class="row">
+      <div class="input-field col s12">
+        <label for="rcu">Read Capacity Units (RCU)</label>
+        <input
+          id="rcu"
+          type="number"
+          min="1"
+          max="5"
+          step="1"
+          value="1"
+          formControlName="readCapacityUnits">
+        <span
+          style="color: red;"
+          *ngIf="!createForm.get('readCapacityUnits').valid"
+          class="helper-text">
+          <strong>Danger!</strong> Please enter a valid RCU value!
+        </span>
+      </div>
+    </div>
+    <!-- Write capacity units -->
+    <div class="row">
+      <div class="input-field col s12">
+        <label for="wcu">Write Capacity Units (RCU)</label>
+        <input
+          id="wcu"
+          type="number"
+          min="1"
+          max="5"
+          step="1"
+          value="1"
+          formControlName="writeCapacityUnits">
+        <span
+          style="color: red;"
+          *ngIf="!createForm.get('writeCapacityUnits').valid"
+          class="helper-text">
+          <strong>Danger!</strong> Please enter a valid WCU value!
+        </span>
+      </div>
+    </div>
+
+    <div class="row">
+      <table class="centered" formArrayName="attributeDefinitions">
+        <thead>
+          <tr>
+            <th>Attribute Name</th>
+            <th>Attribute Type</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of createForm.controls.attributeDefinitions.controls; let i=index" [formGroupName]="i">
+            <td><input type="text" formControlName="AttributeName" placeholder="Attribute name..."></td>
+            <td>
+              <select class="browser-default" #attributeTypeSelect formControlName="AttributeType">
+                <option *ngFor="let AttributeType of dataTypes" [value]="AttributeType">
+                  {{ AttributeType }}
+                </option>
+              </select>
+              <!-- <label>Attribute Type</label> -->
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <button type="button" class="btn" (click)="addAttributeDefinitions()">Add attribute</button>
+    </div>
+
+    <div class="row">
+      <table class="centered" formArrayName="keySchema">
+        <thead>
+          <tr>
+            <th>Key Name</th>
+            <th>Key Type</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of createForm.controls.keySchema.controls; let i=index" [formGroupName]="i">
+            <td><input type="text" formControlName="AttributeName" placeholder="Attribute name..."></td>
+            <td>
+              <select class="browser-default" #keyTypeSelect formControlName="KeyType">
+                <option *ngFor="let KeyType of keyTypes" [value]="KeyType">
+                  {{ KeyType }}
+                </option>
+              </select>
+              <!-- <label>Key Type</label> -->
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <button type="button" class="btn" (click)="addKey()">Add key</button>
+    </div>
+
+    <div class="row">
+      <button
+        [disabled] = "!createForm.valid"
+        class="indigo accent-2 btn"
+        type="submit">Submit</button>
+    </div>
+  </form>
+</div>
+<div class="row" *ngIf="isLoading">
+  <div class="progress">
+    <div class="indeterminate"></div>
+  </div>
+</div>

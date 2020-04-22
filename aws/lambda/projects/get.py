@@ -5,7 +5,7 @@ from boto3.dynamodb.conditions import Key, Attr
 
 def main(event, context):
     dynamodb = boto3.resource('dynamodb')
-    table = dynamodb.Table('ProjectsTable')
+    table = dynamodb.Table('CSE4940ProjectsTable')
 
     name = event["name"] if 'name' in event else None
     owner = event["owner"] if 'owner' in event else None

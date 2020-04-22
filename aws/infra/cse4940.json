@@ -1,0 +1,1712 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "",
+  "Outputs": {
+    "CSE4940ApiKey": {
+      "Value": {
+        "Ref": "CSE4940ApiKey"
+      }
+    }
+  },
+  "Resources": {
+    "CSE4940API": {
+      "Properties": {
+        "ApiKeySourceType": "HEADER",
+        "Name": "CSE4940API"
+      },
+      "Type": "AWS::ApiGateway::RestApi"
+    },
+    "CSE4940ApiInitialDeployment": {
+      "DependsOn": [
+        "CSE4940ProjectsDELETE",
+        "CSE4940ProjectsGET",
+        "CSE4940ProjectsPOST",
+        "CSE4940ProjectsPUT",
+        "CSE4940ProjectsOPTIONS",
+        "CSE4940StacksPOST",
+        "CSE4940StacksPUT",
+        "CSE4940StacksOPTIONS",
+        "CSE4940UsersGET",
+        "CSE4940UsersPOST",
+        "CSE4940UsersOPTIONS",
+        "CSE4940EC2ResourcesGET",
+        "CSE4940EC2ResourcesOPTIONS",
+        "CSE4940DynamoDBResourcesGET",
+        "CSE4940DynamoDBResourcesOPTIONS"
+      ],
+      "Properties": {
+        "RestApiId": {
+          "Ref": "CSE4940API"
+        },
+        "StageName": "development"
+      },
+      "Type": "AWS::ApiGateway::Deployment"
+    },
+    "CSE4940ApiKey": {
+      "DependsOn": "CSE4940ApiUsagePlan",
+      "Properties": {
+        "Enabled": true,
+        "Name": "CSE4940ApiKey",
+        "StageKeys": [
+          {
+            "RestApiId": {
+              "Ref": "CSE4940API"
+            },
+            "StageName": "development"
+          }
+        ]
+      },
+      "Type": "AWS::ApiGateway::ApiKey"
+    },
+    "CSE4940ApiUsagePlan": {
+      "DependsOn": "CSE4940ApiInitialDeployment",
+      "Properties": {
+        "ApiStages": [
+          {
+            "ApiId": {
+              "Ref": "CSE4940API"
+            },
+            "Stage": "development"
+          }
+        ],
+        "UsagePlanName": "CSE4940ApiUsagePlan"
+      },
+      "Type": "AWS::ApiGateway::UsagePlan"
+    },
+    "CSE4940ApiUsagePlanKey": {
+      "DependsOn": "CSE4940ApiKey",
+      "Properties": {
+        "KeyId": {
+          "Ref": "CSE4940ApiKey"
+        },
+        "KeyType": "API_KEY",
+        "UsagePlanId": {
+          "Ref": "CSE4940ApiUsagePlan"
+        }
+      },
+      "Type": "AWS::ApiGateway::UsagePlanKey"
+    },
+    "CSE4940DynamoDBResources": {
+      "DependsOn": "CSE4940API",
+      "Properties": {
+        "ParentId": {
+          "Fn::GetAtt": [
+            "CSE4940API",
+            "RootResourceId"
+          ]
+        },
+        "PathPart": "DynamoDBResources",
+        "RestApiId": {
+          "Ref": "CSE4940API"
+        }
+      },
+      "Type": "AWS::ApiGateway::Resource"
+    },
+    "CSE4940DynamoDBResourcesGET": {
+      "DependsOn": [
+        "CSE4940API",
+        "CSE4940DynamoDBResourcesGETLambda"
+      ],
+      "Properties": {
+        "ApiKeyRequired": true,
+        "AuthorizationType": "NONE",
+        "HttpMethod": "GET",
+        "Integration": {
+          "IntegrationHttpMethod": "POST",
+          "Type": "AWS_PROXY",
+          "Uri": {
+            "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CSE4940DynamoDBResourcesGETLambda.Arn}/invocations"
+          }
+        },
+        "ResourceId": {
+          "Ref": "CSE4940DynamoDBResources"
+        },
+        "RestApiId": {
+          "Ref": "CSE4940API"
+        }
+      },
+      "Type": "AWS::ApiGateway::Method"
+    },
+    "CSE4940DynamoDBResourcesGETLambda": {
+      "DependsOn": "CSE4940DynamoDBResourcesGETLambdaRole",
+      "Properties": {
+        "Code": {
+          "ZipFile": "import json\nimport datetime\n\nimport boto3\n\ndef formatTableData(oldTable):\n    newTable = {}\n    newTable['AttributeDefinitions'] = oldTable['AttributeDefinitions']\n    newTable['TableName'] = oldTable['TableName']\n    newTable['KeySchema'] = oldTable['KeySchema']\n    newTable['TableStatus'] = oldTable['TableStatus']\n    newTable['WriteCapacityUnits'] = oldTable['ProvisionedThroughput']['WriteCapacityUnits']\n    newTable['ReadCapacityUnits'] = oldTable['ProvisionedThroughput']['ReadCapacityUnits']\n    newTable['ItemCount'] = oldTable['ItemCount']\n    newTable['TableArn'] = oldTable['TableArn']\n    return newTable\n\ndef main(event, context):\n    if 'projectName' not in event['queryStringParameters']:\n        return {\n            \"ErrorMessage\": 'missing required key: \"projectName\"',\n            \"StatusCode\": '400',\n            \"body\": '[]'\n        }\n    if 'multiValueQueryStringParameters' not in event or 'tableNames' not in event['multiValueQueryStringParameters']:\n        return {\n            \"ErrorMessage\": 'missing required key: \"tableNames\"',\n            \"StatusCode\": '400',\n            \"body\": '[]'\n        }\n    # print(event)\n    projectName = event['queryStringParameters']['projectName']\n    tableNames = event['multiValueQueryStringParameters']['tableNames']\n\n    client = boto3.client('dynamodb')\n\n    def myconverter(o):\n        if isinstance(o, datetime.datetime):\n            return o.__str__()\n\n    tables = []\n    print('Table names are: ', tableNames)\n\n    for tableName in tableNames:\n        print(str(tableName))\n        table = client.describe_table(\n            TableName=str(tableName)\n            )['Table']\n        print('Table is: ', table)\n        tables.append(formatTableData(table))\n\n    print(tables)\n\n    return {\n        'statusCode': 200,\n        'headers': { 'access-control-allow-origin': '*' },\n        'body': json.dumps(tables)\n    }\n"
+        },
+        "FunctionName": "CSE4940DynamoDBResourcesGETLambda",
+        "Handler": "index.main",
+        "Role": {
+          "Fn::GetAtt": [
+            "CSE4940DynamoDBResourcesGETLambdaRole",
+            "Arn"
+          ]
+        },
+        "Runtime": "python3.7"
+      },
+      "Type": "AWS::Lambda::Function"
+    },
+    "CSE4940DynamoDBResourcesGETLambdaPermission": {
+      "Properties": {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "CSE4940DynamoDBResourcesGETLambda",
+            "Arn"
+          ]
+        },
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Sub": "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${CSE4940API}/*/GET/DynamoDBResources"
+        }
+      },
+      "Type": "AWS::Lambda::Permission"
+    },
+    "CSE4940DynamoDBResourcesGETLambdaRole": {
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "sts:AssumeRole"
+              ],
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [
+                  "lambda.amazonaws.com"
+                ]
+              }
+            }
+          ],
+          "Version": "2012-10-17"
+        },
+        "ManagedPolicyArns": [
+          "arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess"
+        ],
+        "Policies": [
+          {
+            "PolicyDocument": {
+              "Statement": [
+                {
+                  "Action": [
+                    "logs:*"
+                  ],
+                  "Effect": "Allow",
+                  "Resource": "arn:aws:logs:*:*:*"
+                }
+              ],
+              "Version": "2012-10-17"
+            },
+            "PolicyName": "allow-logs"
+          }
+        ],
+        "RoleName": "CSE4940DynamoDBResourcesGETLambdaRole"
+      },
+      "Type": "AWS::IAM::Role"
+    },
+    "CSE4940DynamoDBResourcesOPTIONS": {
+      "DependsOn": [
+        "CSE4940API",
+        "CSE4940DynamoDBResources",
+        "CSE4940DynamoDBResourcesGET"
+      ],
+      "Properties": {
+        "AuthorizationType": "NONE",
+        "HttpMethod": "OPTIONS",
+        "Integration": {
+          "IntegrationResponses": [
+            {
+              "ResponseParameters": {
+                "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'",
+                "method.response.header.Access-Control-Allow-Methods": "'GET,OPTIONS'",
+                "method.response.header.Access-Control-Allow-Origin": "'*'"
+              },
+              "ResponseTemplates": {
+                "application/json": ""
+              },
+              "StatusCode": 200
+            }
+          ],
+          "PassthroughBehavior": "NEVER",
+          "RequestTemplates": {
+            "application/json": "{\n \"statusCode\": 200\n}"
+          },
+          "Type": "MOCK"
+        },
+        "MethodResponses": [
+          {
+            "ResponseModels": {
+              "application/json": "Empty"
+            },
+            "ResponseParameters": {
+              "method.response.header.Access-Control-Allow-Headers": "True",
+              "method.response.header.Access-Control-Allow-Methods": "True",
+              "method.response.header.Access-Control-Allow-Origin": "True"
+            },
+            "StatusCode": 200
+          }
+        ],
+        "ResourceId": {
+          "Ref": "CSE4940DynamoDBResources"
+        },
+        "RestApiId": {
+          "Ref": "CSE4940API"
+        }
+      },
+      "Type": "AWS::ApiGateway::Method"
+    },
+    "CSE4940EC2Resources": {
+      "DependsOn": "CSE4940API",
+      "Properties": {
+        "ParentId": {
+          "Fn::GetAtt": [
+            "CSE4940API",
+            "RootResourceId"
+          ]
+        },
+        "PathPart": "EC2Resources",
+        "RestApiId": {
+          "Ref": "CSE4940API"
+        }
+      },
+      "Type": "AWS::ApiGateway::Resource"
+    },
+    "CSE4940EC2ResourcesGET": {
+      "DependsOn": [
+        "CSE4940API",
+        "CSE4940EC2ResourcesGETLambda"
+      ],
+      "Properties": {
+        "ApiKeyRequired": true,
+        "AuthorizationType": "NONE",
+        "HttpMethod": "GET",
+        "Integration": {
+          "IntegrationHttpMethod": "POST",
+          "IntegrationResponses": [
+            {
+              "ResponseParameters": {
+                "method.response.header.Access-Control-Allow-Origin": "'*'"
+              },
+              "ResponseTemplates": {
+                "application/json": ""
+              },
+              "StatusCode": 200
+            }
+          ],
+          "PassthroughBehavior": "WHEN_NO_TEMPLATES",
+          "RequestTemplates": {
+            "application/json": "{\n  \"projectName\": \"$input.params('projectName')\"\n}\n"
+          },
+          "Type": "AWS",
+          "Uri": {
+            "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CSE4940EC2ResourcesGETLambda.Arn}/invocations"
+          }
+        },
+        "MethodResponses": [
+          {
+            "ResponseModels": {
+              "application/json": "Empty"
+            },
+            "ResponseParameters": {
+              "method.response.header.Access-Control-Allow-Origin": "True"
+            },
+            "StatusCode": 200
+          }
+        ],
+        "ResourceId": {
+          "Ref": "CSE4940EC2Resources"
+        },
+        "RestApiId": {
+          "Ref": "CSE4940API"
+        }
+      },
+      "Type": "AWS::ApiGateway::Method"
+    },
+    "CSE4940EC2ResourcesGETLambda": {
+      "DependsOn": "CSE4940EC2ResourcesGETLambdaRole",
+      "Properties": {
+        "Code": {
+          "ZipFile": "import json\nimport datetime\n\nimport boto3\n\n\ndef main(event, context):    \n    if 'projectName' not in event:\n        return {            \n            \"ErrorMessage\": 'missing required key: \"projectName\"',\n            \"StatusCode\": '400'    \n        }\n\n    projectName = event['projectName']\n\n    client = boto3.client('ec2')\n\n    custom_filter = [\n        {\n            'Name': 'tag:ProjectName', \n            'Values': [ projectName ]\n        }\n    ]\n\n    def myconverter(o):\n        if isinstance(o, datetime.datetime):\n            return o.__str__()\n \n    response = client.describe_instances(Filters=custom_filter)\n    response = json.dumps(response, default = myconverter) # serialize datetimes object to string format\n    response = json.loads(response) # deserialize from string\n    return response"
+        },
+        "FunctionName": "CSE4940EC2ResourcesGETLambda",
+        "Handler": "index.main",
+        "Role": {
+          "Fn::GetAtt": [
+            "CSE4940EC2ResourcesGETLambdaRole",
+            "Arn"
+          ]
+        },
+        "Runtime": "python3.7"
+      },
+      "Type": "AWS::Lambda::Function"
+    },
+    "CSE4940EC2ResourcesGETLambdaPermission": {
+      "Properties": {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "CSE4940EC2ResourcesGETLambda",
+            "Arn"
+          ]
+        },
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Sub": "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${CSE4940API}/*/GET/EC2Resources"
+        }
+      },
+      "Type": "AWS::Lambda::Permission"
+    },
+    "CSE4940EC2ResourcesGETLambdaRole": {
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "sts:AssumeRole"
+              ],
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [
+                  "lambda.amazonaws.com"
+                ]
+              }
+            }
+          ],
+          "Version": "2012-10-17"
+        },
+        "ManagedPolicyArns": [
+          "arn:aws:iam::aws:policy/AmazonEC2FullAccess"
+        ],
+        "Policies": [
+          {
+            "PolicyDocument": {
+              "Statement": [
+                {
+                  "Action": [
+                    "logs:*"
+                  ],
+                  "Effect": "Allow",
+                  "Resource": "arn:aws:logs:*:*:*"
+                }
+              ],
+              "Version": "2012-10-17"
+            },
+            "PolicyName": "allow-logs"
+          }
+        ],
+        "RoleName": "CSE4940EC2ResourcesGETLambdaRole"
+      },
+      "Type": "AWS::IAM::Role"
+    },
+    "CSE4940EC2ResourcesOPTIONS": {
+      "DependsOn": [
+        "CSE4940API",
+        "CSE4940EC2Resources",
+        "CSE4940EC2ResourcesGET"
+      ],
+      "Properties": {
+        "AuthorizationType": "NONE",
+        "HttpMethod": "OPTIONS",
+        "Integration": {
+          "IntegrationResponses": [
+            {
+              "ResponseParameters": {
+                "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'",
+                "method.response.header.Access-Control-Allow-Methods": "'GET,OPTIONS'",
+                "method.response.header.Access-Control-Allow-Origin": "'*'"
+              },
+              "ResponseTemplates": {
+                "application/json": ""
+              },
+              "StatusCode": 200
+            }
+          ],
+          "PassthroughBehavior": "NEVER",
+          "RequestTemplates": {
+            "application/json": "{\n \"statusCode\": 200\n}"
+          },
+          "Type": "MOCK"
+        },
+        "MethodResponses": [
+          {
+            "ResponseModels": {
+              "application/json": "Empty"
+            },
+            "ResponseParameters": {
+              "method.response.header.Access-Control-Allow-Headers": "True",
+              "method.response.header.Access-Control-Allow-Methods": "True",
+              "method.response.header.Access-Control-Allow-Origin": "True"
+            },
+            "StatusCode": 200
+          }
+        ],
+        "ResourceId": {
+          "Ref": "CSE4940EC2Resources"
+        },
+        "RestApiId": {
+          "Ref": "CSE4940API"
+        }
+      },
+      "Type": "AWS::ApiGateway::Method"
+    },
+    "CSE4940Projects": {
+      "DependsOn": "CSE4940API",
+      "Properties": {
+        "ParentId": {
+          "Fn::GetAtt": [
+            "CSE4940API",
+            "RootResourceId"
+          ]
+        },
+        "PathPart": "Projects",
+        "RestApiId": {
+          "Ref": "CSE4940API"
+        }
+      },
+      "Type": "AWS::ApiGateway::Resource"
+    },
+    "CSE4940ProjectsDELETE": {
+      "DependsOn": [
+        "CSE4940API",
+        "CSE4940ProjectsDELETELambda"
+      ],
+      "Properties": {
+        "ApiKeyRequired": true,
+        "AuthorizationType": "NONE",
+        "HttpMethod": "DELETE",
+        "Integration": {
+          "IntegrationHttpMethod": "POST",
+          "IntegrationResponses": [
+            {
+              "ResponseParameters": {
+                "method.response.header.Access-Control-Allow-Origin": "'*'"
+              },
+              "ResponseTemplates": {
+                "application/json": ""
+              },
+              "StatusCode": 200
+            }
+          ],
+          "PassthroughBehavior": "WHEN_NO_TEMPLATES",
+          "Type": "AWS",
+          "Uri": {
+            "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CSE4940ProjectsDELETELambda.Arn}/invocations"
+          }
+        },
+        "MethodResponses": [
+          {
+            "ResponseModels": {
+              "application/json": "Empty"
+            },
+            "ResponseParameters": {
+              "method.response.header.Access-Control-Allow-Origin": "True"
+            },
+            "StatusCode": 200
+          }
+        ],
+        "ResourceId": {
+          "Ref": "CSE4940Projects"
+        },
+        "RestApiId": {
+          "Ref": "CSE4940API"
+        }
+      },
+      "Type": "AWS::ApiGateway::Method"
+    },
+    "CSE4940ProjectsDELETELambda": {
+      "DependsOn": "CSE4940ProjectsDELETELambdaRole",
+      "Properties": {
+        "Code": {
+          "ZipFile": "import json\n\nimport boto3\n\n\ndef main(event, context):\n    cfclient = boto3.client('cloudformation')\n    dbclient = boto3.client('dynamodb')\n\n    if 'id' not in event.keys():\n        return {\n            'error': 'Key \\'id\\' missing'\n        }\n\n    pid = event['id']\n\n    # Look up the project row\n    project = dbclient.get_item(\n        TableName='CSE4940ProjectsTable',\n        Key={\n            'id': {\n                'S': pid\n            }\n        }\n    )\n\n    # Delete CloudFormation stack\n    cfclient.delete_stack(\n        StackName=project['Item']['name']['S'].replace(' ', '')\n    )\n\n    # Delete project row from \"ProjectsTable\" table\n    response = dbclient.delete_item(\n        TableName='CSE4940ProjectsTable',\n        Key={\n            'id': {\n                'S': pid\n            }\n        }\n    )\n\n    return response\n"
+        },
+        "FunctionName": "CSE4940ProjectsDELETELambda",
+        "Handler": "index.main",
+        "Role": {
+          "Fn::GetAtt": [
+            "CSE4940ProjectsDELETELambdaRole",
+            "Arn"
+          ]
+        },
+        "Runtime": "python3.7"
+      },
+      "Type": "AWS::Lambda::Function"
+    },
+    "CSE4940ProjectsDELETELambdaPermission": {
+      "Properties": {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "CSE4940ProjectsDELETELambda",
+            "Arn"
+          ]
+        },
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Sub": "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${CSE4940API}/*/DELETE/Projects"
+        }
+      },
+      "Type": "AWS::Lambda::Permission"
+    },
+    "CSE4940ProjectsDELETELambdaRole": {
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "sts:AssumeRole"
+              ],
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [
+                  "lambda.amazonaws.com"
+                ]
+              }
+            }
+          ],
+          "Version": "2012-10-17"
+        },
+        "ManagedPolicyArns": [
+          "arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess",
+          "arn:aws:iam::aws:policy/AmazonEC2FullAccess",
+          "arn:aws:iam::aws:policy/AWSCloudFormationFullAccess"
+        ],
+        "Policies": [
+          {
+            "PolicyDocument": {
+              "Statement": [
+                {
+                  "Action": [
+                    "logs:*"
+                  ],
+                  "Effect": "Allow",
+                  "Resource": "arn:aws:logs:*:*:*"
+                }
+              ],
+              "Version": "2012-10-17"
+            },
+            "PolicyName": "allow-logs"
+          }
+        ],
+        "RoleName": "CSE4940ProjectsDELETELambdaRole"
+      },
+      "Type": "AWS::IAM::Role"
+    },
+    "CSE4940ProjectsGET": {
+      "DependsOn": [
+        "CSE4940API",
+        "CSE4940ProjectsGETLambda"
+      ],
+      "Properties": {
+        "ApiKeyRequired": true,
+        "AuthorizationType": "NONE",
+        "HttpMethod": "GET",
+        "Integration": {
+          "IntegrationHttpMethod": "POST",
+          "IntegrationResponses": [
+            {
+              "ResponseParameters": {
+                "method.response.header.Access-Control-Allow-Origin": "'*'"
+              },
+              "ResponseTemplates": {
+                "application/json": ""
+              },
+              "StatusCode": 200
+            }
+          ],
+          "PassthroughBehavior": "WHEN_NO_TEMPLATES",
+          "RequestTemplates": {
+            "application/json": "{\n  \"name\": \"$input.params('name')\",\n  \"owner\": \"$input.params('owner')\"\n}"
+          },
+          "Type": "AWS",
+          "Uri": {
+            "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CSE4940ProjectsGETLambda.Arn}/invocations"
+          }
+        },
+        "MethodResponses": [
+          {
+            "ResponseModels": {
+              "application/json": "Empty"
+            },
+            "ResponseParameters": {
+              "method.response.header.Access-Control-Allow-Origin": "True"
+            },
+            "StatusCode": 200
+          }
+        ],
+        "ResourceId": {
+          "Ref": "CSE4940Projects"
+        },
+        "RestApiId": {
+          "Ref": "CSE4940API"
+        }
+      },
+      "Type": "AWS::ApiGateway::Method"
+    },
+    "CSE4940ProjectsGETLambda": {
+      "DependsOn": "CSE4940ProjectsGETLambdaRole",
+      "Properties": {
+        "Code": {
+          "ZipFile": "import json\nimport boto3\nfrom boto3.dynamodb.conditions import Key, Attr\n\n\ndef main(event, context):\n    dynamodb = boto3.resource('dynamodb')\n    table = dynamodb.Table('CSE4940ProjectsTable')\n\n    name = event[\"name\"] if 'name' in event else None\n    owner = event[\"owner\"] if 'owner' in event else None\n\n    if name and owner:\n        result = table.scan(\n            FilterExpression=Key('name').eq(name) & Key('owner').eq(owner)\n        )\n    elif name:\n        result = table.scan(\n            FilterExpression=Key('name').eq(name)\n        )\n    elif owner:\n        result = table.scan(\n            FilterExpression=Key('owner').eq(owner)\n        )\n    else:\n        result = table.scan(\n            Select=\"ALL_ATTRIBUTES\"\n        )\n\n    return result[\"Items\"]\n"
+        },
+        "FunctionName": "CSE4940ProjectsGETLambda",
+        "Handler": "index.main",
+        "Role": {
+          "Fn::GetAtt": [
+            "CSE4940ProjectsGETLambdaRole",
+            "Arn"
+          ]
+        },
+        "Runtime": "python3.7"
+      },
+      "Type": "AWS::Lambda::Function"
+    },
+    "CSE4940ProjectsGETLambdaPermission": {
+      "Properties": {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "CSE4940ProjectsGETLambda",
+            "Arn"
+          ]
+        },
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Sub": "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${CSE4940API}/*/GET/Projects"
+        }
+      },
+      "Type": "AWS::Lambda::Permission"
+    },
+    "CSE4940ProjectsGETLambdaRole": {
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "sts:AssumeRole"
+              ],
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [
+                  "lambda.amazonaws.com"
+                ]
+              }
+            }
+          ],
+          "Version": "2012-10-17"
+        },
+        "ManagedPolicyArns": [
+          "arn:aws:iam::aws:policy/AmazonDynamoDBReadOnlyAccess"
+        ],
+        "Policies": [
+          {
+            "PolicyDocument": {
+              "Statement": [
+                {
+                  "Action": [
+                    "logs:*"
+                  ],
+                  "Effect": "Allow",
+                  "Resource": "arn:aws:logs:*:*:*"
+                }
+              ],
+              "Version": "2012-10-17"
+            },
+            "PolicyName": "allow-logs"
+          }
+        ],
+        "RoleName": "CSE4940ProjectsGETLambdaRole"
+      },
+      "Type": "AWS::IAM::Role"
+    },
+    "CSE4940ProjectsOPTIONS": {
+      "DependsOn": [
+        "CSE4940API",
+        "CSE4940Projects",
+        "CSE4940ProjectsDELETE",
+        "CSE4940ProjectsGET",
+        "CSE4940ProjectsPOST",
+        "CSE4940ProjectsPUT"
+      ],
+      "Properties": {
+        "AuthorizationType": "NONE",
+        "HttpMethod": "OPTIONS",
+        "Integration": {
+          "IntegrationResponses": [
+            {
+              "ResponseParameters": {
+                "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'",
+                "method.response.header.Access-Control-Allow-Methods": "'DELETE,GET,POST,PUT,OPTIONS'",
+                "method.response.header.Access-Control-Allow-Origin": "'*'"
+              },
+              "ResponseTemplates": {
+                "application/json": ""
+              },
+              "StatusCode": 200
+            }
+          ],
+          "PassthroughBehavior": "NEVER",
+          "RequestTemplates": {
+            "application/json": "{\n \"statusCode\": 200\n}"
+          },
+          "Type": "MOCK"
+        },
+        "MethodResponses": [
+          {
+            "ResponseModels": {
+              "application/json": "Empty"
+            },
+            "ResponseParameters": {
+              "method.response.header.Access-Control-Allow-Headers": "True",
+              "method.response.header.Access-Control-Allow-Methods": "True",
+              "method.response.header.Access-Control-Allow-Origin": "True"
+            },
+            "StatusCode": 200
+          }
+        ],
+        "ResourceId": {
+          "Ref": "CSE4940Projects"
+        },
+        "RestApiId": {
+          "Ref": "CSE4940API"
+        }
+      },
+      "Type": "AWS::ApiGateway::Method"
+    },
+    "CSE4940ProjectsPOST": {
+      "DependsOn": [
+        "CSE4940API",
+        "CSE4940ProjectsPOSTLambda"
+      ],
+      "Properties": {
+        "ApiKeyRequired": true,
+        "AuthorizationType": "NONE",
+        "HttpMethod": "POST",
+        "Integration": {
+          "IntegrationHttpMethod": "POST",
+          "IntegrationResponses": [
+            {
+              "ResponseParameters": {
+                "method.response.header.Access-Control-Allow-Origin": "'*'"
+              },
+              "ResponseTemplates": {
+                "application/json": ""
+              },
+              "StatusCode": 200
+            }
+          ],
+          "PassthroughBehavior": "WHEN_NO_TEMPLATES",
+          "RequestTemplates": {
+            "application/json": "{\n  \"name\" : $input.json(\"$.name\"),\n  \"owner\" : $input.json(\"$.owner\"),\n  \"description\" : $input.json(\"$.description\"),\n  \"version\" : $input.json(\"$.version\"),\n  \"template\" : $input.json(\"$.template\"),\n  \"dynamoTables\" : $input.json(\"$.dynamoTables\")\n}\n"
+          },
+          "Type": "AWS",
+          "Uri": {
+            "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CSE4940ProjectsPOSTLambda.Arn}/invocations"
+          }
+        },
+        "MethodResponses": [
+          {
+            "ResponseModels": {
+              "application/json": "Empty"
+            },
+            "ResponseParameters": {
+              "method.response.header.Access-Control-Allow-Origin": "True"
+            },
+            "StatusCode": 200
+          }
+        ],
+        "ResourceId": {
+          "Ref": "CSE4940Projects"
+        },
+        "RestApiId": {
+          "Ref": "CSE4940API"
+        }
+      },
+      "Type": "AWS::ApiGateway::Method"
+    },
+    "CSE4940ProjectsPOSTLambda": {
+      "DependsOn": "CSE4940ProjectsPOSTLambdaRole",
+      "Properties": {
+        "Code": {
+          "ZipFile": "import json\nimport uuid\n\nimport boto3\nfrom boto3.dynamodb.conditions import Key, Attr\n\n\ndynamodb = boto3.resource('dynamodb')\n\n\nclass Project:\n    name: str\n    owner: str\n    description: str\n    version: str\n    dynamoTables: str\n\n    def __init__(self, event):\n        self.name = event['name']\n        self.owner = event['owner']\n        self.description = event['description']\n        self.version = event['version']\n        self.dynamoTables = event['dynamoTables']\n\n\ndef get_missing_keys(required_keys, actual_keys):\n    missing_keys = []\n    for key in required_keys:\n        if key not in actual_keys:\n            missing_keys.append(key)\n    return missing_keys\n\n\ndef isOwnerValid(project: Project) -> bool:\n    table = dynamodb.Table('CSE4940UsersTable')\n    result = table.scan(\n        FilterExpression=Attr('email').eq(project.owner)\n    )\n    return len(result[\"Items\"]) == 1\n\n\ndef isProjectValid(project: Project) -> bool:\n    table = dynamodb.Table('CSE4940ProjectsTable')\n    result = table.scan(\n        FilterExpression=Key('name').eq(\n            project.name) & Key('owner').eq(project.owner)\n    )\n    return True if result[\"Count\"] == 0 else False\n\n\ndef build_response(error_msg: str, status_code: str):\n    return {\n        \"ErrorMessage\": error_msg,\n        \"StatusCode\": status_code\n    }\n\ndef main(event, context):\n    table = dynamodb.Table('CSE4940ProjectsTable')\n    required = ['name', 'owner', 'description', 'version', 'template', 'dynamoTables']\n\n    missing_keys = get_missing_keys(required, event.keys())\n\n    if len(missing_keys) > 0:\n        return build_response(\"Missing require keys: {}\".format(missing_keys), \"400\")\n\n    project: Project = Project(event)\n\n    if not isOwnerValid(project):\n        return build_response(\"Owner does not exist\", \"400\")\n\n    if not isProjectValid(project):\n        return build_response(\n            \"Bad Request (project '{}' with project owner '{}' already exist)\".format(project.name, project.owner),\n            \"400\"\n        )\n\n    projectId: str = str(uuid.uuid1())\n\n    result = table.put_item(\n        Item={\n            'id': projectId,\n            'name': event['name'],\n            'owner': event['owner'],\n            'description': event['description'],\n            'version': event['version'],\n            'template': event['template'],\n            'dynamoTables': event['dynamoTables']\n        }\n    )\n\n    result = table.query(\n        KeyConditionExpression=Key('id').eq(projectId)\n    )\n\n    return result[\"Items\"][0]\n"
+        },
+        "FunctionName": "CSE4940ProjectsPOSTLambda",
+        "Handler": "index.main",
+        "Role": {
+          "Fn::GetAtt": [
+            "CSE4940ProjectsPOSTLambdaRole",
+            "Arn"
+          ]
+        },
+        "Runtime": "python3.7"
+      },
+      "Type": "AWS::Lambda::Function"
+    },
+    "CSE4940ProjectsPOSTLambdaPermission": {
+      "Properties": {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "CSE4940ProjectsPOSTLambda",
+            "Arn"
+          ]
+        },
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Sub": "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${CSE4940API}/*/POST/Projects"
+        }
+      },
+      "Type": "AWS::Lambda::Permission"
+    },
+    "CSE4940ProjectsPOSTLambdaRole": {
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "sts:AssumeRole"
+              ],
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [
+                  "lambda.amazonaws.com"
+                ]
+              }
+            }
+          ],
+          "Version": "2012-10-17"
+        },
+        "ManagedPolicyArns": [
+          "arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess"
+        ],
+        "Policies": [
+          {
+            "PolicyDocument": {
+              "Statement": [
+                {
+                  "Action": [
+                    "logs:*"
+                  ],
+                  "Effect": "Allow",
+                  "Resource": "arn:aws:logs:*:*:*"
+                }
+              ],
+              "Version": "2012-10-17"
+            },
+            "PolicyName": "allow-logs"
+          }
+        ],
+        "RoleName": "CSE4940ProjectsPOSTLambdaRole"
+      },
+      "Type": "AWS::IAM::Role"
+    },
+    "CSE4940ProjectsPUT": {
+      "DependsOn": [
+        "CSE4940API",
+        "CSE4940ProjectsPUTLambda"
+      ],
+      "Properties": {
+        "ApiKeyRequired": true,
+        "AuthorizationType": "NONE",
+        "HttpMethod": "PUT",
+        "Integration": {
+          "IntegrationHttpMethod": "POST",
+          "IntegrationResponses": [
+            {
+              "ResponseParameters": {
+                "method.response.header.Access-Control-Allow-Origin": "'*'"
+              },
+              "ResponseTemplates": {
+                "application/json": ""
+              },
+              "StatusCode": 200
+            }
+          ],
+          "PassthroughBehavior": "WHEN_NO_TEMPLATES",
+          "RequestTemplates": {
+            "application/json": "{\n  \"id\" : $input.json(\"$.id\"),\n  \"name\" : $input.json(\"$.name\"),\n  \"owner\" : $input.json(\"$.owner\"),\n  \"description\" : $input.json(\"$.description\"),\n  \"version\" : $input.json(\"$.version\"),\n  \"template\" : $input.json(\"$.template\"),\n  \"dynamoTables\" : $input.json(\"$.dynamoTables\")\n}\n"
+          },
+          "Type": "AWS",
+          "Uri": {
+            "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CSE4940ProjectsPUTLambda.Arn}/invocations"
+          }
+        },
+        "MethodResponses": [
+          {
+            "ResponseModels": {
+              "application/json": "Empty"
+            },
+            "ResponseParameters": {
+              "method.response.header.Access-Control-Allow-Origin": "True"
+            },
+            "StatusCode": 200
+          }
+        ],
+        "ResourceId": {
+          "Ref": "CSE4940Projects"
+        },
+        "RestApiId": {
+          "Ref": "CSE4940API"
+        }
+      },
+      "Type": "AWS::ApiGateway::Method"
+    },
+    "CSE4940ProjectsPUTLambda": {
+      "DependsOn": "CSE4940ProjectsPUTLambdaRole",
+      "Properties": {
+        "Code": {
+          "ZipFile": "import boto3\nfrom boto3.dynamodb.conditions import Key\n\n\ndef main(event, context):\n    dynamodb = boto3.resource('dynamodb')\n    table = dynamodb.Table('CSE4940ProjectsTable')\n    required = ['id', 'name', 'owner', 'description', 'version', 'template', 'dynamoTables']\n\n    if False in [k in event.keys() for k in required]:\n        return {\n            'error': 'Missing a required key'\n        }\n\n    result = table.update_item(\n        Key={\n            'id': event['id']\n        },\n        ExpressionAttributeNames={\n            '#n': 'name',\n            '#o': 'owner',\n            '#d': 'description',\n            '#v': 'version',\n            '#t': 'template',\n            '#dt': 'dynamoTables'\n        },\n        ExpressionAttributeValues={\n            ':n': event['name'],\n            ':o': event['owner'],\n            ':d': event['description'],\n            ':v': event['version'],\n            ':t': event['template'],\n            ':dt': event['dynamoTables']\n        },\n        UpdateExpression='SET #n = :n, #o = :o, #d = :d, #v = :v, #t = :t, #dt = :dt'\n    )\n\n    result = table.query(\n        KeyConditionExpression=Key('id').eq(event['id'])\n    )\n\n    return result[\"Items\"][0]\n"
+        },
+        "FunctionName": "CSE4940ProjectsPUTLambda",
+        "Handler": "index.main",
+        "Role": {
+          "Fn::GetAtt": [
+            "CSE4940ProjectsPUTLambdaRole",
+            "Arn"
+          ]
+        },
+        "Runtime": "python3.7"
+      },
+      "Type": "AWS::Lambda::Function"
+    },
+    "CSE4940ProjectsPUTLambdaPermission": {
+      "Properties": {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "CSE4940ProjectsPUTLambda",
+            "Arn"
+          ]
+        },
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Sub": "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${CSE4940API}/*/PUT/Projects"
+        }
+      },
+      "Type": "AWS::Lambda::Permission"
+    },
+    "CSE4940ProjectsPUTLambdaRole": {
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "sts:AssumeRole"
+              ],
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [
+                  "lambda.amazonaws.com"
+                ]
+              }
+            }
+          ],
+          "Version": "2012-10-17"
+        },
+        "ManagedPolicyArns": [
+          "arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess"
+        ],
+        "Policies": [
+          {
+            "PolicyDocument": {
+              "Statement": [
+                {
+                  "Action": [
+                    "logs:*"
+                  ],
+                  "Effect": "Allow",
+                  "Resource": "arn:aws:logs:*:*:*"
+                }
+              ],
+              "Version": "2012-10-17"
+            },
+            "PolicyName": "allow-logs"
+          }
+        ],
+        "RoleName": "CSE4940ProjectsPUTLambdaRole"
+      },
+      "Type": "AWS::IAM::Role"
+    },
+    "CSE4940ProjectsTable": {
+      "Properties": {
+        "AttributeDefinitions": [
+          {
+            "AttributeName": "id",
+            "AttributeType": "S"
+          }
+        ],
+        "KeySchema": [
+          {
+            "AttributeName": "id",
+            "KeyType": "HASH"
+          }
+        ],
+        "ProvisionedThroughput": {
+          "ReadCapacityUnits": 1,
+          "WriteCapacityUnits": 1
+        },
+        "TableName": "CSE4940ProjectsTable"
+      },
+      "Type": "AWS::DynamoDB::Table"
+    },
+    "CSE4940Stacks": {
+      "DependsOn": "CSE4940API",
+      "Properties": {
+        "ParentId": {
+          "Fn::GetAtt": [
+            "CSE4940API",
+            "RootResourceId"
+          ]
+        },
+        "PathPart": "Stacks",
+        "RestApiId": {
+          "Ref": "CSE4940API"
+        }
+      },
+      "Type": "AWS::ApiGateway::Resource"
+    },
+    "CSE4940StacksOPTIONS": {
+      "DependsOn": [
+        "CSE4940API",
+        "CSE4940Stacks",
+        "CSE4940StacksPOST",
+        "CSE4940StacksPUT"
+      ],
+      "Properties": {
+        "AuthorizationType": "NONE",
+        "HttpMethod": "OPTIONS",
+        "Integration": {
+          "IntegrationResponses": [
+            {
+              "ResponseParameters": {
+                "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'",
+                "method.response.header.Access-Control-Allow-Methods": "'POST,PUT,OPTIONS'",
+                "method.response.header.Access-Control-Allow-Origin": "'*'"
+              },
+              "ResponseTemplates": {
+                "application/json": ""
+              },
+              "StatusCode": 200
+            }
+          ],
+          "PassthroughBehavior": "NEVER",
+          "RequestTemplates": {
+            "application/json": "{\n \"statusCode\": 200\n}"
+          },
+          "Type": "MOCK"
+        },
+        "MethodResponses": [
+          {
+            "ResponseModels": {
+              "application/json": "Empty"
+            },
+            "ResponseParameters": {
+              "method.response.header.Access-Control-Allow-Headers": "True",
+              "method.response.header.Access-Control-Allow-Methods": "True",
+              "method.response.header.Access-Control-Allow-Origin": "True"
+            },
+            "StatusCode": 200
+          }
+        ],
+        "ResourceId": {
+          "Ref": "CSE4940Stacks"
+        },
+        "RestApiId": {
+          "Ref": "CSE4940API"
+        }
+      },
+      "Type": "AWS::ApiGateway::Method"
+    },
+    "CSE4940StacksPOST": {
+      "DependsOn": [
+        "CSE4940API",
+        "CSE4940StacksPOSTLambda"
+      ],
+      "Properties": {
+        "ApiKeyRequired": true,
+        "AuthorizationType": "NONE",
+        "HttpMethod": "POST",
+        "Integration": {
+          "IntegrationHttpMethod": "POST",
+          "IntegrationResponses": [
+            {
+              "ResponseParameters": {
+                "method.response.header.Access-Control-Allow-Origin": "'*'"
+              },
+              "ResponseTemplates": {
+                "application/json": ""
+              },
+              "StatusCode": 200
+            }
+          ],
+          "PassthroughBehavior": "WHEN_NO_TEMPLATES",
+          "Type": "AWS",
+          "Uri": {
+            "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CSE4940StacksPOSTLambda.Arn}/invocations"
+          }
+        },
+        "MethodResponses": [
+          {
+            "ResponseModels": {
+              "application/json": "Empty"
+            },
+            "ResponseParameters": {
+              "method.response.header.Access-Control-Allow-Origin": "True"
+            },
+            "StatusCode": 200
+          }
+        ],
+        "ResourceId": {
+          "Ref": "CSE4940Stacks"
+        },
+        "RestApiId": {
+          "Ref": "CSE4940API"
+        }
+      },
+      "Type": "AWS::ApiGateway::Method"
+    },
+    "CSE4940StacksPOSTLambda": {
+      "DependsOn": "CSE4940StacksPOSTLambdaRole",
+      "Properties": {
+        "Code": {
+          "ZipFile": "import json\n\nimport boto3\n\n\ndef main(event, context):\n    required = set(['stackName', 'template'])\n\n    missing_keys = required - set(event.keys())\n\n    if len(missing_keys) > 0:\n        return {            \n            \"errorMessage\": \"missing required key(s): {}\".format(missing_keys),\n            \"statusCode\": \"400\"    \n        }\n    \n    response = {\n        'stackId': '',\n        'keys': [],\n        'statusCode': '200'\n    }\n\n    template = event['template']\n\n    ec2client = boto3.client('ec2')\n\n    # Check if EC2 resources types have specified EC2 key pair name exists and, if not, create a key pair and add to response \n    for resource in template['Resources'].values():\n        resourceType = resource['Type']        \n        if resourceType == 'AWS::EC2::Instance':\n            keyName = resource[\"Properties\"][\"KeyName\"]\n            result = ec2client.describe_key_pairs(Filters=[{'Name': 'key-name', 'Values': [keyName]}])             \n            if len(result['KeyPairs']) == 0:\n                response['keys'].append(ec2client.create_key_pair(KeyName=keyName))\n            # else:\n            #     print(\"result = \" + json.dumps(resource, indent=4))\n            #     resource['keys'].append(result['KeyPairs'][0])\n              \n    cfclient = boto3.client('cloudformation')    \n\n    response['stackId'] = cfclient.create_stack(\n        StackName=event['stackName'],\n        TemplateBody=json.dumps(event['template'])\n    )[\"StackId\"]\n\n    return response"
+        },
+        "FunctionName": "CSE4940StacksPOSTLambda",
+        "Handler": "index.main",
+        "Role": {
+          "Fn::GetAtt": [
+            "CSE4940StacksPOSTLambdaRole",
+            "Arn"
+          ]
+        },
+        "Runtime": "python3.7"
+      },
+      "Type": "AWS::Lambda::Function"
+    },
+    "CSE4940StacksPOSTLambdaPermission": {
+      "Properties": {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "CSE4940StacksPOSTLambda",
+            "Arn"
+          ]
+        },
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Sub": "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${CSE4940API}/*/POST/Stacks"
+        }
+      },
+      "Type": "AWS::Lambda::Permission"
+    },
+    "CSE4940StacksPOSTLambdaRole": {
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "sts:AssumeRole"
+              ],
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [
+                  "lambda.amazonaws.com"
+                ]
+              }
+            }
+          ],
+          "Version": "2012-10-17"
+        },
+        "ManagedPolicyArns": [
+          "arn:aws:iam::aws:policy/AWSCloudFormationFullAccess",
+          "arn:aws:iam::aws:policy/AmazonEC2FullAccess",
+          "arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess"
+        ],
+        "Policies": [
+          {
+            "PolicyDocument": {
+              "Statement": [
+                {
+                  "Action": [
+                    "logs:*"
+                  ],
+                  "Effect": "Allow",
+                  "Resource": "arn:aws:logs:*:*:*"
+                }
+              ],
+              "Version": "2012-10-17"
+            },
+            "PolicyName": "allow-logs"
+          }
+        ],
+        "RoleName": "CSE4940StacksPOSTLambdaRole"
+      },
+      "Type": "AWS::IAM::Role"
+    },
+    "CSE4940StacksPUT": {
+      "DependsOn": [
+        "CSE4940API",
+        "CSE4940StacksPUTLambda"
+      ],
+      "Properties": {
+        "ApiKeyRequired": true,
+        "AuthorizationType": "NONE",
+        "HttpMethod": "PUT",
+        "Integration": {
+          "IntegrationHttpMethod": "POST",
+          "IntegrationResponses": [
+            {
+              "ResponseParameters": {
+                "method.response.header.Access-Control-Allow-Origin": "'*'"
+              },
+              "ResponseTemplates": {
+                "application/json": ""
+              },
+              "StatusCode": 200
+            }
+          ],
+          "PassthroughBehavior": "WHEN_NO_TEMPLATES",
+          "Type": "AWS",
+          "Uri": {
+            "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CSE4940StacksPUTLambda.Arn}/invocations"
+          }
+        },
+        "MethodResponses": [
+          {
+            "ResponseModels": {
+              "application/json": "Empty"
+            },
+            "ResponseParameters": {
+              "method.response.header.Access-Control-Allow-Origin": "True"
+            },
+            "StatusCode": 200
+          }
+        ],
+        "ResourceId": {
+          "Ref": "CSE4940Stacks"
+        },
+        "RestApiId": {
+          "Ref": "CSE4940API"
+        }
+      },
+      "Type": "AWS::ApiGateway::Method"
+    },
+    "CSE4940StacksPUTLambda": {
+      "DependsOn": "CSE4940StacksPUTLambdaRole",
+      "Properties": {
+        "Code": {
+          "ZipFile": "import json\n\nimport boto3\n\n\ndef main(event, context):\n    required = set(['stackName', 'template'])\n\n    missing_keys = required - set(event.keys())\n\n    if len(missing_keys) > 0:\n        return {            \n            \"errorMessage\": \"missing required key(s): {}\".format(missing_keys),\n            \"statusCode\": \"400\"    \n        }\n    \n    response = {\n        'stackId': '',\n        'keys': [],\n        'statusCode': '200'\n    }\n\n    template = event['template']\n\n    ec2client = boto3.client('ec2')\n\n    # Check if EC2 resources types have specified EC2 key pair name exists and, if not, create a key pair and add to response \n    for resource in template['Resources'].values():\n        resourceType = resource['Type']        \n        if resourceType == 'AWS::EC2::Instance':\n            keyName = resource[\"Properties\"][\"KeyName\"]\n            result = ec2client.describe_key_pairs(Filters=[{'Name': 'key-name', 'Values': [keyName]}])             \n            if len(result['KeyPairs']) == 0:\n                response['keys'].append(ec2client.create_key_pair(KeyName=keyName))\n            # else:\n            #     print(\"result = \" + json.dumps(resource, indent=4))\n            #     resource['keys'].append(result['KeyPairs'][0])                       \n              \n    cfclient = boto3.client('cloudformation')    \n\n    response['stackId'] = cfclient.update_stack(\n        StackName=event['stackName'],\n        TemplateBody=json.dumps(event['template'])\n    )[\"StackId\"]\n\n    return response"
+        },
+        "FunctionName": "CSE4940StacksPUTLambda",
+        "Handler": "index.main",
+        "Role": {
+          "Fn::GetAtt": [
+            "CSE4940StacksPUTLambdaRole",
+            "Arn"
+          ]
+        },
+        "Runtime": "python3.7"
+      },
+      "Type": "AWS::Lambda::Function"
+    },
+    "CSE4940StacksPUTLambdaPermission": {
+      "Properties": {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "CSE4940StacksPUTLambda",
+            "Arn"
+          ]
+        },
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Sub": "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${CSE4940API}/*/PUT/Stacks"
+        }
+      },
+      "Type": "AWS::Lambda::Permission"
+    },
+    "CSE4940StacksPUTLambdaRole": {
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "sts:AssumeRole"
+              ],
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [
+                  "lambda.amazonaws.com"
+                ]
+              }
+            }
+          ],
+          "Version": "2012-10-17"
+        },
+        "ManagedPolicyArns": [
+          "arn:aws:iam::aws:policy/AWSCloudFormationFullAccess",
+          "arn:aws:iam::aws:policy/AmazonEC2FullAccess",
+          "arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess"
+        ],
+        "Policies": [
+          {
+            "PolicyDocument": {
+              "Statement": [
+                {
+                  "Action": [
+                    "logs:*"
+                  ],
+                  "Effect": "Allow",
+                  "Resource": "arn:aws:logs:*:*:*"
+                }
+              ],
+              "Version": "2012-10-17"
+            },
+            "PolicyName": "allow-logs"
+          }
+        ],
+        "RoleName": "CSE4940StacksPUTLambdaRole"
+      },
+      "Type": "AWS::IAM::Role"
+    },
+    "CSE4940Users": {
+      "DependsOn": "CSE4940API",
+      "Properties": {
+        "ParentId": {
+          "Fn::GetAtt": [
+            "CSE4940API",
+            "RootResourceId"
+          ]
+        },
+        "PathPart": "Users",
+        "RestApiId": {
+          "Ref": "CSE4940API"
+        }
+      },
+      "Type": "AWS::ApiGateway::Resource"
+    },
+    "CSE4940UsersGET": {
+      "DependsOn": [
+        "CSE4940API",
+        "CSE4940UsersGETLambda"
+      ],
+      "Properties": {
+        "ApiKeyRequired": true,
+        "AuthorizationType": "NONE",
+        "HttpMethod": "GET",
+        "Integration": {
+          "IntegrationHttpMethod": "POST",
+          "IntegrationResponses": [
+            {
+              "ResponseParameters": {
+                "method.response.header.Access-Control-Allow-Origin": "'*'"
+              },
+              "ResponseTemplates": {
+                "application/json": ""
+              },
+              "StatusCode": 200
+            }
+          ],
+          "PassthroughBehavior": "WHEN_NO_TEMPLATES",
+          "Type": "AWS",
+          "Uri": {
+            "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CSE4940UsersGETLambda.Arn}/invocations"
+          }
+        },
+        "MethodResponses": [
+          {
+            "ResponseModels": {
+              "application/json": "Empty"
+            },
+            "ResponseParameters": {
+              "method.response.header.Access-Control-Allow-Origin": "True"
+            },
+            "StatusCode": 200
+          }
+        ],
+        "ResourceId": {
+          "Ref": "CSE4940Users"
+        },
+        "RestApiId": {
+          "Ref": "CSE4940API"
+        }
+      },
+      "Type": "AWS::ApiGateway::Method"
+    },
+    "CSE4940UsersGETLambda": {
+      "DependsOn": "CSE4940UsersGETLambdaRole",
+      "Properties": {
+        "Code": {
+          "ZipFile": "import json\n\nimport boto3\n\n\ndef main(event, context):\n    dynamodb = boto3.resource('dynamodb')\n    table = dynamodb.Table('CSE4940UsersTable')\n    result = table.scan(Select=\"ALL_ATTRIBUTES\")\n    return result[\"Items\"]\n"
+        },
+        "FunctionName": "CSE4940UsersGETLambda",
+        "Handler": "index.main",
+        "Role": {
+          "Fn::GetAtt": [
+            "CSE4940UsersGETLambdaRole",
+            "Arn"
+          ]
+        },
+        "Runtime": "python3.7"
+      },
+      "Type": "AWS::Lambda::Function"
+    },
+    "CSE4940UsersGETLambdaPermission": {
+      "Properties": {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "CSE4940UsersGETLambda",
+            "Arn"
+          ]
+        },
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Sub": "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${CSE4940API}/*/GET/Users"
+        }
+      },
+      "Type": "AWS::Lambda::Permission"
+    },
+    "CSE4940UsersGETLambdaRole": {
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "sts:AssumeRole"
+              ],
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [
+                  "lambda.amazonaws.com"
+                ]
+              }
+            }
+          ],
+          "Version": "2012-10-17"
+        },
+        "ManagedPolicyArns": [
+          "arn:aws:iam::aws:policy/AmazonDynamoDBReadOnlyAccess"
+        ],
+        "Policies": [
+          {
+            "PolicyDocument": {
+              "Statement": [
+                {
+                  "Action": [
+                    "logs:*"
+                  ],
+                  "Effect": "Allow",
+                  "Resource": "arn:aws:logs:*:*:*"
+                }
+              ],
+              "Version": "2012-10-17"
+            },
+            "PolicyName": "allow-logs"
+          }
+        ],
+        "RoleName": "CSE4940UsersGETLambdaRole"
+      },
+      "Type": "AWS::IAM::Role"
+    },
+    "CSE4940UsersOPTIONS": {
+      "DependsOn": [
+        "CSE4940API",
+        "CSE4940Users",
+        "CSE4940UsersGET",
+        "CSE4940UsersPOST"
+      ],
+      "Properties": {
+        "AuthorizationType": "NONE",
+        "HttpMethod": "OPTIONS",
+        "Integration": {
+          "IntegrationResponses": [
+            {
+              "ResponseParameters": {
+                "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'",
+                "method.response.header.Access-Control-Allow-Methods": "'GET,POST,OPTIONS'",
+                "method.response.header.Access-Control-Allow-Origin": "'*'"
+              },
+              "ResponseTemplates": {
+                "application/json": ""
+              },
+              "StatusCode": 200
+            }
+          ],
+          "PassthroughBehavior": "NEVER",
+          "RequestTemplates": {
+            "application/json": "{\n \"statusCode\": 200\n}"
+          },
+          "Type": "MOCK"
+        },
+        "MethodResponses": [
+          {
+            "ResponseModels": {
+              "application/json": "Empty"
+            },
+            "ResponseParameters": {
+              "method.response.header.Access-Control-Allow-Headers": "True",
+              "method.response.header.Access-Control-Allow-Methods": "True",
+              "method.response.header.Access-Control-Allow-Origin": "True"
+            },
+            "StatusCode": 200
+          }
+        ],
+        "ResourceId": {
+          "Ref": "CSE4940Users"
+        },
+        "RestApiId": {
+          "Ref": "CSE4940API"
+        }
+      },
+      "Type": "AWS::ApiGateway::Method"
+    },
+    "CSE4940UsersPOST": {
+      "DependsOn": [
+        "CSE4940API",
+        "CSE4940UsersPOSTLambda"
+      ],
+      "Properties": {
+        "ApiKeyRequired": true,
+        "AuthorizationType": "NONE",
+        "HttpMethod": "POST",
+        "Integration": {
+          "IntegrationHttpMethod": "POST",
+          "IntegrationResponses": [
+            {
+              "ResponseParameters": {
+                "method.response.header.Access-Control-Allow-Origin": "'*'"
+              },
+              "ResponseTemplates": {
+                "application/json": ""
+              },
+              "StatusCode": 200
+            }
+          ],
+          "PassthroughBehavior": "WHEN_NO_TEMPLATES",
+          "RequestTemplates": {
+            "application/json": "{\n  \"firstName\" : $input.json(\"$.firstName\"), \n  \"lastName\" : $input.json(\"$.lastName\"),\n  \"email\" : $input.json(\"$.email\"),\n  \"role\" : $input.json(\"$.role\")\n}"
+          },
+          "Type": "AWS",
+          "Uri": {
+            "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CSE4940UsersPOSTLambda.Arn}/invocations"
+          }
+        },
+        "MethodResponses": [
+          {
+            "ResponseModels": {
+              "application/json": "Empty"
+            },
+            "ResponseParameters": {
+              "method.response.header.Access-Control-Allow-Origin": "True"
+            },
+            "StatusCode": 200
+          }
+        ],
+        "ResourceId": {
+          "Ref": "CSE4940Users"
+        },
+        "RestApiId": {
+          "Ref": "CSE4940API"
+        }
+      },
+      "Type": "AWS::ApiGateway::Method"
+    },
+    "CSE4940UsersPOSTLambda": {
+      "DependsOn": "CSE4940UsersPOSTLambdaRole",
+      "Properties": {
+        "Code": {
+          "ZipFile": "import json\nimport boto3\nimport uuid\n\n\ndef main(event, context):\n    required = ['firstName', 'lastName', 'email', 'role']\n\n    if False in [k in event.keys() for k in required]:\n        return {\n            'error': 'Missing a required key'\n        }\n  \n    dynamodb = boto3.resource('dynamodb')\n    table = dynamodb.Table('CSE4940UsersTable')\n\n    result = table.put_item(\n        Item={\n            'id': str(uuid.uuid4()),\n            'firstName': event['firstName'],\n            'lastName': event['lastName'],\n            'email': event['email'],\n            'role': event['role']\n        }\n    )\n\n    return result\n"
+        },
+        "FunctionName": "CSE4940UsersPOSTLambda",
+        "Handler": "index.main",
+        "Role": {
+          "Fn::GetAtt": [
+            "CSE4940UsersPOSTLambdaRole",
+            "Arn"
+          ]
+        },
+        "Runtime": "python3.7"
+      },
+      "Type": "AWS::Lambda::Function"
+    },
+    "CSE4940UsersPOSTLambdaPermission": {
+      "Properties": {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "CSE4940UsersPOSTLambda",
+            "Arn"
+          ]
+        },
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Sub": "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${CSE4940API}/*/POST/Users"
+        }
+      },
+      "Type": "AWS::Lambda::Permission"
+    },
+    "CSE4940UsersPOSTLambdaRole": {
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "sts:AssumeRole"
+              ],
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [
+                  "lambda.amazonaws.com"
+                ]
+              }
+            }
+          ],
+          "Version": "2012-10-17"
+        },
+        "ManagedPolicyArns": [
+          "arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess"
+        ],
+        "Policies": [
+          {
+            "PolicyDocument": {
+              "Statement": [
+                {
+                  "Action": [
+                    "logs:*"
+                  ],
+                  "Effect": "Allow",
+                  "Resource": "arn:aws:logs:*:*:*"
+                }
+              ],
+              "Version": "2012-10-17"
+            },
+            "PolicyName": "allow-logs"
+          }
+        ],
+        "RoleName": "CSE4940UsersPOSTLambdaRole"
+      },
+      "Type": "AWS::IAM::Role"
+    },
+    "CSE4940UsersTable": {
+      "Properties": {
+        "AttributeDefinitions": [
+          {
+            "AttributeName": "id",
+            "AttributeType": "S"
+          }
+        ],
+        "KeySchema": [
+          {
+            "AttributeName": "id",
+            "KeyType": "HASH"
+          }
+        ],
+        "ProvisionedThroughput": {
+          "ReadCapacityUnits": 1,
+          "WriteCapacityUnits": 1
+        },
+        "TableName": "CSE4940UsersTable"
+      },
+      "Type": "AWS::DynamoDB::Table"
+    }
+  }
+}

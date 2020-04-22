@@ -27,8 +27,6 @@ if __name__ == '__main__':
                            required=True, help="path to AWS credentials file")
     my_parser.add_argument('-r', '--region', action='store', type=str,
                            required=False, default=REGION_NAME, help="AWS region")
-    my_parser.add_argument('-sn', '--stack-name', action='store', type=str,
-                           required=False, default=utils.get_random_name(), help="name of CloudFormation stack")
     my_parser.add_argument('-ec2k', '--ec2-key-pair', action='store', type=str,
                            required=False, default=DEFAULT_KEY_PAIR, help="name of EC2 key pair")
     my_parser.add_argument('-ec2n', '--ec2-name', action='store', type=str,
@@ -37,22 +35,31 @@ if __name__ == '__main__':
     args = my_parser.parse_args()
 
     PATH = args.path
-    STACK_NAME = args.stack_name
+    STACK_NAME = 'CSE4940'
     EC2_KEY_PAIR = args.ec2_key_pair
     EC2_NAME = args.ec2_name
     API_NAME = 'API'
-    API_DEPLOYMENT_NAME = API_NAME+'InitialDeployment'
+    API_DEPLOYMENT_NAME = 'ApiInitialDeployment'
     API_STAGE_NAME = 'development'
-    API_USAGE_PLAN_NAME = API_NAME+'UsagePlan'
-    API_KEY_NAME = API_NAME+'Key'
-    API_RESOURCES = ['Projects', 'Stacks', 'Users', 'EC2Resources']
+    API_USAGE_PLAN_NAME = 'ApiUsagePlan'
+    API_KEY_NAME = 'ApiKey'
+    API_RESOURCES = ['Projects', 'Stacks', 'Users', 'EC2Resources', 'DynamoDBResources']
     API_RESOURCE_METHODS = {
         'Projects': ['DELETE', 'GET', 'POST', 'PUT'],
         'Stacks': ['POST', 'PUT'],
         'Users': ['GET', 'POST'],
-        'EC2Resources': ['GET']
+        'EC2Resources': ['GET'],
+        'DynamoDBResources': ['GET']
     }
     API_LAMBDAS = {
+        'DynamoDBResources': {
+            'GET': LambdaParams(
+                'DynamoDBResourcesGETLambda',
+                '/../lambda/dynamodbResources/get.py',
+                ['arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess'],
+                proxy=True
+            )
+        },
         'EC2Resources': {
             'GET': LambdaParams(
                 'EC2ResourcesGETLambda',
@@ -96,7 +103,8 @@ if __name__ == '__main__':
                 '/../lambda/stacks/post.py',
                 [
                     'arn:aws:iam::aws:policy/AWSCloudFormationFullAccess',
-                    'arn:aws:iam::aws:policy/AmazonEC2FullAccess'
+                    'arn:aws:iam::aws:policy/AmazonEC2FullAccess',
+                    'arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess',
                 ]
             ),
             'PUT': LambdaParams(
@@ -104,15 +112,16 @@ if __name__ == '__main__':
                 '/../lambda/stacks/put.py',
                 [
                     'arn:aws:iam::aws:policy/AWSCloudFormationFullAccess',
-                    'arn:aws:iam::aws:policy/AmazonEC2FullAccess'
+                    'arn:aws:iam::aws:policy/AmazonEC2FullAccess',
+                    'arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess',
                 ]
             )
         },
         'Users': {
             'GET': LambdaParams(
                 'UsersGETLambda',
-                '/../lambda/users/get.py',     
-                ['arn:aws:iam::aws:policy/AmazonDynamoDBReadOnlyAccess']        
+                '/../lambda/users/get.py',
+                ['arn:aws:iam::aws:policy/AmazonDynamoDBReadOnlyAccess']
             ),
             'POST': LambdaParams(
                 'UsersPOSTLambda',
@@ -125,24 +134,16 @@ if __name__ == '__main__':
 
     ACCESS, SECRET = utils.read_credentials(PATH)
     session = boto3.Session(ACCESS, SECRET, region_name=REGION_NAME)
-    
-    """
-    session = boto3.session.Session(
-        aws_access_key_id=ACCESS,
-        aws_secret_access_key=SECRET,
-    )
-    """
-
-    template = Template()
+    template = Template(name=STACK_NAME)
 
     # Generate Database tables
     template.add_dynamodb_table(
-        name='ProjectsTable',
+        name='Projects',
         reads=1,
         writes=1
     )
     template.add_dynamodb_table(
-        name='UsersTable',
+        name='Users',
         reads=1,
         writes=1
     )
@@ -169,15 +170,25 @@ if __name__ == '__main__':
                 managed_policies=function.policies
             )
 
-            template.add_apigateway_method(
-                lambda_name=function.name,
-                method_type=method,
-                api_name=API_NAME,
-                resource=resource,
-                full_path=resource,     # Note: resource nesting must be accounted for
-                require_key=True,
-                mapping_template=function.mapping_template
-            )
+            if function.is_proxy:
+                template.add_apigateway_proxy_method(
+                    lambda_name=function.name,
+                    method_type=method,
+                    api_name=API_NAME,
+                    resource_name=resource,
+                    full_path=resource,
+                    require_key=True
+                )
+            else:
+                template.add_apigateway_method(
+                    lambda_name=function.name,
+                    method_type=method,
+                    api_name=API_NAME,
+                    resource_name=resource,
+                    full_path=resource,
+                    require_key=True,
+                    mapping_template=function.mapping_template
+                )
 
         template.enable_apigateway_resource_cors(
             resource_name=resource,
@@ -188,7 +199,7 @@ if __name__ == '__main__':
 
     all_methods = list(
         itertools.chain.from_iterable([
-            [k+s for s in API_RESOURCE_METHODS[k]+['OPTIONS']]
+            [k+s for s in API_RESOURCE_METHODS[k]]
             for k in API_RESOURCE_METHODS.keys()
         ])
     )
@@ -206,6 +217,8 @@ if __name__ == '__main__':
         deployment_name=API_DEPLOYMENT_NAME
     )
 
+    # Save a copy of the template
+    template.save_as_json(STACK_NAME.lower()+'.json')
 
     # Submit the template to Cloud Formation for stack construction
     if client.stack_exists(session, STACK_NAME):
@@ -225,5 +238,24 @@ if __name__ == '__main__':
             stack_name=STACK_NAME,
             template=template
         )
-        print('Stack "{}" uploaded.'.format(STACK_NAME))
-        print(utils.prettify_json(response))
+
+        print('Template for stack "{}" uploaded.'.format(STACK_NAME))
+        print('Creating... ', end='', flush=True)
+        result = client.wait_for_completion(
+            session=session,
+            stack_name=STACK_NAME,
+            api_name=API_NAME,
+            key_name=API_KEY_NAME,
+            region_name=REGION_NAME,
+            stage_name=API_STAGE_NAME
+        )
+
+        if result['status']:
+            print('SUCCESS')
+
+            del result['status']
+            result['stackName'] = STACK_NAME
+            with open('confidential.json', 'w') as f:
+                f.write(utils.prettify_json(result))
+        else:
+            print('FAILED')

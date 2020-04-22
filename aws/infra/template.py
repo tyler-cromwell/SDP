@@ -4,23 +4,25 @@ import utils
 
 
 class LambdaParams:
-    def __init__(self, function_name, file_name, managed_policies=[], mapping_template=''):
+    def __init__(self, function_name, file_name, managed_policies=[], mapping_template='', proxy=False):
         self.name = function_name
         self.file = file_name
         self.role = function_name+'Role'
         self.policies = managed_policies
         self.mapping_template = mapping_template
+        self.is_proxy = proxy
 
 
 class Template:
-    def __init__(self, description='', version='2010-09-09'):
+    def __init__(self, name, description='', version='2010-09-09'):
+        self.stack_name = name
+        self.keys = []
         self.json = {
             'AWSTemplateFormatVersion': version,
             'Description': description,
             'Resources': {},
             'Outputs': {}
         }
-        self.keys = []
 
 
     def _FnGetAtt(self, name, att):
@@ -42,69 +44,93 @@ class Template:
         return {'Ref': name}
 
 
-    def save(self, filename):
+    def save_as_json(self, filename):
+        with open(filename, 'w') as outf:
+            print(utils.prettify_json(self.json), file=outf)
+
+
+    def save_as_yaml(self, filename):
         utils.dict_to_yaml(self.json, filename)
 
 
     def add_apigateway_api(self, name):
-        self.json['Resources'][name] = {
+        # Namespace (prefix) resource names/ids
+        full_name = self.stack_name + name
+
+        self.json['Resources'][full_name] = {
             'Type': 'AWS::ApiGateway::RestApi',
             'Properties': {
                 'ApiKeySourceType': 'HEADER',
-                'Name': name
+                'Name': full_name
             }
         }
 
 
     def add_apigateway_deployment(self, name, api_name, stage_name, methods):
-        self.json['Resources'][name] = {
-            'DependsOn': methods,
+        # Namespace (prefix) resource names/ids
+        full_name = self.stack_name + name
+        full_api_name = self.stack_name + api_name
+
+        self.json['Resources'][full_name] = {
+            'DependsOn': [self.stack_name + m for m in methods],
             'Type': 'AWS::ApiGateway::Deployment',
             'Properties': {
-                'RestApiId': self._Ref(api_name),
+                'RestApiId': self._Ref(full_api_name),
                 'StageName': stage_name
             }
         }
 
 
     def add_apigateway_stage(self, name, api_name, deployment_name):
-        self.json['Resources'][name] = {
-            'DependsOn': deployment_name,
+        # Namespace (prefix) resource names/ids
+        full_name = self.stack_name + name
+        full_api_name = self.stack_name + api_name
+        full_deploy_name = self.stack_name + deployment_name
+
+        self.json['Resources'][full_name] = {
+            'DependsOn': full_deploy_name,
             'Type': 'AWS::ApiGateway::Stage',
             'Properties': {
-                'DeploymentId': self._Ref(deployment_name),
-                'RestApiId': self._Ref(api_name),
+                'DeploymentId': self._Ref(full_deploy_name),
+                'RestApiId': self._Ref(full_api_name),
                 'StageName': name
             }
         }
 
 
     def add_apigateway_usage_plan(self, name, api_name, key_name, stage_name, deployment_name):
+        # Namespace (prefix) resource names/ids
+        full_name = self.stack_name + name
+        full_plan_key_name = full_name + 'Key'
+        full_key_name = self.stack_name + key_name
+        full_api_name = self.stack_name + api_name
+        full_deploy_name = self.stack_name + deployment_name
+
         # Create the API Usage Plan and associate with a Stage.
-        self.json['Resources'][name] = {
-            'DependsOn': deployment_name,
+        self.json['Resources'][full_name] = {
+            'DependsOn': full_deploy_name,
             'Type': 'AWS::ApiGateway::UsagePlan',
             'Properties': {
                 'ApiStages': [
                     {
-                        'ApiId': self._Ref(api_name),
+                        'ApiId': self._Ref(full_api_name),
                         'Stage': stage_name,
                     }
                 ],
-                'UsagePlanName': name
+                'UsagePlanName': full_name
             }
         }
 
         # Create an API key for the Usage Plan.
-        self.json['Resources'][key_name] = {
-            'DependsOn': name,
+        self.json['Resources'][full_key_name] = {
+            'DependsOn': full_name,
             'Type': 'AWS::ApiGateway::ApiKey',
             'Properties': {
                 'Enabled': True,
-                'Name': key_name,
+                'Name': full_key_name,
                 'StageKeys': [
                     {
-                        'RestApiId': self._Ref(api_name),
+                        'RestApiId': self._Ref(full_api_name),
                         'StageName': stage_name
                     }
                 ]
@@ -112,54 +138,65 @@ class Template:
         }
 
         # Associates the previously created API key with the Usage Plan.
-        self.json['Resources'][name+'UsagePlanKey'] = {
-            'DependsOn': key_name,
+        self.json['Resources'][full_plan_key_name] = {
+            'DependsOn': full_key_name,
             'Type': 'AWS::ApiGateway::UsagePlanKey',
             'Properties': {
-                'KeyId': self._Ref(key_name),
+                'KeyId': self._Ref(full_key_name),
                 'KeyType': 'API_KEY',
-                'UsagePlanId': self._Ref(name)
+                'UsagePlanId': self._Ref(full_name)
             }
         }
 
-        self.json['Outputs'][key_name] = {
-            'Value': self._Ref(key_name)
+        self.json['Outputs'][full_key_name] = {
+            'Value': self._Ref(full_key_name)
         }
 
 
-    def add_apigateway_resource(self, name, api_name, parent=''):
+    def add_apigateway_resource(self, name, api_name, parent_name=''):
+        # Namespace (prefix) resource names/ids
+        full_name = self.stack_name + name
+        full_api_name = self.stack_name + api_name
+        full_parent_name = self.stack_name + parent_name
+
         parent_ref = (
-            self._Ref(parent)
-            if parent
-            else self._FnGetAtt(api_name, 'RootResourceId')
+            self._Ref(full_parent_name)
+            if parent_name
+            else self._FnGetAtt(full_api_name, 'RootResourceId')
         )
 
-        self.json['Resources'][name] = {
-            'DependsOn': api_name,
+        self.json['Resources'][full_name] = {
+            'DependsOn': full_api_name,
             'Type': 'AWS::ApiGateway::Resource',
             'Properties': {
                 'ParentId': parent_ref,
                 'PathPart': name,
-                'RestApiId': self._Ref(api_name)
+                'RestApiId': self._Ref(full_api_name)
             }
         }
 
 
     def enable_apigateway_resource_cors(self, resource_name, api_name, methods=[], allow_http_methods=[]):
+        # Namespace (prefix) resource names/ids/methods
+        full_api_name = self.stack_name + api_name
+        full_resource_name = self.stack_name + resource_name
+        full_options_resource_name = self.stack_name + resource_name + 'OPTIONS'
+        full_method_names = [self.stack_name + m for m in methods]
+
         allow_http_methods.append('OPTIONS')
 
         resource_ref = (
-            self._Ref(resource_name)
+            self._Ref(full_resource_name)
             if resource_name
-            else self._FnGetAtt(api_name, 'RootResourceId')
+            else self._FnGetAtt(full_api_name, 'RootResourceId')
         )
 
         # Create the OPTIONS method
-        self.json['Resources'][resource_name+'OPTIONS'] = {
+        self.json['Resources'][full_options_resource_name] = {
             'DependsOn': [
-                api_name,
-                resource_name,
-            ] + methods,
+                full_api_name,
+                full_resource_name,
+            ] + full_method_names,
             'Type': 'AWS::ApiGateway::Method',
             'Properties': {
                 'AuthorizationType': 'NONE',
@@ -198,48 +235,103 @@ class Template:
                     }
                 ],
                 'ResourceId': resource_ref,
-                'RestApiId': self._Ref(api_name)
+                'RestApiId': self._Ref(full_api_name)
             }
         }
 
         # Update each method/integration response for existing methods
         for method in methods:
-            iresponses = self.json['Resources'][method]['Properties']['Integration']['IntegrationResponses']
-            mresponses = self.json['Resources'][method]['Properties']['MethodResponses']
+            full_method = self.stack_name + method
+            keys = self.json['Resources'][full_method]['Properties'].keys()
 
-            for iresponse in iresponses:
-                iresponse['ResponseParameters'] = {
-                    'method.response.header.Access-Control-Allow-Origin': "'*'"
-                }
+            if 'Integration' in keys and 'MethodResponses' in keys:
+                iresponses = self.json['Resources'][full_method]['Properties']['Integration']['IntegrationResponses']
+                mresponses = self.json['Resources'][full_method]['Properties']['MethodResponses']
 
-            for mresponse in mresponses:
-                mresponse['ResponseParameters'] = {
-                    'method.response.header.Access-Control-Allow-Origin': str(True)
-                }
+                for iresponse in iresponses:
+                    iresponse['ResponseParameters'] = {
+                        'method.response.header.Access-Control-Allow-Origin': "'*'"
+                    }
+
+                for mresponse in mresponses:
+                    mresponse['ResponseParameters'] = {
+                        'method.response.header.Access-Control-Allow-Origin': str(True)
+                    }
 
 
-    def add_apigateway_method(self, method_type, api_name, lambda_name, resource='', full_path='', require_key=False, mapping_template=''):
+    def add_apigateway_proxy_method(self, method_type, api_name, lambda_name, resource_name='', full_path='', require_key=False):
+        # Namespace (prefix) resource names/ids/methods
+        full_api_name = self.stack_name + api_name
+        full_lambda_name = self.stack_name + lambda_name
+        full_resource_name = self.stack_name + resource_name
+        full_method_name = full_resource_name + method_type
+
         resource_ref = (
-            self._Ref(resource)
-            if resource
-            else self._FnGetAtt(api_name, 'RootResourceId')
+            self._Ref(full_resource_name)
+            if resource_name
+            else self._FnGetAtt(full_api_name, 'RootResourceId')
         )
 
         # Allow the API method permission to execute the Lambda function
-        self.json['Resources'][lambda_name+'Permission'] = {
+        self.json['Resources'][full_lambda_name + 'Permission'] = {
             'Type': 'AWS::Lambda::Permission',
             'Properties': {
                 'Action': 'lambda:InvokeFunction',
-                'FunctionName': self._FnGetAtt(lambda_name, 'Arn'),
+                'FunctionName': self._FnGetAtt(full_lambda_name, 'Arn'),
                 'Principal': 'apigateway.amazonaws.com',
-                'SourceArn': self._FnSub('arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${'+api_name+'}/*/'+method_type+'/'+full_path)
+                'SourceArn': self._FnSub('arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${'+full_api_name+'}/*/'+method_type+'/'+full_path)
+            }
+        }
+
+        self.json['Resources'][full_method_name] = {
+            'DependsOn': [
+                full_api_name,
+                full_lambda_name
+            ],
+            'Type': 'AWS::ApiGateway::Method',
+            'Properties': {
+                'ApiKeyRequired': require_key,
+                'AuthorizationType': 'NONE',
+                'HttpMethod': method_type,
+                'Integration': {
+                    'IntegrationHttpMethod': 'POST',
+                    'Type': 'AWS_PROXY',
+                    'Uri': self._FnSub('arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${'+full_lambda_name+'.Arn}/invocations')
+                },
+                'ResourceId': resource_ref,
+                'RestApiId': self._Ref(full_api_name)
+            }
+        }
+
+
+    def add_apigateway_method(self, method_type, api_name, lambda_name, resource_name='', full_path='', require_key=False, mapping_template=''):
+        # Namespace (prefix) resource names/ids/methods
+        full_api_name = self.stack_name + api_name
+        full_lambda_name = self.stack_name + lambda_name
+        full_resource_name = self.stack_name + resource_name
+        full_method_name = full_resource_name + method_type
+
+        resource_ref = (
+            self._Ref(full_resource_name)
+            if resource_name
+            else self._FnGetAtt(full_api_name, 'RootResourceId')
+        )
+
+        # Allow the API method permission to execute the Lambda function
+        self.json['Resources'][full_lambda_name + 'Permission'] = {
+            'Type': 'AWS::Lambda::Permission',
+            'Properties': {
+                'Action': 'lambda:InvokeFunction',
+                'FunctionName': self._FnGetAtt(full_lambda_name, 'Arn'),
+                'Principal': 'apigateway.amazonaws.com',
+                'SourceArn': self._FnSub('arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${'+full_api_name+'}/*/'+method_type+'/'+full_path)
             }
         }   
 
-        self.json['Resources'][resource+method_type] = {
+        self.json['Resources'][full_method_name] = {
             'DependsOn': [
-                api_name,
-                lambda_name
+                full_api_name,
+                full_lambda_name
             ],
             'Type': 'AWS::ApiGateway::Method',
             'Properties': {
@@ -258,7 +350,7 @@ class Template:
                     ],
                     'PassthroughBehavior': 'WHEN_NO_TEMPLATES',   
                     'Type': 'AWS',
-                    'Uri': self._FnSub('arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${'+lambda_name+'.Arn}/invocations')
+                    'Uri': self._FnSub('arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${'+full_lambda_name+'.Arn}/invocations')
                 },
                 'MethodResponses': [
                     {
@@ -269,18 +361,21 @@ class Template:
                     }
                 ],
                 'ResourceId': resource_ref,
-                'RestApiId': self._Ref(api_name)
+                'RestApiId': self._Ref(full_api_name)
             }
         }
 
         if mapping_template != '':
-             self.json['Resources'][resource+method_type]["Properties"]["Integration"]["RequestTemplates"] = {                
+             self.json['Resources'][full_method_name]["Properties"]["Integration"]["RequestTemplates"] = {
                 "application/json": mapping_template
              }
 
 
     def add_dynamodb_table(self, name, reads, writes):
-        self.json['Resources'][name] = {
+        # Namespace (prefix) resource names/ids
+        full_name = self.stack_name + name + 'Table'
+
+        self.json['Resources'][full_name] = {
             'Type': 'AWS::DynamoDB::Table',
             'Properties': {
                 'AttributeDefinitions': [
@@ -299,35 +394,39 @@ class Template:
                     'ReadCapacityUnits': reads,
                     'WriteCapacityUnits': writes
                 },
-                'TableName': name
+                'TableName': full_name
             }
         }
 
 
     def add_ec2_instance(self, name, instance_type, key_name, machine_image, user_data=''):
-        if key_name not in self.keys:
-            self.keys.append(key_name)
+        # Namespace (prefix) resource names/ids/methods
+        full_name = self.stack_name + name
+        full_key_name = self.stack_name + key_name
 
-        self.json['Resources'][name] = {	
+        if key_name not in self.keys:
+            self.keys.append(full_key_name)
+
+        self.json['Resources'][full_name] = {
             'Type': 'AWS::EC2::Instance',
             'Properties': {
                 'ImageId': machine_image,
                 'InstanceType': instance_type,
-                'KeyName': key_name,
+                'KeyName': full_key_name,
                 'UserData': {
                     'Fn::Base64': user_data
                 }
             }
         }
 
-        iid = self._Ref(name)
+        iid = self._Ref(full_name)
         az = self._FnGetAtt(name, 'AvailabilityZone')
         ip = self._FnGetAtt(name, 'PublicIp')
         dns = self._FnGetAtt(name, 'PublicDnsName')
 
         """
-        This ugly block of code below encodes into the Cloud Formation template,
-        instructions for Cloud Formation to produce the instance's:
+        This ugly block of code below encodes into the CloudFormation template,
+        instructions for CloudFormation to produce the instance's:
             - Instance id (id)
             - Availability zone (az)
             - Public IP address (ip)
@@ -335,7 +434,7 @@ class Template:
         and then pack those values into a JSON object as an output of stack creation.
         Each JSON object is keyed by the logical ID of the EC2 Instance.
         """
-        self.json['Outputs'][name] = {
+        self.json['Outputs'][full_name] = {
             'Value': self._FnJoin(
                 delimiter='',
                 array=[
@@ -368,11 +467,15 @@ class Template:
 
 
     def add_lambda_function(self, name, filename, rolename, managed_policies=[]):
+        # Namespace (prefix) resource names/ids/methods
+        full_name = self.stack_name + name
+        full_role_name = self.stack_name + rolename
+
         with open(filename) as fp:
             code = fp.read()
 
         # Create IAM role so function can write logs
-        self.json['Resources'][rolename] = {
+        self.json['Resources'][full_role_name] = {
             'Type': 'AWS::IAM::Role',
             'Properties': {
                 'AssumeRolePolicyDocument': {
@@ -409,20 +512,20 @@ class Template:
                         }
                     }
                 ],
-                'RoleName': rolename
+                'RoleName': full_role_name
             }
         }
 
-        self.json['Resources'][name] = {
-            'DependsOn': rolename,
+        self.json['Resources'][full_name] = {
+            'DependsOn': full_role_name,
             'Type': 'AWS::Lambda::Function',
             'Properties': {
                 'Code': {
                     'ZipFile': code
                 },
-                'FunctionName': name,
+                'FunctionName': full_name,
                 'Handler': 'index.main',
-                'Role': self._FnGetAtt(rolename, 'Arn'),
+                'Role': self._FnGetAtt(full_role_name, 'Arn'),
                 'Runtime': 'python3.7'
             }
         }
