@@ -11,25 +11,18 @@ export class Template {
       "Description": description,
       "Resources": {},
       "Outputs": {},
-    };
+    };    
   }
 
   public isEmpty(): Boolean {
     return Object.keys(this.json['Resources']).length == 0
   }
 
-  public addLambdaFunction(name: string, handler: string, role: string, code: string, runtime: string) {
-    this.json["Resources"][name] = {
-      "Type": "AWS::Lambda::Function",
-      "Properties" : {
-        "Code": {
-          "ZipFile": code
-        }
-      },
-      "Handler": handler,
-      "Role": role,
-      "Runtime": runtime,
+  private templateHasEC2Instance(): Boolean {
+    for (let resourceName in this.json["Resources"]) {
+      if (resourceName["Type"] === "AWS::EC2::Instance") return true;
     }
+    return false;
   }
 
   public addEC2Instance(projectId: string, instance: EC2) {
@@ -55,16 +48,30 @@ export class Template {
       }
     }
 
-    // if (fullKeyName !== null) {
-    //   this.json["Resources"][fullId]["Properties"]["KeyName"] = fullKeyName;
-    // }
-
     // "userData" parameter must not be an empty string or null, otherwise DynamoDB will throw error.
     if (instance.userData !== null && instance.userData !== '') {
       this.json["Resources"][fullId]["Properties"]["UserData"] = {
         "Fn::Base64": instance.userData
       }
     }
+
+    // Add EC2 instance security group to enable SSH access
+    if (!this.templateHasEC2Instance()) {
+      this.json["Resources"]["InstanceSecurityGroup"] = {        
+        "Type" : "AWS::EC2::SecurityGroup",
+        "Properties" : {
+          "GroupDescription": "Enable SSH access via port 22",
+          "SecurityGroupIngress": {
+            "IpProtocol": "tcp",
+            "FromPort": "22",
+            "ToPort": "22",
+            "CidrIp": "0.0.0.0/0"
+          }
+        }        
+      }      
+    }
+
+    this.json["Resources"][fullId]["Properties"]["SecurityGroups"] = [ {"Ref" : "InstanceSecurityGroup"} ];
   }
 
   public addDynamoDBTable(projectId: string, instance: DynamoDB) {
