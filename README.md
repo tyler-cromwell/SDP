@@ -33,7 +33,7 @@ Any other keys will automatically be added when data containing it is inserted i
 The actual method is specified with the key `HttpMethod` under `Properties`.
 
 3. When creating an EC2 Instance, the default security group does not open any port for SSH.
-To resolve this, a new instance group that opens a desired port must be created.
+To resolve this, a new security group that opens a desired port must be created.
 
 4. EC2 instances can be instructed to run a **BASH** script once creation is completed (for an example, see the `UserData` key under the `add_ec2_instance` function in `./aws/infra/template.py` or the `addEC2Instance` function in `./src/template.ts`).
 
@@ -45,3 +45,10 @@ Therefore, if a resource with a certain name/id already exists in one CloudForma
 A simple workaround we applied was to prefix resource names & ids with the name of the stack.
 
 7. **AWS Resource names have a character limit.**
+
+8. CloudFormation stacks cannot be created without at least 1 resource defined.
+Our solution is to track/store the template in the database.
+On submission of an a resource creation form, check if a resource exists, and if not we create the stack, otherwise we update the stack.
+However, **there is currently no logic that waits for the stack to finish creating/updating**.
+
+## Last updated: 5/1/2020
