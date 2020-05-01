@@ -1,11 +1,12 @@
-# SDP
+# SDP: AWS Cloud Project Management Application
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 8.3.19.
+An Angular 8 web application for managing collections of Amazon Web Services (AWS) resources.
+This application serves as our Senior Design Project (SDP) for the Computer Science program at the University of Connecticut.
 
 
 ## Project Setup
 
-Project setup is completed in 2 parts. First is to setup to deploy the backend infrastructure, and the second is to serve the frontend application.
+Setup is completed in 2 parts. The first is to setup to deploy the backend infrastructure, and the second is to serve the frontend application.
 
 
 ### Backend
