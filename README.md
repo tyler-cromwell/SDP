@@ -2,32 +2,22 @@
 
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 8.3.19.
 
-## Setting up project
 
-Install Node.js (12.13.1 LTS @ https://nodejs.org/en/).  This will automatically install NPM.
+## Project Setup
 
-Run `npm install -g @angular/cli` to install the Angular CLI.  After that, run `npm install --save-dev @angular-devkit/build-angular` to set up the `ng serve` command
+Project setup is completed in 2 parts. First is to setup to deploy the backend infrastructure, and the second is to serve the frontend application.
 
-## Development server
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
+### Backend
 
-## Code scaffolding
+To deploy the backend, execute the following steps:
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+1. `cd aws/infra/` (from the project root directory)
+2. `./main.py -p <AWS account credentials text file>` (for details, see `./aws/infra/README.md`)
+3. `cp confidential.json ../../src/` (for details, see `./aws/infra/README.md`)
 
-## Build
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory. Use the `--prod` flag for a production build.
+### Frontend
 
-## Running unit tests
-
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
-
-## Running end-to-end tests
-
-Run `ng e2e` to execute the end-to-end tests via [Protractor](http://www.protractortest.org/).
-
-## Further help
-
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI README](https://github.com/angular/angular-cli/blob/master/README.md).
+1. `cd ./src` (from the project root directory)
+2. `ng serve --host <external IP> --port <#>`
