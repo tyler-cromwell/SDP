@@ -19,25 +19,16 @@ if __name__ == '__main__':
         description='CloudFormation template builder.'
     )
 
-    DEFAULT_KEY_PAIR = "MyEC2KeyPair01"
     REGION_NAME = 'us-east-2'
 
     # Define command line interface
     my_parser.add_argument('-p', '--path', action='store', type=str,
                            required=True, help="path to AWS credentials file")
-    my_parser.add_argument('-r', '--region', action='store', type=str,
-                           required=False, default=REGION_NAME, help="AWS region")
-    my_parser.add_argument('-ec2k', '--ec2-key-pair', action='store', type=str,
-                           required=False, default=DEFAULT_KEY_PAIR, help="name of EC2 key pair")
-    my_parser.add_argument('-ec2n', '--ec2-name', action='store', type=str,
-                           required=False, default=utils.get_random_name(), help="name of EC2 instance")
 
     args = my_parser.parse_args()
 
     PATH = args.path
     STACK_NAME = 'CSE4940'
-    EC2_KEY_PAIR = args.ec2_key_pair
-    EC2_NAME = args.ec2_name
     API_NAME = 'API'
     API_DEPLOYMENT_NAME = 'ApiInitialDeployment'
     API_STAGE_NAME = 'development'
